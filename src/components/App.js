@@ -2,9 +2,11 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import shuffle from "../shuffle";
 import phrases from "../phrases";
-import Header from "./Header";
+import InGame from "./InGame";
 import Settings from "./Settings";
+import Screen from "./Screen";
 import TouchButton from "./TouchButton";
+import { playSound } from "../utils/sounds";
 
 const PHRASES = shuffle(phrases);
 const MAX_SCORE = 7;
@@ -14,8 +16,24 @@ const MIN_ROUND_TIME = 45 * 1000;
 const MAX_ROUND_TIME = 60 * 1000;
 const RUSH_DURATION = 5 * 1000;
 
-class App extends Component {
+const Header = styled.div`
+  display: flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  justify-content: space-around;
+  height: 50px;
+  background-color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.secondary};
+  color: ${props => props.theme.secondary};
+`;
 
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
+`;
+
+class App extends Component {
   state = {
     showSettings: false,
     isPlaying: false,
@@ -43,11 +61,11 @@ class App extends Component {
         pointsForTeamB: 0,
       });
 
-      // Celebrate sounds here
+      playSound('winRound');
     } else {
       this.setState({ [key]: this.state[key] + 1 });
 
-      // point click sounds here
+      playSound('addPoint');
     }
   };
 
@@ -60,28 +78,25 @@ class App extends Component {
     this.startTimers();
   };
 
-  handleTouchNext = () => {
-    this.setState({
-      phraseIndex: (this.state.phraseIndex + 1) % PHRASES.length
-    });
-  };
-
   handleTouchStop = () => {
     this.setState({ isPlaying: false });
     this.stopTimers();
+    playSound('nextPhrase');
   };
 
   tick = () => {
     this.tickTimer = setTimeout(this.tick, this.state.tickRate);
-    console.log('TICK');
+    playSound('timerTick');
   };
 
   handleTouchSettings = () => {
     this.setState({ showSettings: true });
+    playSound('nextPhrase');
   };
 
   handleSaveSettings = () => {
     this.setState({ showSettings: false });
+    playSound('nextPhrase');
   };
 
   startTimers = () => {
@@ -112,72 +127,56 @@ class App extends Component {
   render() {
     const { isPlaying, pointsForTeamA, pointsForTeamB, phraseIndex, showSettings } = this.state;
 
-    return isPlaying ? (
-      <Game>
-        <GameBoard>
-          <Header>
-            <Score points={pointsForTeamA} />
-            <TouchButton borderless icon onTouchEnd={this.handleTouchStop}>
-              &#xf04c;
-            </TouchButton>
-            <Score points={pointsForTeamB} reverse />
-          </Header>
-          <div style={{
-            display: "flex",
-            flexBasis: "15vh",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            flexGrow: 2,
-            fontSize: "250%",
-            lineHeight: "1",
-            padding: "15vw",
-            color: "inherit",
-            backgroundColor: "inherit",
-          }}>
-            {PHRASES[phraseIndex]}
+    return (
+      <div>
+        {isPlaying ? (
+          <InGame
+            phrases={PHRASES}
+            phraseIndex={phraseIndex}
+            pointsForTeamA={pointsForTeamA}
+            pointsForTeamB={pointsForTeamB}
+            onStopGame={this.handleTouchStop}
+          />
+        ) : (
+          <div>
+            <Settings isVisible={showSettings} onSave={this.handleSaveSettings} />
+            <GameBoard showSettings={showSettings}>
+              <Screen
+                header={(
+                  <HeaderWrapper>
+                    <Score points={pointsForTeamA} />
+                    <TouchButton borderless icon onTouchEnd={this.handleTouchSettings}>
+                      &#xf013;
+                    </TouchButton>
+                    <Score points={pointsForTeamB} reverse />
+                  </HeaderWrapper>
+                )}
+                body={(
+                  <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "stretch",
+                      flexGrow: 1
+                    }}>
+                      <ScoreButton teamName="A" onTouchEnd={this.handleTouchA} />
+                      <ScoreButton teamName="B" onTouchEnd={this.handleTouchB} />
+                    </div>
+                    <TouchButton
+                      style={{
+                        display: "block",
+                        flexGrow: 2
+                      }}
+                      onTouchEnd={this.handleTouchStart}
+                    >
+                      Start
+                    </TouchButton>
+                  </div>
+                )}
+              />
+            </GameBoard>
           </div>
-          <TouchButton
-            style={{
-              display: "block",
-              flexGrow: 1
-            }}
-            onTouchEnd={this.handleTouchNext}
-          >
-            Next
-          </TouchButton>
-        </GameBoard>
-      </Game>
-    ) : (
-      <Game>
-        <Settings isVisible={showSettings} onSave={this.handleSaveSettings} />
-        <GameBoard showSettings={showSettings}>
-          <Header>
-            <Score points={pointsForTeamA} />
-            <TouchButton borderless icon onTouchEnd={this.handleTouchSettings}>
-              &#xf013;
-            </TouchButton>
-            <Score points={pointsForTeamB} reverse />
-          </Header>
-          <div style={{
-            display: "flex",
-            alignItems: "stretch",
-            flexGrow: 1
-          }}>
-            <ScoreButton teamName="A" onTouchEnd={this.handleTouchA} />
-            <ScoreButton teamName="B" onTouchEnd={this.handleTouchB} />
-          </div>
-          <TouchButton
-            style={{
-              display: "block",
-              flexGrow: 2
-            }}
-            onTouchEnd={this.handleTouchStart}
-          >
-            Start
-          </TouchButton>
-        </GameBoard>
-      </Game>
+        )}
+      </div>
     );
   }
 }
@@ -202,16 +201,6 @@ const Score = ({ points, reverse }) => {
   );
 };
 
-const Game = styled.div`
-  background-color: ${props => props.theme.secondary};
-  font-family: 'Helvetica Neue';
-  font-weight: bold;
-  text-transform: uppercase;
-  color: ${props => props.theme.primary};
-  width: 100vw;
-  height: 100vh;
-`;
-
 const GameBoard = styled.div`
   position: fixed;
   display: flex;
@@ -222,7 +211,6 @@ const GameBoard = styled.div`
   width: 100vw;
   height: 100vh;
   backface-visibility: hidden;
-  border: 1px solid ${props => props.theme.secondary};
   transition: all 0.25s ease-in-out;
   ${ props => props.showSettings ? `
     transform: rotate3d(0, 1, 0.1, 180deg);

@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import Header from "./Header";
 import TouchButton from "./TouchButton";
 
 const Container = styled.div`
@@ -22,6 +21,17 @@ const Container = styled.div`
     pointer-events: none;
     opacity: 0;
   `}
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  justify-content: space-around;
+  height: 50px;
+  background-color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.secondary};
+  color: ${props => props.theme.secondary};
 `;
 
 const ScrollableContent = styled.div`
