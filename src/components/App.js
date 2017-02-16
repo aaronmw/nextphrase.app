@@ -48,7 +48,7 @@ class App extends Component {
   handleTouchStart = () => {
     this.setState({
       isPlaying: true,
-      phraseIndex: (this.state.phraseIndex + 1) % PHRASES.length
+      phraseIndex: this.state.phraseIndex + 1,
     });
 
     this.startTimers();
@@ -58,6 +58,11 @@ class App extends Component {
     this.setState({ isPlaying: false });
     this.stopTimers();
     playSound('nextPhrase');
+  };
+
+  handleTouchNext = () => {
+    this.setState({ phraseIndex: this.state.phraseIndex + 1 });
+    playSound("nextPhrase");
   };
 
   tick = () => {
@@ -112,6 +117,7 @@ class App extends Component {
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
             onStopGame={this.handleTouchStop}
+            onTouchNext={this.handleTouchNext}
           />
         ) : (
           <div>
