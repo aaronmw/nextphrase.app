@@ -1,12 +1,9 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 import shuffle from "../shuffle";
 import phrases from "../phrases";
 import InGame from "./InGame";
+import Home from "./Home";
 import Settings from "./Settings";
-import Score from "./Score";
-import Screen from "./Screen";
-import TouchButton from "./TouchButton";
 import { playSound } from "../utils/sounds";
 
 const PHRASES = shuffle(phrases);
@@ -16,12 +13,6 @@ const FAST_TICK_RATE = 250;
 const MIN_ROUND_TIME = 45 * 1000;
 const MAX_ROUND_TIME = 60 * 1000;
 const RUSH_DURATION = 5 * 1000;
-
-const HeaderWrapper = styled.div`
-  display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
-`;
 
 class App extends Component {
   state = {
@@ -46,15 +37,10 @@ class App extends Component {
     const newScore = this.state[key] + 1;
 
     if (newScore > MAX_SCORE) {
-      this.setState({
-        pointsForTeamA: 0,
-        pointsForTeamB: 0,
-      });
-
+      this.setState({ pointsForTeamA: 0, pointsForTeamB: 0 });
       playSound('winRound');
     } else {
-      this.setState({ [key]: this.state[key] + 1 });
-
+      this.setState({ [key]: newScore });
       playSound('addPoint');
     }
   };
@@ -130,73 +116,20 @@ class App extends Component {
         ) : (
           <div>
             <Settings isVisible={showSettings} onSave={this.handleSaveSettings} />
-            <GameBoard showSettings={showSettings}>
-              <Screen
-                header={(
-                  <HeaderWrapper>
-                    <Score points={pointsForTeamA} />
-                    <TouchButton borderless icon onTouchEnd={this.handleTouchSettings}>
-                      &#xf013;
-                    </TouchButton>
-                    <Score points={pointsForTeamB} reverse />
-                  </HeaderWrapper>
-                )}
-                body={(
-                  <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "stretch",
-                      flexGrow: 1
-                    }}>
-                      <ScoreButton teamName="A" onTouchEnd={this.handleTouchA} />
-                      <ScoreButton teamName="B" onTouchEnd={this.handleTouchB} />
-                    </div>
-                    <TouchButton
-                      style={{
-                        display: "block",
-                        flexGrow: 2
-                      }}
-                      onTouchEnd={this.handleTouchStart}
-                    >
-                      Start
-                    </TouchButton>
-                  </div>
-                )}
-              />
-            </GameBoard>
+            <Home
+              showSettings={showSettings}
+              pointsForTeamA={pointsForTeamA}
+              pointsForTeamB={pointsForTeamB}
+              onStartGame={this.handleTouchStart}
+              onTouchSettings={this.handleTouchSettings}
+              onTouchA={this.handleTouchA}
+              onTouchB={this.handleTouchB}
+            />
           </div>
         )}
       </div>
     );
   }
 }
-
-const GameBoard = styled.div`
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  background-color: inherit;
-  color: inherit;
-  align-items: stretch;
-  width: 100vw;
-  height: 100vh;
-  backface-visibility: hidden;
-  transition: all 0.25s ease-in-out;
-  ${ props => props.showSettings ? `
-    transform: rotate3d(0, 1, 0.1, 180deg);
-    pointer-events: none;
-    opacity: 0;
-  ` : `
-    transition-delay: 0.125s;
-    transform: rotate3d(0, 1, 0.1, 0);
-    opacity: 1;
-  `}
-`;
-
-const ScoreButton = ({ teamName, onTouchEnd }) => (
-  <TouchButton onTouchEnd={onTouchEnd} style={{ flexBasis: "50%" }}>
-    {teamName}
-  </TouchButton>
-);
 
 export default App;
