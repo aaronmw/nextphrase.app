@@ -4,6 +4,7 @@ import shuffle from "../shuffle";
 import phrases from "../phrases";
 import InGame from "./InGame";
 import Settings from "./Settings";
+import Score from "./Score";
 import Screen from "./Screen";
 import TouchButton from "./TouchButton";
 import { playSound } from "../utils/sounds";
@@ -15,17 +16,6 @@ const FAST_TICK_RATE = 250;
 const MIN_ROUND_TIME = 45 * 1000;
 const MAX_ROUND_TIME = 60 * 1000;
 const RUSH_DURATION = 5 * 1000;
-
-const Header = styled.div`
-  display: flex;
-  flex-grow: 0;
-  flex-shrink: 0;
-  justify-content: space-around;
-  height: 50px;
-  background-color: ${props => props.theme.primary};
-  border: 1px solid ${props => props.theme.secondary};
-  color: ${props => props.theme.secondary};
-`;
 
 const HeaderWrapper = styled.div`
   display: flex;
@@ -181,26 +171,6 @@ class App extends Component {
   }
 }
 
-const Score = ({ points, reverse }) => {
-  const pointElements = [];
-
-  for (var i = 1; i <= 7; i++) {
-    pointElements.push((
-      <Point key={i} filled={i <= points} />
-    ));
-  }
-
-  if (reverse) {
-    pointElements.reverse();
-  }
-
-  return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      {pointElements}
-    </div>
-  );
-};
-
 const GameBoard = styled.div`
   position: fixed;
   display: flex;
@@ -221,21 +191,6 @@ const GameBoard = styled.div`
     transform: rotate3d(0, 1, 0.1, 0);
     opacity: 1;
   `}
-`;
-
-const Point = styled.div`
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid ${props => props.theme.secondary};
-  background: ${ props => props.filled ? props.theme.secondary : "none" };
-  opacity: ${ props => props.filled ? 1 : 0.5 };
-  transition: all 0.1s ease-in-out;
-
-  &:not(:first-child) {
-    margin-left: 2px;
-  }
 `;
 
 const ScoreButton = ({ teamName, onTouchEnd }) => (
