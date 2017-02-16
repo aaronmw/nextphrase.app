@@ -38,10 +38,10 @@ class App extends Component {
 
     if (newScore > MAX_SCORE) {
       this.setState({ pointsForTeamA: 0, pointsForTeamB: 0 });
-      playSound('winRound');
+      playSound("winRound");
     } else {
       this.setState({ [key]: newScore });
-      playSound('addPoint');
+      playSound("addPoint");
     }
   };
 
@@ -57,7 +57,7 @@ class App extends Component {
   handleTouchStop = () => {
     this.setState({ isPlaying: false });
     this.stopTimers();
-    playSound('nextPhrase');
+    playSound("nextPhrase");
   };
 
   handleTouchNext = () => {
@@ -67,17 +67,17 @@ class App extends Component {
 
   tick = () => {
     this.tickTimer = setTimeout(this.tick, this.state.tickRate);
-    playSound('timerTick');
+    playSound("timerTick");
   };
 
   handleTouchSettings = () => {
     this.setState({ showSettings: true });
-    playSound('nextPhrase');
+    playSound("nextPhrase");
   };
 
   handleSaveSettings = () => {
     this.setState({ showSettings: false });
-    playSound('nextPhrase');
+    playSound("nextPhrase");
   };
 
   startTimers = () => {
@@ -99,9 +99,7 @@ class App extends Component {
   };
 
   endRound = () => {
-    this.setState({
-      isPlaying: false
-    });
+    this.setState({ isPlaying: false });
     this.stopTimers();
   };
 
