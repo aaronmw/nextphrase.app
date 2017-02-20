@@ -99,7 +99,10 @@ class App extends Component {
   };
 
   endRound = () => {
-    this.setState({ isPlaying: false });
+    this.setState({
+      isPlaying: false,
+      tickRate: DEFAULT_TICK_RATE
+    });
     this.stopTimers();
     playSound("beep");
   };
