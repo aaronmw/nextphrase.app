@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import shuffle from "../shuffle";
-import phrases from "../phrases";
+import lists from "../lists";
 import InGame from "./InGame";
 import Settings from "./Settings";
 import Screen from "./Screen";
 import TouchButton from "./TouchButton";
 import { playSound } from "../utils/sounds";
 
-const PHRASES = shuffle(phrases);
+const PHRASES = shuffle(lists['StarWars']);
 const MAX_SCORE = 7;
 const DEFAULT_TICK_RATE = 500;
 const FAST_TICK_RATE = 250;
