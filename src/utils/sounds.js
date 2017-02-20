@@ -1,11 +1,11 @@
 import webAudioToolkit from "../utils/webAudioToolkit";
 
 const SOUNDS = [
-  { name: 'timerTick', path: '/sounds/tick.wav'},
-  { name: 'addPoint', path: '/sounds/typewriter.wav'},
-  { name: 'endRound', path: '/sounds/beep.wav'},
-  { name: 'winRound', path: '/sounds/celebration.wav'},
-  { name: 'nextPhrase', path: '/sounds/woosh.wav'}
+  { name: "tickTock", path: "/sounds/tick.wav"},
+  { name: "typewriter", path: "/sounds/typewriter.wav"},
+  { name: "beep", path: "/sounds/beep.wav"},
+  { name: "celebration", path: "/sounds/celebration.wav"},
+  { name: "woosh", path: "/sounds/woosh.wav"}
 ];
 
 const SOUND_BUFFERS = {};
