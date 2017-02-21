@@ -1,11 +1,10 @@
 import styled from "styled-components";
 
 const TouchButton = styled.button`
+  padding: 0 20px;
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
-  border: none;
   cursor: pointer;
-  padding: 0 20px;
   border: ${ props => props.borderless ? "none" : "1px solid " + props.theme.secondary };
   text-transform: inherit;
   font: inherit;

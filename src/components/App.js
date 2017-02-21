@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import shuffle from "../shuffle";
-import lists from "../lists";
-import InGame from "./InGame";
+// import shuffle from "../shuffle";
+// import lists from "../lists";
+// import InGame from "./InGame";
 import Home from "./Home";
-import Settings from "./Settings";
+// import Settings from "./Settings";
 import { playSound } from "../utils/sounds";
 
-const PHRASES = shuffle(lists['StarWars']);
+// const PHRASES = shuffle(lists["StarWars"]);
 const MAX_SCORE = 7;
 const DEFAULT_TICK_RATE = 500;
 const FAST_TICK_RATE = 250;
@@ -16,36 +16,27 @@ const RUSH_DURATION = 5 * 1000;
 
 class App extends Component {
   state = {
-    showSettings: false,
-    isPlaying: false,
+    activeRoute: "home",
     pointsForTeamA: 0,
     pointsForTeamB: 0,
     phraseIndex: 0,
-    tickRate: DEFAULT_TICK_RATE,
+    selectedLists: ["StarWars"]
   };
 
-  handleTouchA = () => {
-    this.addPointForTeam("A");
-  };
-
-  handleTouchB = () => {
-    this.addPointForTeam("B");
-  };
-
-  addPointForTeam = teamName => {
-    const key = "pointsForTeam" + teamName;
-    const newScore = this.state[key] + 1;
-
-    if (newScore > MAX_SCORE) {
-      this.setState({ pointsForTeamA: 0, pointsForTeamB: 0 });
-      playSound("celebration");
-    } else {
-      this.setState({ [key]: newScore });
-      playSound("typewriter");
+  setScore = (teamA, teamB) => {
+    if (teamA === MAX_SCORE || teamB === MAX_SCORE) {
+      this.endGame();
+      return;
     }
+
+    this.setState({
+      pointsForTeamA: teamA,
+      pointsForTeamB: teamB,
+    });
+    playSound("typewriter");
   };
 
-  handleTouchStart = () => {
+  startGame = () => {
     this.setState({
       isPlaying: true,
       phraseIndex: this.state.phraseIndex + 1,
@@ -54,15 +45,20 @@ class App extends Component {
     this.startTimers();
   };
 
-  handleTouchStop = () => {
+  stopGame = () => {
     this.setState({ isPlaying: false });
     this.stopTimers();
     playSound("woosh");
   };
 
-  handleTouchNext = () => {
+  nextPhrase = () => {
     this.setState({ phraseIndex: this.state.phraseIndex + 1 });
     playSound("woosh");
+  };
+
+  endGame = () => {
+    this.setScore(0, 0);
+    this.goTo("home");
   };
 
   tick = () => {
@@ -70,13 +66,8 @@ class App extends Component {
     playSound("tickTock");
   };
 
-  handleTouchSettings = () => {
-    this.setState({ showSettings: true });
-    playSound("woosh");
-  };
-
-  handleSaveSettings = () => {
-    this.setState({ showSettings: false });
+  goTo = routeName => {
+    this.setState({ activeRoute: routeName })
     playSound("woosh");
   };
 
@@ -108,35 +99,56 @@ class App extends Component {
   };
 
   render() {
-    const { isPlaying, pointsForTeamA, pointsForTeamB, phraseIndex, showSettings } = this.state;
+    const { activeRoute, pointsForTeamA, pointsForTeamB, phraseIndex, selectedLists } = this.state;
 
     return (
-      <div>
-        {isPlaying ? (
-          <InGame
-            phrases={PHRASES}
-            phraseIndex={phraseIndex}
+      <Home
+        pointsForTeamA={pointsForTeamA}
+        pointsForTeamB={pointsForTeamB}
+        onStartGame={this.startGame}
+        onTouchSettings={this.goTo.bind(this, "settings")}
+        onScoreChange={this.setScore}
+      />
+    );
+
+    /*
+    // Routing, sort of
+    switch (activeRoute) {
+      case "home":
+      default:
+        return (
+          <Home
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
-            onStopGame={this.handleTouchStop}
-            onTouchNext={this.handleTouchNext}
+            onStartGame={this.startGame}
+            onTouchSettings={this.goTo.bind(this, "settings")}
+            onScoreChange={this.setScore}
           />
-        ) : (
-          <div>
-            <Settings isVisible={showSettings} onSave={this.handleSaveSettings} />
-            <Home
-              showSettings={showSettings}
-              pointsForTeamA={pointsForTeamA}
-              pointsForTeamB={pointsForTeamB}
-              onStartGame={this.handleTouchStart}
-              onTouchSettings={this.handleTouchSettings}
-              onTouchA={this.handleTouchA}
-              onTouchB={this.handleTouchB}
-            />
-          </div>
-        )}
-      </div>
-    );
+        );
+
+      /*
+      case "in-game":
+        return (
+          <InGame
+            phrases={phrases}
+            pointsForTeamA={pointsForTeamA}
+            pointsForTeamB={pointsForTeamB}
+            onTouchNext={nextPhrase}
+            onTouchStop={stopGame}
+          />
+        );
+        break;
+
+      case "settings"
+        return (
+          <Settings
+            selectedLists={selectedLists}
+            onTouchSave={saveSelectedLists}
+          />
+        );
+        break;
+    }
+    */
   }
 }
 

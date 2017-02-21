@@ -1,7 +1,7 @@
 import React, { PropTypes } from "react";
 import styled from "styled-components";
 
-const Point = styled.div`
+const Dot = styled.span`
   display: inline-block;
   width: 12px;
   height: 12px;
@@ -16,29 +16,29 @@ const Point = styled.div`
   }
 `;
 
-const Score = ({ points, reverse }) => {
-  const pointElements = [];
+const ScoreDots = ({ score, reverse }) => {
+  const dotElements = [];
 
   for (var i = 1; i <= 7; i++) {
-    pointElements.push((
-      <Point key={i} filled={i <= points} />
+    dotElements.push((
+      <Dot key={i} filled={i <= score} />
     ));
   }
 
   if (reverse) {
-    pointElements.reverse();
+    dotElements.reverse();
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      {pointElements}
-    </div>
+    <span>
+      {dotElements}
+    </span>
   );
 };
 
-Score.propTypes = {
-  points: PropTypes.number.isRequired,
+ScoreDots.propTypes = {
+  score: PropTypes.number.isRequired,
   reverse: PropTypes.bool,
 };
 
-export default Score;
+export default ScoreDots;

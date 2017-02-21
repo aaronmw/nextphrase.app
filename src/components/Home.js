@@ -1,96 +1,51 @@
-import React, { PropTypes } from "react";
+import React, { Component, PropTypes } from "react";
 import styled from "styled-components";
-import TouchButton from "./TouchButton";
-import Score from "./Score";
-import Screen from "./Screen";
+import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements"
 
-const GameBoard = styled.div`
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  background-color: inherit;
-  color: inherit;
-  align-items: stretch;
-  width: 100vw;
-  height: 100vh;
-  backface-visibility: hidden;
-  transition: all 0.25s ease-in-out;
-  ${ props => props.showSettings ? `
-    transform: rotate3d(0, 1, 0.1, 180deg);
-    pointer-events: none;
-    opacity: 0;
-  ` : `
-    transition-delay: 0.125s;
-    transform: rotate3d(0, 1, 0.1, 0);
-    opacity: 1;
-  `}
+const ScoreButton = styled(GameButton)`
+  width: 50%;
+  height: 33.333%;
 `;
 
-const ScoreButton = ({ teamName, onTouchEnd }) => (
-  <TouchButton onTouchEnd={onTouchEnd} style={{ flexBasis: "50%" }}>
-    {teamName}
-  </TouchButton>
-);
-
-const HeaderWrapper = styled.div`
-  display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
+const StartButton = styled(GameButton)`
+  width: 100%;
+  height: 66.666%;
 `;
 
-const Home = ({
-  showSettings,
-  pointsForTeamA,
-  pointsForTeamB,
-  onTouchSettings,
-  onStartGame,
-  onTouchA,
-  onTouchB,
-}) => (
-  <GameBoard showSettings={showSettings}>
-    <Screen
-      header={(
-        <HeaderWrapper>
-          <Score points={pointsForTeamA} />
-          <TouchButton borderless icon onTouchEnd={onTouchSettings}>
-            &#xf013;
-          </TouchButton>
-          <Score points={pointsForTeamB} reverse />
-        </HeaderWrapper>
-      )}
-      body={(
-        <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{
-            display: "flex",
-            alignItems: "stretch",
-            flexGrow: 1
-          }}>
-            <ScoreButton teamName="A" onTouchEnd={onTouchA} />
-            <ScoreButton teamName="B" onTouchEnd={onTouchB} />
-          </div>
-          <TouchButton
-            style={{
-              display: "block",
-              flexGrow: 2
-            }}
-            onTouchEnd={onStartGame}
-          >
-            Start
-          </TouchButton>
-        </div>
-      )}
-    />
-  </GameBoard>
-);
+class Home extends Component {
+  addPointForTeam = teamName => {
+    let { pointsForTeamA, pointsForTeamB, onScoreChange } = this.props;
+    (teamName === "A") ? pointsForTeamA++ : pointsForTeamB++;
+    onScoreChange(pointsForTeamA, pointsForTeamB);
+  };
+
+  render() {
+    const { pointsForTeamA, pointsForTeamB, onStartGame, onTouchSettings } = this.props;
+
+    return (
+      <GameBoard>
+        <GameHeader
+          buttonIcon="cog"
+          onTouchButton={onTouchSettings}
+          pointsForTeamA={pointsForTeamA}
+          pointsForTeamB={pointsForTeamB}
+        />
+        <GameContent>
+          <ScoreButton onClick={this.addPointForTeam.bind(this, "A")}>A</ScoreButton>
+          <ScoreButton onClick={this.addPointForTeam.bind(this, "B")}>B</ScoreButton>
+          <StartButton onClick={onStartGame}>Start</StartButton>
+        </GameContent>
+      </GameBoard>
+    );
+  }
+};
 
 Home.propTypes = {
   pointsForTeamA: PropTypes.number.isRequired,
   pointsForTeamB: PropTypes.number.isRequired,
-  showSettings: PropTypes.bool.isRequired,
   onStartGame: PropTypes.func.isRequired,
-  onTouchA: PropTypes.func.isRequired,
-  onTouchB: PropTypes.func.isRequired,
   onTouchSettings: PropTypes.func.isRequired,
+  onScoreChange: PropTypes.func.isRequired,
 };
 
 export default Home;
