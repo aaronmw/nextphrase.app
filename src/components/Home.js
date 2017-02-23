@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from "react";
 import styled from "styled-components";
-import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements"
+import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
 const ScoreButton = styled(GameButton)`
   width: 50%;
@@ -14,13 +14,21 @@ const StartButton = styled(GameButton)`
 
 class Home extends Component {
   addPointForTeam = teamName => {
-    let { pointsForTeamA, pointsForTeamB, onScoreChange } = this.props;
+    let { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
     (teamName === "A") ? pointsForTeamA++ : pointsForTeamB++;
-    onScoreChange(pointsForTeamA, pointsForTeamB);
+    onTouchScore(pointsForTeamA, pointsForTeamB);
+  };
+
+  addPointForTeamA = () => {
+    this.addPointForTeam("A");
+  };
+
+  addPointForTeamB = () => {
+    this.addPointForTeam("B");
   };
 
   render() {
-    const { pointsForTeamA, pointsForTeamB, onStartGame, onTouchSettings } = this.props;
+    const { pointsForTeamA, pointsForTeamB, onTouchStart, onTouchSettings } = this.props;
 
     return (
       <GameBoard>
@@ -31,9 +39,9 @@ class Home extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          <ScoreButton onClick={this.addPointForTeam.bind(this, "A")}>A</ScoreButton>
-          <ScoreButton onClick={this.addPointForTeam.bind(this, "B")}>B</ScoreButton>
-          <StartButton onClick={onStartGame}>Start</StartButton>
+          <ScoreButton onTouchEnd={this.addPointForTeamA}>A</ScoreButton>
+          <ScoreButton onTouchEnd={this.addPointForTeamB}>B</ScoreButton>
+          <StartButton onTouchEnd={onTouchStart}>Start</StartButton>
         </GameContent>
       </GameBoard>
     );
@@ -43,9 +51,9 @@ class Home extends Component {
 Home.propTypes = {
   pointsForTeamA: PropTypes.number.isRequired,
   pointsForTeamB: PropTypes.number.isRequired,
-  onStartGame: PropTypes.func.isRequired,
+  onTouchStart: PropTypes.func.isRequired,
   onTouchSettings: PropTypes.func.isRequired,
-  onScoreChange: PropTypes.func.isRequired,
+  onTouchScore: PropTypes.func.isRequired,
 };
 
 export default Home;

@@ -43,9 +43,24 @@ const GameHeaderButton = styled(GameButton)`
   position: absolute;
   width: 50px;
   height: 100%;
+  padding: 0;
   left: 50%;
   transform: translateX(-50%);
 `;
+
+const GameHeaderScore = styled.div`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 12px;
+  ${ props => props.align === "left" ?
+    "left: 20px;" :
+    "right: 20px;"
+  };
+`;
+GameHeaderScore.propTypes = {
+  align: PropTypes.oneOf(["left", "right"]).isRequired,
+};
 
 const ICONS = {
   "cog": "\uf013",
@@ -59,11 +74,19 @@ class GameHeader extends Component {
 
     return (
       <GameHeaderWrapper>
-        <ScoreDots score={pointsForTeamA} />
-        <GameHeaderButton onClick={onTouchButton} borderless icon>
+        { typeof pointsForTeamA !== "undefined" ? (
+          <GameHeaderScore align="left">
+            <ScoreDots score={pointsForTeamA} />
+          </GameHeaderScore>
+        ) : "" }
+        <GameHeaderButton onTouchEnd={onTouchButton} borderless icon>
           { ICONS[buttonIcon] }
         </GameHeaderButton>
-        <ScoreDots score={pointsForTeamB} reverse />
+        { typeof pointsForTeamA !== "undefined" ? (
+          <GameHeaderScore align="right">
+            <ScoreDots score={pointsForTeamB} reverse />
+          </GameHeaderScore>
+        ) : "" }
       </GameHeaderWrapper>
     );
   }

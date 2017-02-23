@@ -1,10 +1,12 @@
 import React, { PropTypes } from "react";
+import * as config from "../config";
 import styled from "styled-components";
 
 const Dot = styled.span`
   display: inline-block;
   width: 12px;
   height: 12px;
+  line-height: 12px;
   border-radius: 50%;
   border: 2px solid ${props => props.theme.secondary};
   background: ${ props => props.filled ? props.theme.secondary : "none" };
@@ -19,7 +21,7 @@ const Dot = styled.span`
 const ScoreDots = ({ score, reverse }) => {
   const dotElements = [];
 
-  for (var i = 1; i <= 7; i++) {
+  for (var i = 1; i <= config.MAX_SCORE; i++) {
     dotElements.push((
       <Dot key={i} filled={i <= score} />
     ));
@@ -29,11 +31,7 @@ const ScoreDots = ({ score, reverse }) => {
     dotElements.reverse();
   }
 
-  return (
-    <span>
-      {dotElements}
-    </span>
-  );
+  return <div>{dotElements}</div>;
 };
 
 ScoreDots.propTypes = {
