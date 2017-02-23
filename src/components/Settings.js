@@ -1,68 +1,34 @@
-import React from "react";
+import React, { Component, PropTypes } from "react";
 import styled from "styled-components";
-import TouchButton from "./TouchButton";
+import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
-const Container = styled.div`
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100vw;
-  height: 100vh;
-  backface-visibility: hidden;
-  border: 1px solid ${props => props.theme.secondary};
-  transition: all 0.25s ease-in-out;
-  ${ props => props.isVisible ? `
-    transition-delay: 0.125s;
-    transform: rotate3d(0, 1, 0.1, 0);
-    opacity: 1;
-  ` : `
-    transform: rotate3d(0, 1, 0.1, 180deg);
-    pointer-events: none;
-    opacity: 0;
-  `}
-`;
-
-const Header = styled.div`
-  display: flex;
-  flex-grow: 0;
-  flex-shrink: 0;
-  justify-content: space-around;
-  height: 50px;
-  background-color: ${props => props.theme.primary};
-  border: 1px solid ${props => props.theme.secondary};
-  color: ${props => props.theme.secondary};
-`;
-
-const ScrollableContent = styled.div`
-  background: ${props => props.theme.primary};
-  flex-grow: 1;
+const SettingsContent = styled(GameContent)`
+  border: 1px solid ${ props => props.theme.secondary };
   padding: 20px;
-  color: ${props => props.theme.secondary};
-  border: 1px solid ${props => props.theme.secondary};
+  overflow: auto;
 `;
 
-const Settings = ({ onSave, isVisible }) => (
-  <Container isVisible={isVisible}>
-    <Header>
-      <TouchButton borderless icon onTouchEnd={onSave}>
-        &#xf00c;
-      </TouchButton>
-    </Header>
-    <ScrollableContent>
-      <h1>Word Lists</h1>
-      <ul>
-        <li><input type="checkbox" /> NSFW</li>
-        <li><input type="checkbox" /> Entertainment</li>
-        <li><input type="checkbox" /> Pop Culture</li>
-        <li><input type="checkbox" /> 70&rsquo;s</li>
-        <li><input type="checkbox" /> 80&rsquo;s</li>
-        <li><input type="checkbox" /> 90&rsquo;s</li>
-        <li><input type="checkbox" /> 00&rsquo;s</li>
-        <li><input type="checkbox" /> Christmas</li>
-      </ul>
-    </ScrollableContent>
-  </Container>
-);
+class Settings extends Component {
+  render() {
+    const { selectedLists, onTouchSave } = this.props;
+
+    return (
+      <GameBoard>
+        <GameHeader
+          buttonIcon="checkmark"
+          onTouchButton={onTouchSave}
+        />
+        <SettingsContent>
+          Settings!
+        </SettingsContent>
+      </GameBoard>
+    );
+  }
+};
+
+Settings.propTypes = {
+  selectedLists: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onTouchSave: PropTypes.func.isRequired,
+};
 
 export default Settings;

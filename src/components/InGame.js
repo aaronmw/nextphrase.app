@@ -1,95 +1,56 @@
-import React, { PropTypes } from "react";
+import React, { Component, PropTypes } from "react";
 import styled from "styled-components";
-import Score from "./Score";
-import Screen from "./Screen";
-import TouchButton from "./TouchButton";
+import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
-const GameBoard = styled.div`
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  background-color: inherit;
-  color: inherit;
-  align-items: stretch;
-  width: 100vw;
-  height: 100vh;
-  backface-visibility: hidden;
-  transition: all 0.25s ease-in-out;
-  ${props => props.showSettings ? `
-    transform: rotate3d(0, 1, 0.1, 180deg);
-    pointer-events: none;
-    opacity: 0;
-  ` : `
-    transition-delay: 0.125s;
-    transform: rotate3d(0, 1, 0.1, 0);
-    opacity: 1;
-  `}
+const NextButton = styled(GameButton)`
+  width: 100%;
+  height: 33.333%;
 `;
 
-const HeaderWrapper = styled.div`
+const PhraseDisplay = styled.div`
   display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
+  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.6em;
+  line-height: 1.1;
+  width: 100%;
+  height: 66.666%;
+  background: ${ props => props.theme.secondary };
+  color: ${ props => props.theme.primary };
 `;
 
-const InGame = ({
-  pointsForTeamA,
-  pointsForTeamB,
-  phrases,
-  phraseIndex,
-  onStopGame,
-  onTouchNext,
-}) => (
-  <GameBoard>
-    <Screen
-      header={(
-        <HeaderWrapper>
-          <Score points={pointsForTeamA} />
-          <TouchButton borderless icon onTouchEnd={onStopGame}>
-            &#xf04c;
-          </TouchButton>
-          <Score points={pointsForTeamB} reverse />
-        </HeaderWrapper>
-      )}
-      body={(
-        <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{
-            display: "flex",
-            flexBasis: "15vh",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            flexGrow: 2,
-            fontSize: "250%",
-            lineHeight: "1",
-            padding: "15vw",
-            color: "inherit",
-            backgroundColor: "inherit",
-          }}>
-            {phrases[phraseIndex % phrases.length]}
-          </div>
-          <TouchButton
-            style={{
-              display: "block",
-              flexGrow: 1
-            }}
-            onTouchEnd={onTouchNext}
-          >
-            Next
-          </TouchButton>
-        </div>
-      )}
-    />
-  </GameBoard>
-);
+class InGame extends Component {
+  render() {
+    const { phrases, phraseIndex, pointsForTeamA, pointsForTeamB, onTouchNext, onTouchStop } = this.props;
+
+    return (
+      <GameBoard>
+        <GameHeader
+          buttonIcon="pause"
+          onTouchButton={onTouchStop}
+          pointsForTeamA={pointsForTeamA}
+          pointsForTeamB={pointsForTeamB}
+        />
+        <GameContent>
+          <PhraseDisplay>
+            {phrases[phraseIndex % phrases.length].replace("'", "\u2019")}
+          </PhraseDisplay>
+          <NextButton onTouchEnd={onTouchNext}>Next</NextButton>
+        </GameContent>
+      </GameBoard>
+    );
+  }
+};
 
 InGame.propTypes = {
   phrases: PropTypes.arrayOf(PropTypes.string).isRequired,
   phraseIndex: PropTypes.number.isRequired,
   pointsForTeamA: PropTypes.number.isRequired,
   pointsForTeamB: PropTypes.number.isRequired,
-  onStopGame: PropTypes.func.isRequired,
   onTouchNext: PropTypes.func.isRequired,
+  onTouchStop: PropTypes.func.isRequired,
 };
 
 export default InGame;
