@@ -13,7 +13,8 @@ class App extends Component {
   constructor (props) {
     super(props);
 
-    const selectedLists = window.localStorage.getItem("selectedLists") || config.DEFAULT_LISTS;
+    let savedSelectedLists = JSON.parse(window.localStorage.getItem("selectedLists"));
+    const selectedLists = savedSelectedLists.length ? savedSelectedLists : config.DEFAULT_LISTS;
 
     let phrases = [];
     selectedLists.forEach(value => {
@@ -32,7 +33,32 @@ class App extends Component {
     };
   };
 
-  buildPhrases = () => {
+  buildPhrases = (newSelectedLists) => {
+    let newPhrases = [];
+    newSelectedLists.forEach(value => {
+      newPhrases = newPhrases.concat(lists[value]);
+    });
+    newPhrases = shuffle(newPhrases);
+    this.setState({
+      phrases: newPhrases,
+    });
+  };
+
+  saveLists = (listName, isSelected) => {
+    const { selectedLists } = this.state;
+
+    let newSelectedLists = isSelected ?
+      selectedLists.concat([listName])
+    : selectedLists.filter(item => item !== listName);
+
+    this.setState({
+      selectedLists: newSelectedLists,
+    });
+
+    this.buildPhrases(newSelectedLists);
+    window.localStorage.setItem("selectedLists", JSON.stringify(newSelectedLists));
+    console.log(newSelectedLists, typeof newSelectedLists, window.localStorage.getItem("selectedLists"), typeof window.localStorage.getItem("selectedLists"));
+    playSound("typewriter");
   };
 
   goTo = routeName => {
@@ -110,10 +136,6 @@ class App extends Component {
     playSound("beep");
   };
 
-  saveLists = () => {
-    this.goTo("home");
-  };
-
   render() {
     const { activeRoute, pointsForTeamA, pointsForTeamB, phrases, phraseIndex, selectedLists } = this.state;
 
@@ -146,7 +168,8 @@ class App extends Component {
         return (
           <Settings
             selectedLists={selectedLists}
-            onTouchSave={this.saveLists}
+            onTouchDone={this.goTo.bind(this, "home")}
+            onTouchList={this.saveLists}
           />
         );
     }

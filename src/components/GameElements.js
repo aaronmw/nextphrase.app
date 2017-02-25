@@ -46,6 +46,10 @@ const GameHeaderButton = styled(GameButton)`
   padding: 0;
   left: 50%;
   transform: translateX(-50%);
+  ${ props => props.disabled ? `
+    opacity: 0.25;
+    pointer-events: none;
+  ` : `` }
 `;
 
 const GameHeaderScore = styled.div`
@@ -56,7 +60,7 @@ const GameHeaderScore = styled.div`
   ${ props => props.align === "left" ?
     "left: 20px;" :
     "right: 20px;"
-  };
+  }
 `;
 GameHeaderScore.propTypes = {
   align: PropTypes.oneOf(["left", "right"]).isRequired,
@@ -70,7 +74,7 @@ const ICONS = {
 
 class GameHeader extends Component {
   render() {
-    const { pointsForTeamA, pointsForTeamB, onTouchButton, buttonIcon } = this.props;
+    const { pointsForTeamA, pointsForTeamB, onTouchButton, buttonIcon, disabled } = this.props;
 
     return (
       <GameHeaderWrapper>
@@ -79,7 +83,7 @@ class GameHeader extends Component {
             <ScoreDots score={pointsForTeamA} />
           </GameHeaderScore>
         ) : "" }
-        <GameHeaderButton onTouchEnd={onTouchButton} borderless icon>
+        <GameHeaderButton onTouchEnd={onTouchButton} borderless icon disabled={disabled}>
           { ICONS[buttonIcon] }
         </GameHeaderButton>
         { typeof pointsForTeamA !== "undefined" ? (
@@ -91,6 +95,14 @@ class GameHeader extends Component {
     );
   }
 }
+
+GameHeader.propTypes = {
+  pointsForTeamA: PropTypes.number,
+  pointsForTeamB: PropTypes.number,
+  onTouchButton: PropTypes.func.isRequired,
+  buttonIcon: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
+};
 
 export { GameHeader };
 
