@@ -32,11 +32,13 @@ export const GameButton = styled.button`
 
 const GameHeaderWrapper = styled.div`
   position: relative;
+  z-index: 1000;
   height: 10%;
   line-height: 100%;
   white-space: nowrap;
   width: 100%;
   border: 1px solid ${ props => props.theme.secondary };
+  background: ${ props => props.theme.primary };
 `;
 
 const GameHeaderButton = styled(GameButton)`

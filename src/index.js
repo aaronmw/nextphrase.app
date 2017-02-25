@@ -7,7 +7,7 @@ import './index.css';//
 const THEME = {
   primary: '#113347',
   secondary: 'LightSkyBlue',
-  highlight: 'red',
+  highlight: 'rgba(255,255,255,0.2)',
 };
 
 document.addEventListener('touchmove', function (e) {

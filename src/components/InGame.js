@@ -1,13 +1,34 @@
 import React, { Component, PropTypes } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
 const NextButton = styled(GameButton)`
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 33.333%;
+  background: ${ props => props.theme.primary };
+  z-index: 1000;
 `;
 
-const PhraseDisplay = styled.div`
+const newPhrase = keyframes`
+  from {
+    opacity: 0;
+    filter: blur(20px);
+    transform: scale(5) translateY(20%);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) translateY(0);
+  }
+`;
+
+const PhraseCanvas = styled.div`
+  position: absolute;
+  z-index: 1;
+  top: 0;
   display: flex;
   padding: 20px;
   align-items: center;
@@ -19,11 +40,42 @@ const PhraseDisplay = styled.div`
   height: 66.666%;
   background: ${ props => props.theme.secondary };
   color: ${ props => props.theme.primary };
+  animation: ${newPhrase} 0.125s linear;
 `;
 
-class InGame extends Component {
+class Phrase extends Component {
   render() {
-    const { phrases, phraseIndex, pointsForTeamA, pointsForTeamB, onTouchNext, onTouchStop } = this.props;
+    return (
+      <PhraseCanvas>
+        {this.props.text.replace("'", "\u2019")}
+      </PhraseCanvas>
+    );
+  }
+};
+
+class InGame extends Component {
+  constructor(props) {
+    super(props);
+    const { phrase } = this.props;
+
+    this.state = {
+      phraseKey: 0,
+      phraseHistory: [<Phrase key={0} text={phrase} />],
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { phrase } = nextProps;
+    const { phraseHistory, phraseKey } = this.state;
+
+    this.setState((prevState, prevProps) => ({
+      phraseKey: prevState.phraseKey + 1,
+      phraseHistory: prevState.phraseHistory.concat(<Phrase key={prevState.phraseKey + 1} text={phrase} />),
+    }));
+  }
+
+  render() {
+    const { pointsForTeamA, pointsForTeamB, onTouchNext, onTouchStop } = this.props;
 
     return (
       <GameBoard>
@@ -34,9 +86,9 @@ class InGame extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          <PhraseDisplay>
-            {phrases[phraseIndex % phrases.length].replace("'", "\u2019")}
-          </PhraseDisplay>
+          <TransitionGroup>
+            {this.state.phraseHistory}
+          </TransitionGroup>
           <NextButton onTouchEnd={onTouchNext}>Next</NextButton>
         </GameContent>
       </GameBoard>
@@ -45,8 +97,7 @@ class InGame extends Component {
 };
 
 InGame.propTypes = {
-  phrases: PropTypes.arrayOf(PropTypes.string).isRequired,
-  phraseIndex: PropTypes.number.isRequired,
+  phrase: PropTypes.string.isRequired,
   pointsForTeamA: PropTypes.number.isRequired,
   pointsForTeamB: PropTypes.number.isRequired,
   onTouchNext: PropTypes.func.isRequired,

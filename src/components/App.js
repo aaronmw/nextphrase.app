@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 import * as config from "../config";
-import shuffle from "../shuffle";
-import lists from "../lists";
 import Home from "./Home";
 import InGame from "./InGame";
 import Settings from "./Settings";
 import { playSound } from "../utils/sounds";
-
-// const config.PHRASES = shuffle(lists["StarWars"]);
+import shuffle from "../shuffle";
+import lists from "../lists";
 
 class App extends Component {
   constructor (props) {
@@ -23,13 +21,12 @@ class App extends Component {
     phrases = shuffle(phrases);
 
     this.state = {
+      phrases: phrases,
+      phraseIndex: 0,
       activeRoute: "home",
       pointsForTeamA: 0,
       pointsForTeamB: 0,
-      phraseIndex: 0,
-      tickRate: config.DEFAULT_TICK_RATE,
       selectedLists,
-      phrases,
     };
   };
 
@@ -79,10 +76,6 @@ class App extends Component {
   };
 
   startGame = () => {
-    this.setState({
-      phraseIndex: this.state.phraseIndex + 1,
-    });
-
     this.startTimers();
     this.goTo('in-game');
   };
@@ -94,7 +87,9 @@ class App extends Component {
   };
 
   nextPhrase = () => {
-    this.setState({ phraseIndex: this.state.phraseIndex + 1 });
+    this.setState((prevState, props) => ({
+      phraseIndex: prevState.phraseIndex + 1
+    }));
     playSound("woosh");
   };
 
@@ -105,33 +100,32 @@ class App extends Component {
   };
 
   tick = () => {
-    this.tickTimer = setTimeout(this.tick, this.state.tickRate);
+    this._tickTimer = setTimeout(this.tick, this._tickRate);
     playSound("tickTock");
   };
 
   startTimers = () => {
     const roundTime = Math.round(config.MIN_ROUND_TIME + ((config.MAX_ROUND_TIME - config.MIN_ROUND_TIME) * Math.random()));
 
-    this.tick();
-
-    this.speedUpTimer = setTimeout(() => {
-      this.setState({ tickRate: config.FAST_TICK_RATE })
+    this._tickRate = config.DEFAULT_TICK_RATE;
+    this._speedUpTimer = setTimeout(() => {
+      this._tickRate = config.FAST_TICK_RATE;
     }, roundTime - config.RUSH_DURATION);
 
-    this.roundTimer = setTimeout(this.endRound, roundTime);
+    this._roundTimer = setTimeout(this.endRound, roundTime);
+
+    this.tick();
   };
 
   stopTimers = () => {
-    clearTimeout(this.tickTimer);
-    clearTimeout(this.speedUpTimer);
-    clearTimeout(this.roundTimer);
+    clearTimeout(this._tickTimer);
+    clearTimeout(this._speedUpTimer);
+    clearTimeout(this._roundTimer);
   };
 
   endRound = () => {
-    this.setState({
-      tickRate: config.DEFAULT_TICK_RATE
-    });
     this.stopTimers();
+    this.goTo("home");
     playSound("beep");
   };
 
@@ -154,8 +148,7 @@ class App extends Component {
       case "in-game":
         return (
           <InGame
-            phrases={phrases}
-            phraseIndex={phraseIndex}
+            phrase={phrases[phraseIndex % phrases.length]}
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
             onTouchNext={this.nextPhrase}
