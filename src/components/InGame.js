@@ -86,9 +86,7 @@ class InGame extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          <TransitionGroup>
-            {this.state.phraseHistory}
-          </TransitionGroup>
+          {this.state.phraseHistory}
           <NextButton onTouchEnd={onTouchNext}>Next</NextButton>
         </GameContent>
       </GameBoard>
