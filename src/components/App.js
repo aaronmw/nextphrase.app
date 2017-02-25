@@ -14,7 +14,7 @@ class App extends Component {
     super(props);
 
     let savedSelectedLists = JSON.parse(window.localStorage.getItem("selectedLists"));
-    const selectedLists = savedSelectedLists.length ? savedSelectedLists : config.DEFAULT_LISTS;
+    const selectedLists = savedSelectedLists && savedSelectedLists.length ? savedSelectedLists : config.DEFAULT_LISTS;
 
     let phrases = [];
     selectedLists.forEach(value => {
