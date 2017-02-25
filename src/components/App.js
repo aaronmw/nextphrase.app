@@ -57,7 +57,6 @@ class App extends Component {
 
     this.buildPhrases(newSelectedLists);
     window.localStorage.setItem("selectedLists", JSON.stringify(newSelectedLists));
-    console.log(newSelectedLists, typeof newSelectedLists, window.localStorage.getItem("selectedLists"), typeof window.localStorage.getItem("selectedLists"));
     playSound("typewriter");
   };
 
