@@ -11,7 +11,7 @@ const SOUNDS = [
 const SOUND_BUFFERS = {};
 
 SOUNDS.forEach(({ name, path }) => {
-  webAudioToolkit.loadSound(path, buffer => { SOUND_BUFFERS[name] = buffer });
+  webAudioToolkit.loadSound(process.env.PUBLIC_URL + path, buffer => { SOUND_BUFFERS[name] = buffer });
 });
 
 export const playSound = name => {
