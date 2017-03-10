@@ -6,12 +6,12 @@ export const GameBoard = styled.div`
   position: fixed;
   width: 100vw;
   height: 100vh;
-  border: 1px solid ${ props => props.theme.secondary };
+  border: 2px solid ${ props => props.theme.secondary };
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
-  font-family: 'Amatic SC', cursive;
+  font-family: 'Boogaloo', cursive;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 2.6em;
 `;
 
@@ -19,7 +19,7 @@ export const GameButton = styled.button`
   padding: 0 20px;
   cursor: pointer;
   background: inherit;
-  border: ${ props => props.borderless ? "none" : "1px solid " + props.theme.secondary };
+  border: ${ props => props.borderless ? "none" : "2px solid " + props.theme.secondary };
   text-transform: inherit;
   color: inherit;
   font: inherit;
@@ -37,7 +37,7 @@ const GameHeaderWrapper = styled.div`
   line-height: 100%;
   white-space: nowrap;
   width: 100%;
-  border: 1px solid ${ props => props.theme.secondary };
+  border: 2px solid ${ props => props.theme.secondary };
   background: ${ props => props.theme.primary };
 `;
 
