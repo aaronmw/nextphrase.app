@@ -34,7 +34,6 @@ const PhraseCanvas = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 1.6em;
   line-height: 1.1;
   width: 100%;
   height: 66.666%;

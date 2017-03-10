@@ -9,7 +9,8 @@ const SettingsContent = styled(GameContent)`
 `;
 
 const ListOption = styled.div`
-  padding: 20px;
+  padding: 10px 20px;
+  margin-bottom: 2px;
   ${ props => props.selected ? `
     background: ` + props.theme.secondary + `
     color: ` + props.theme.primary + `

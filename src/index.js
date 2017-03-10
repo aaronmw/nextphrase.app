@@ -5,8 +5,8 @@ import App from './components/App';
 import './index.css';//
 
 const THEME = {
-  primary: '#113347',
-  secondary: 'LightSkyBlue',
+  primary: '#177F60',
+  secondary: 'white',
   highlight: 'rgba(255,255,255,0.2)',
 };
 

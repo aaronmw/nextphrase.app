@@ -6,7 +6,6 @@ const Dot = styled.span`
   display: inline-block;
   width: 12px;
   height: 12px;
-  line-height: 12px;
   border-radius: 50%;
   border: 2px solid ${props => props.theme.secondary};
   background: ${ props => props.filled ? props.theme.secondary : "none" };

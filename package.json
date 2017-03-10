@@ -1,7 +1,7 @@
 {
   "name": "catchphrase",
   "version": "0.1.0",
-  "homepage": "https://aaronmw.github.io/whatthephrase",
+  "homepage": "http://whatthephrase.aaronwright.ca",
   "private": true,
   "devDependencies": {
     "gh-pages": "^0.12.0",

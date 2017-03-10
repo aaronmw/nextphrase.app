@@ -9,10 +9,10 @@ export const GameBoard = styled.div`
   border: 1px solid ${ props => props.theme.secondary };
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
-  font-family: 'Helvetica Neue';
+  font-family: 'Amatic SC', cursive;
   text-transform: uppercase;
-  font-weight: 900;
-  font-size: 1.5em;
+  font-weight: 700;
+  font-size: 2.6em;
 `;
 
 export const GameButton = styled.button`
@@ -48,6 +48,7 @@ const GameHeaderButton = styled(GameButton)`
   padding: 0;
   left: 50%;
   transform: translateX(-50%);
+  font-size: 0.5em;
   ${ props => props.disabled ? `
     opacity: 0.25;
     pointer-events: none;
@@ -58,7 +59,7 @@ const GameHeaderScore = styled.div`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  line-height: 12px;
+  line-height: 0;
   ${ props => props.align === "left" ?
     "left: 20px;" :
     "right: 20px;"
