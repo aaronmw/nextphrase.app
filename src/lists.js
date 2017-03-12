@@ -1704,7 +1704,7 @@ const lists = {
         "hot potato",
         "cup of tea",
         "out of breath",
-        "carzy as a loon",
+        "crazy as a loon",
         "training wheels",
         "foot the bill",
         "bride and groom",
