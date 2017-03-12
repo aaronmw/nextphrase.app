@@ -4,16 +4,18 @@ import styled from "styled-components";
 
 const Dot = styled.span`
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  border: 2px solid ${props => props.theme.secondary};
+  border-style: solid;
+  border-color: ${props => props.theme.secondary};
+  border-width: ${ props => props.filled ? "7px" : "2px" };
   background: ${ props => props.filled ? props.theme.secondary : "none" };
-  opacity: ${ props => props.filled ? 1 : 0.5 };
-  transition: all 0.1s ease-in-out;
+  opacity: ${ props => props.filled ? 1 : 0.15 };
+  transition: all 0.25s ease-in-out;
 
   &:not(:first-child) {
-    margin-left: 2px;
+    margin-left: ${ props => props.theme.borderWidth };
   }
 `;
 

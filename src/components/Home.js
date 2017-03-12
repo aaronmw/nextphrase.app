@@ -4,12 +4,14 @@ import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
 const ScoreButton = styled(GameButton)`
   width: 50%;
-  height: 33.333%;
+  height: 33%;
+  line-height: 100%;
+  border-bottom: none;
 `;
 
 const StartButton = styled(GameButton)`
   width: 100%;
-  height: 66.666%;
+  height: 67%;
 `;
 
 class Home extends Component {
@@ -39,7 +41,7 @@ class Home extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          <ScoreButton onTouchEnd={this.addPointForTeamA}>A</ScoreButton>
+          <ScoreButton onTouchEnd={this.addPointForTeamA} style={{ borderRight: 'none' }}>A</ScoreButton>
           <ScoreButton onTouchEnd={this.addPointForTeamB}>B</ScoreButton>
           <StartButton onTouchEnd={onTouchStart}>Start</StartButton>
         </GameContent>

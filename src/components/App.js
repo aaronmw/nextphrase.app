@@ -57,9 +57,11 @@ class App extends Component {
     playSound("typewriter");
   };
 
-  goTo = routeName => {
-    this.setState({ activeRoute: routeName })
-    playSound("woosh");
+  goTo = (routeName, audible = true) => {
+    this.setState({ activeRoute: routeName });
+    if (audible) {
+      playSound("woosh");
+    }
   };
 
   setScore = (teamA, teamB) => {
@@ -77,25 +79,29 @@ class App extends Component {
 
   startGame = () => {
     this.startTimers();
-    this.goTo('in-game');
+    this.goTo("in-game");
   };
 
   stopGame = () => {
     this.stopTimers();
-    playSound("woosh");
+    this.incrementPhraseIndex();
     this.goTo("home");
   };
 
-  nextPhrase = () => {
+  incrementPhraseIndex = () => {
     this.setState((prevState, props) => ({
       phraseIndex: prevState.phraseIndex + 1
     }));
+  };
+
+  nextPhrase = () => {
+    this.incrementPhraseIndex();
     playSound("woosh");
   };
 
   endGame = () => {
     this.setScore(0, 0);
-    this.goTo("home");
+    this.goTo("home", false);
     playSound("celebration");
   };
 
@@ -125,7 +131,7 @@ class App extends Component {
 
   endRound = () => {
     this.stopTimers();
-    this.goTo("home");
+    this.goTo("home", false);
     playSound("beep");
   };
 

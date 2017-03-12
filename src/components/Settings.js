@@ -4,13 +4,13 @@ import { GameBoard, GameHeader, GameContent } from "./GameElements";
 import lists from "../lists";
 
 const SettingsContent = styled(GameContent)`
-  border: 1px solid ${ props => props.theme.secondary };
+  border: ${ props => props.theme.borderWidth } solid ${ props => props.theme.secondary };
   overflow: auto;
 `;
 
 const ListOption = styled.div`
   padding: 10px 20px;
-  margin-bottom: 4px;
+  margin-bottom: ${ props => props.theme.borderWidth };
   ${ props => props.selected ? `
     background: ` + props.theme.secondary + `
     color: ` + props.theme.primary + `

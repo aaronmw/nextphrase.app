@@ -5,6 +5,7 @@ import App from './components/App';
 import './index.css';//
 
 const THEME = {
+  borderWidth: '4px',
   primary: '#2864A5',
   secondary: 'white',
   highlight: 'rgba(255,255,255,0.2)',
