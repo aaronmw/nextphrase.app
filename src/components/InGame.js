@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from "react";
+import * as config from "../config";
 import styled, { keyframes } from "styled-components";
 import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
@@ -10,6 +11,15 @@ const NextButton = styled(GameButton)`
   height: 33.333%;
   background: ${ props => props.theme.primary };
   z-index: 1000;
+  transition: all 0.2s ease-in-out;
+
+  ${ props => props.isFrozen ? `
+    color: rgba(255,255,255,0.2);
+
+    &:active {
+      background: none;
+    }
+  ` : ""}
 `;
 
 const newPhrase = keyframes`
@@ -58,9 +68,16 @@ class InGame extends Component {
     const { phrase } = this.props;
 
     this.state = {
+      isFrozen: false,
       phraseKey: 0,
       phraseHistory: [<Phrase key={0} text={phrase} />],
     };
+
+    this._lastTouchedNext = Math.floor(Date.now() / 1000);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._unfreezeTimer);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -73,8 +90,20 @@ class InGame extends Component {
     }));
   }
 
+  handleTouchNext = () => {
+    const { onTouchNext } = this.props;
+
+    if (!this.state.isFrozen) {
+      this.setState({ isFrozen: true });
+      this._unfreezeTimer = setTimeout(() => {
+        this.setState({ isFrozen: false });
+      }, config.NEXT_BUTTON_FREEZE_TIME * 1000);
+      onTouchNext();
+    }
+  }
+
   render() {
-    const { pointsForTeamA, pointsForTeamB, onTouchNext, onTouchStop } = this.props;
+    const { pointsForTeamA, pointsForTeamB, onTouchStop } = this.props;
 
     return (
       <GameBoard>
@@ -86,7 +115,7 @@ class InGame extends Component {
         />
         <GameContent>
           {this.state.phraseHistory}
-          <NextButton onTouchEnd={onTouchNext}>Next</NextButton>
+          <NextButton onTouchEnd={this.handleTouchNext} isFrozen={this.state.isFrozen}>Next</NextButton>
         </GameContent>
       </GameBoard>
     );
