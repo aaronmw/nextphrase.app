@@ -11,7 +11,7 @@ const NextButton = styled(GameButton)`
   height: 33.333%;
   background: ${ props => props.theme.primary };
   z-index: 1000;
-  transition: all 0.2s ease-in-out;
+  transition: color 0.2s ease-in-out;
 
   ${ props => props.isFrozen ? `
     color: rgba(255,255,255,0.2);
@@ -68,10 +68,14 @@ class InGame extends Component {
     const { phrase } = this.props;
 
     this.state = {
-      isFrozen: false,
+      isFrozen: true,
       phraseKey: 0,
       phraseHistory: [<Phrase key={0} text={phrase} />],
     };
+
+    this._unfreezeTimer = setTimeout(() => {
+      this.setState({ isFrozen: false });
+    }, config.NEXT_BUTTON_FREEZE_TIME * 1000);
 
     this._lastTouchedNext = Math.floor(Date.now() / 1000);
   }

@@ -78,13 +78,13 @@ class App extends Component {
   };
 
   startGame = () => {
+    this.incrementPhraseIndex();
     this.startTimers();
     this.goTo("in-game");
   };
 
   stopGame = () => {
     this.stopTimers();
-    this.incrementPhraseIndex();
     this.goTo("home");
   };
 
