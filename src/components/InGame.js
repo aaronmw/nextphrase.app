@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from "react";
-import * as config from "../config";
+import { NEXT_BUTTON_FREEZE_TIME } from "../config";
 import styled, { keyframes } from "styled-components";
 import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
@@ -52,20 +52,13 @@ const PhraseCanvas = styled.div`
   animation: ${newPhrase} 0.125s linear;
 `;
 
-class Phrase extends Component {
-  render() {
-    return (
-      <PhraseCanvas>
-        {this.props.text.replace("'", "\u2019")}
-      </PhraseCanvas>
-    );
-  }
-};
+const Phrase = ({ text }) => <PhraseCanvas>{text.replace("'", "\u2019")}</PhraseCanvas>;
 
 class InGame extends Component {
   constructor(props) {
     super(props);
-    const { phrase } = this.props;
+
+    const { phrase } = props;
 
     this.state = {
       isFrozen: true,
@@ -73,15 +66,13 @@ class InGame extends Component {
       phraseHistory: [<Phrase key={0} text={phrase} />],
     };
 
-    this._unfreezeTimer = setTimeout(() => {
+    this.unfreezeTimer = setTimeout(() => {
       this.setState({ isFrozen: false });
-    }, config.NEXT_BUTTON_FREEZE_TIME * 1000);
-
-    this._lastTouchedNext = Math.floor(Date.now() / 1000);
+    }, NEXT_BUTTON_FREEZE_TIME * 1000);
   }
 
   componentWillUnmount() {
-    clearTimeout(this._unfreezeTimer);
+    clearTimeout(this.unfreezeTimer);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -94,19 +85,20 @@ class InGame extends Component {
   }
 
   handleTouchNext = () => {
-    const { onTouchNext } = this.props;
+    if (this.state.isFrozen) { return; }
 
-    if (!this.state.isFrozen) {
-      this.setState({ isFrozen: true });
-      this._unfreezeTimer = setTimeout(() => {
-        this.setState({ isFrozen: false });
-      }, config.NEXT_BUTTON_FREEZE_TIME * 1000);
-      onTouchNext();
-    }
-  }
+    this.setState({ isFrozen: true });
+
+    this.unfreezeTimer = setTimeout(() => {
+      this.setState({ isFrozen: false });
+    }, NEXT_BUTTON_FREEZE_TIME * 1000);
+
+    this.props.onTouchNext();
+  };
 
   render() {
     const { pointsForTeamA, pointsForTeamB, onTouchStop } = this.props;
+    const { phraseHistory, isFrozen } = this.state;
 
     return (
       <GameBoard>
@@ -117,8 +109,8 @@ class InGame extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          {this.state.phraseHistory}
-          <NextButton onTouchEnd={this.handleTouchNext} isFrozen={this.state.isFrozen}>Next</NextButton>
+          {phraseHistory}
+          <NextButton onTouchEnd={this.handleTouchNext} isFrozen={isFrozen}>Next</NextButton>
         </GameContent>
       </GameBoard>
     );

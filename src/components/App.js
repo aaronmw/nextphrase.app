@@ -11,17 +11,16 @@ class App extends Component {
   constructor (props) {
     super(props);
 
-    let savedSelectedLists = JSON.parse(window.localStorage.getItem("selectedLists"));
+    const savedSelectedLists = JSON.parse(window.localStorage.getItem("selectedLists"));
     const selectedLists = savedSelectedLists && savedSelectedLists.length ? savedSelectedLists : config.DEFAULT_LISTS;
+    const phrases = [];
 
-    let phrases = [];
     selectedLists.forEach(value => {
-      phrases = phrases.concat(lists[value]);
+      phrases.push(...lists[value]);
     });
-    phrases = shuffle(phrases);
 
     this.state = {
-      phrases: phrases,
+      phrases: shuffle(phrases),
       phraseIndex: 0,
       activeRoute: "home",
       pointsForTeamA: 0,
@@ -30,15 +29,14 @@ class App extends Component {
     };
   };
 
-  buildPhrases = (newSelectedLists) => {
-    let newPhrases = [];
-    newSelectedLists.forEach(value => {
-      newPhrases = newPhrases.concat(lists[value]);
+  buildPhrases = listNames => {
+    const phrases = [];
+
+    listNames.forEach(listName => {
+      phrases.push(...lists[listName]);
     });
-    newPhrases = shuffle(newPhrases);
-    this.setState({
-      phrases: newPhrases,
-    });
+
+    this.setState({ phrases: shuffle(phrases) });
   };
 
   saveLists = (listName, isSelected) => {
@@ -66,14 +64,12 @@ class App extends Component {
 
   setScore = (teamA, teamB) => {
     if (teamA === config.MAX_SCORE || teamB === config.MAX_SCORE) {
-      this.endGame();
+      this.setState({ pointsForTeamA: 0, pointsForTeamB: 0 });
+      playSound("celebration");
       return;
     }
 
-    this.setState({
-      pointsForTeamA: teamA,
-      pointsForTeamB: teamB,
-    });
+    this.setState({ pointsForTeamA: teamA, pointsForTeamB: teamB });
     playSound("typewriter");
   };
 
@@ -89,20 +85,14 @@ class App extends Component {
   };
 
   incrementPhraseIndex = () => {
-    this.setState((prevState, props) => ({
-      phraseIndex: prevState.phraseIndex + 1
+    this.setState(({ phraseIndex }) => ({
+      phraseIndex: phraseIndex + 1
     }));
   };
 
   nextPhrase = () => {
     this.incrementPhraseIndex();
     playSound("woosh");
-  };
-
-  endGame = () => {
-    this.setScore(0, 0);
-    this.goTo("home", false);
-    playSound("celebration");
   };
 
   tick = () => {
