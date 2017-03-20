@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from "react";
 import { NEXT_BUTTON_FREEZE_TIME } from "../config";
-import styled, { keyframes } from "styled-components";
+import PhraseSwitcher from "./PhraseSwitcher";
+import styled from "styled-components";
 import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
 
 const NextButton = styled(GameButton)`
@@ -22,50 +23,10 @@ const NextButton = styled(GameButton)`
   ` : ""}
 `;
 
-const newPhrase = keyframes`
-  from {
-    opacity: 0;
-    filter: blur(20px);
-    transform: scale(5) translateY(20%);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: scale(1) translateY(0);
-  }
-`;
-
-const PhraseCanvas = styled.div`
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  display: flex;
-  padding: 20px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  line-height: 1.1;
-  width: 100%;
-  height: 66.666%;
-  background: ${ props => props.theme.secondary };
-  color: ${ props => props.theme.primary };
-  animation: ${newPhrase} 0.125s linear;
-`;
-
-const Phrase = ({ text }) => <PhraseCanvas>{text.replace("'", "\u2019")}</PhraseCanvas>;
-
 class InGame extends Component {
-  constructor(props) {
-    super(props);
+  state = { isFrozen: true };
 
-    const { phrase } = props;
-
-    this.state = {
-      isFrozen: true,
-      phraseKey: 0,
-      phraseHistory: [<Phrase key={0} text={phrase} />],
-    };
-
+  componentDidMount () {
     this.unfreezeTimer = setTimeout(() => {
       this.setState({ isFrozen: false });
     }, NEXT_BUTTON_FREEZE_TIME * 1000);
@@ -73,15 +34,6 @@ class InGame extends Component {
 
   componentWillUnmount() {
     clearTimeout(this.unfreezeTimer);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { phrase } = nextProps;
-
-    this.setState(state => ({
-      phraseKey: state.phraseKey + 1,
-      phraseHistory: state.phraseHistory.concat(<Phrase key={state.phraseKey + 1} text={phrase} />),
-    }));
   }
 
   handleTouchNext = () => {
@@ -97,8 +49,8 @@ class InGame extends Component {
   };
 
   render() {
-    const { pointsForTeamA, pointsForTeamB, onTouchStop } = this.props;
-    const { phraseHistory, isFrozen } = this.state;
+    const { pointsForTeamA, pointsForTeamB, onTouchStop, phrase } = this.props;
+    const { isFrozen } = this.state;
 
     return (
       <GameBoard>
@@ -109,7 +61,7 @@ class InGame extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          {phraseHistory}
+          <PhraseSwitcher phrase={phrase} />
           <NextButton onTouchEnd={this.handleTouchNext} isFrozen={isFrozen}>Next</NextButton>
         </GameContent>
       </GameBoard>
