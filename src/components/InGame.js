@@ -86,11 +86,10 @@ class InGame extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { phrase } = nextProps;
-    const { phraseHistory, phraseKey } = this.state;
 
-    this.setState((prevState, prevProps) => ({
-      phraseKey: prevState.phraseKey + 1,
-      phraseHistory: prevState.phraseHistory.concat(<Phrase key={prevState.phraseKey + 1} text={phrase} />),
+    this.setState(state => ({
+      phraseKey: state.phraseKey + 1,
+      phraseHistory: state.phraseHistory.concat(<Phrase key={state.phraseKey + 1} text={phrase} />),
     }));
   }
 
