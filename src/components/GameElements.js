@@ -8,7 +8,7 @@ export const GameBoard = styled.div`
   height: 100vh;
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
-  font-family: 'Boogaloo', cursive;
+  font-family: 'Boogaloo', 'Helvetica', sans-serif;
   text-transform: uppercase;
   font-weight: 400;
   font-size: 2.6em;
@@ -23,9 +23,14 @@ export const GameButton = styled.button`
   color: inherit;
   font: inherit;
   ${ props => props.icon ? "font-family: FontAwesome;" : "" }
+  transition: rotate3d 0.5s ease-in-out;
 
   &:active {
     background-color: ${props => props.theme.highlight};
+  }
+  &:focus {
+    outline: none;
+    -webkit-appearance: none;
   }
 `;
 
