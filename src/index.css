@@ -5,6 +5,9 @@
   user-select: none;
   /*outline: 1px dotted red;*/
 }
+:root, html, body {
+  background: #2864A5;
+}
 body {
   overflow: hidden;
   position: fixed;

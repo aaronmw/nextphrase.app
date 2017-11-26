@@ -4,8 +4,10 @@ import ScoreDots from "./ScoreDots";
 
 export const GameBoard = styled.div`
   position: fixed;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
   font-family: 'Boogaloo', 'Helvetica', sans-serif;
