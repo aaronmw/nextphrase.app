@@ -7,6 +7,9 @@ const ScoreButton = styled(GameButton)`
   height: 33%;
   line-height: 100%;
   border-bottom: none;
+  &:first-child {
+    border-right: none;
+  }
 `;
 
 const StartButton = styled(GameButton)`
@@ -15,18 +18,14 @@ const StartButton = styled(GameButton)`
 `;
 
 class Home extends Component {
-  addPointForTeam = teamName => {
-    let { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
-    (teamName === "A") ? pointsForTeamA++ : pointsForTeamB++;
-    onTouchScore(pointsForTeamA, pointsForTeamB);
-  };
-
   addPointForTeamA = () => {
-    this.addPointForTeam("A");
+    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
+    onTouchScore(pointsForTeamA + 1, pointsForTeamB);
   };
 
   addPointForTeamB = () => {
-    this.addPointForTeam("B");
+    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
+    onTouchScore(pointsForTeamA, pointsForTeamB + 1);
   };
 
   render() {
@@ -41,7 +40,7 @@ class Home extends Component {
           pointsForTeamB={pointsForTeamB}
         />
         <GameContent>
-          <ScoreButton onTouchEnd={this.addPointForTeamA} style={{ borderRight: 'none' }}>A</ScoreButton>
+          <ScoreButton onTouchEnd={this.addPointForTeamA}>A</ScoreButton>
           <ScoreButton onTouchEnd={this.addPointForTeamB}>B</ScoreButton>
           <StartButton onTouchEnd={onTouchStart}>Start</StartButton>
         </GameContent>
