@@ -8,16 +8,23 @@ import shuffle from "../shuffle";
 import lists from "../lists";
 
 class App extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
-    const savedSelectedLists = JSON.parse(window.localStorage.getItem("selectedLists"));
-    const selectedLists = savedSelectedLists && savedSelectedLists.length ? savedSelectedLists : config.DEFAULT_LISTS;
+    const savedSelectedLists = JSON.parse(
+      window.localStorage.getItem("selectedLists")
+    );
+    const selectedLists =
+      savedSelectedLists && savedSelectedLists.length
+        ? savedSelectedLists
+        : config.DEFAULT_LISTS;
     const phrases = [];
 
     selectedLists.forEach(value => {
       phrases.push(...lists[value]);
     });
+
+    this.toggleScreenRotation = this.toggleScreenRotation.bind(this);
 
     this.state = {
       phrases: shuffle(phrases),
@@ -26,8 +33,9 @@ class App extends Component {
       pointsForTeamA: 0,
       pointsForTeamB: 0,
       selectedLists,
+      isRotated: window.localStorage.getItem("isRotated") || false
     };
-  };
+  }
 
   buildPhrases = listNames => {
     const phrases = [];
@@ -42,16 +50,19 @@ class App extends Component {
   saveLists = (listName, isSelected) => {
     const { selectedLists } = this.state;
 
-    let newSelectedLists = isSelected ?
-      selectedLists.concat([listName])
-    : selectedLists.filter(item => item !== listName);
+    let newSelectedLists = isSelected
+      ? selectedLists.concat([listName])
+      : selectedLists.filter(item => item !== listName);
 
     this.setState({
-      selectedLists: newSelectedLists,
+      selectedLists: newSelectedLists
     });
 
     this.buildPhrases(newSelectedLists);
-    window.localStorage.setItem("selectedLists", JSON.stringify(newSelectedLists));
+    window.localStorage.setItem(
+      "selectedLists",
+      JSON.stringify(newSelectedLists)
+    );
     playSound("typewriter");
   };
 
@@ -101,7 +112,10 @@ class App extends Component {
   };
 
   startTimers = () => {
-    const roundTime = Math.round(config.MIN_ROUND_TIME + ((config.MAX_ROUND_TIME - config.MIN_ROUND_TIME) * Math.random()));
+    const roundTime = Math.round(
+      config.MIN_ROUND_TIME +
+        (config.MAX_ROUND_TIME - config.MIN_ROUND_TIME) * Math.random()
+    );
 
     this._tickRate = config.DEFAULT_TICK_RATE;
     this._speedUpTimer = setTimeout(() => {
@@ -125,14 +139,33 @@ class App extends Component {
     playSound("beep");
   };
 
+  toggleScreenRotation = () => {
+    this.setState(state => {
+      const newState = !state.isRotated;
+      window.localStorage.setItem("isRotated", newState);
+      return {
+        isRotated: newState
+      };
+    });
+  };
+
   render() {
-    const { activeRoute, pointsForTeamA, pointsForTeamB, phrases, phraseIndex, selectedLists } = this.state;
+    const {
+      activeRoute,
+      pointsForTeamA,
+      pointsForTeamB,
+      phrases,
+      phraseIndex,
+      selectedLists,
+      isRotated
+    } = this.state;
 
     switch (activeRoute) {
       case "home":
       default:
         return (
           <Home
+            isRotated={isRotated}
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
             onTouchStart={this.startGame}
@@ -144,6 +177,7 @@ class App extends Component {
       case "in-game":
         return (
           <InGame
+            isRotated={isRotated}
             phrase={phrases[phraseIndex % phrases.length]}
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
@@ -155,9 +189,11 @@ class App extends Component {
       case "settings":
         return (
           <Settings
+            isRotated={isRotated}
             selectedLists={selectedLists}
             onTouchDone={this.goTo.bind(this, "home")}
             onTouchList={this.saveLists}
+            onToggleScreenRotation={this.toggleScreenRotation}
           />
         );
     }

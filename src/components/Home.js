@@ -29,10 +29,16 @@ class Home extends Component {
   };
 
   render() {
-    const { pointsForTeamA, pointsForTeamB, onTouchStart, onTouchSettings } = this.props;
+    const {
+      pointsForTeamA,
+      pointsForTeamB,
+      onTouchStart,
+      onTouchSettings,
+      isRotated
+    } = this.props;
 
     return (
-      <GameBoard>
+      <GameBoard isRotated={isRotated}>
         <GameHeader
           buttonIcon="cog"
           onTouchButton={onTouchSettings}
@@ -47,14 +53,14 @@ class Home extends Component {
       </GameBoard>
     );
   }
-};
+}
 
 Home.propTypes = {
   pointsForTeamA: PropTypes.number.isRequired,
   pointsForTeamB: PropTypes.number.isRequired,
   onTouchStart: PropTypes.func.isRequired,
   onTouchSettings: PropTypes.func.isRequired,
-  onTouchScore: PropTypes.func.isRequired,
+  onTouchScore: PropTypes.func.isRequired
 };
 
 export default Home;
