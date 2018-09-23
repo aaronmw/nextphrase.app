@@ -81,6 +81,7 @@ class App extends Component {
         isRotated: newState
       };
     });
+    playSound("typewriter");
   };
 
   goTo = (routeName, audible = true) => {
