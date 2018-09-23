@@ -10,7 +10,6 @@ const NextButton = styled(GameButton)`
   left: 0;
   width: 100%;
   height: 33.333%;
-  background: ${props => props.theme.primary};
   z-index: 1000;
   transition: color 0.2s ease-in-out;
 
@@ -59,12 +58,13 @@ class InGame extends Component {
       pointsForTeamB,
       onTouchStop,
       phrase,
-      isRotated
+      isRotated,
+      isRushing
     } = this.props;
     const { isFrozen } = this.state;
 
     return (
-      <GameBoard isRotated={isRotated}>
+      <GameBoard isRotated={isRotated} isRushing={isRushing}>
         <GameHeader
           buttonIcon="pause"
           onTouchButton={onTouchStop}

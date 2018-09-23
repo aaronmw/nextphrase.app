@@ -7,8 +7,12 @@ const ScoreButton = styled(GameButton)`
   height: 33%;
   line-height: 100%;
   border-bottom: none;
+
   &:first-child {
-    border-right: none;
+    border-right-width: ${props => props.theme.halfBorderWidth}    
+  }
+  &:nth-child(2) {
+    border-left-width: ${props => props.theme.halfBorderWidth}
   }
 `;
 

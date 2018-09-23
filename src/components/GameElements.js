@@ -1,6 +1,18 @@
 import React, { Component, PropTypes } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import ScoreDots from "./ScoreDots";
+
+const rushingGameBoard = keyframes`
+  0% {
+    background-color: ${props => props.theme.primary};
+  }
+  50% {
+    background-color: white;
+  }
+  100% {
+    background-color: ${props => props.theme.primary};
+  }
+`;
 
 export const GameBoard = styled.div`
   position: fixed;
@@ -15,6 +27,8 @@ export const GameBoard = styled.div`
   font-weight: 400;
   font-size: 2.6rem;
   transition: all 0.5s ease-in-out;
+  transition-property: padding, transform;
+
   ${props =>
     props.isRotated === true
       ? `
@@ -22,6 +36,13 @@ export const GameBoard = styled.div`
       padding-bottom: constant(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-top);
       transform: rotate(180deg);
+    `
+      : ``};
+
+  ${props =>
+    props.isRushing === true
+      ? `
+      animation: ${rushingGameBoard} 0.5s ease-in-out infinite;
     `
       : ``};
 `;
@@ -61,7 +82,6 @@ const GameHeaderWrapper = styled.div`
   border: ${props => props.theme.borderWidth} solid
     ${props => props.theme.secondary};
   border-bottom: none;
-  background: ${props => props.theme.primary};
 `;
 
 const GameHeaderButton = styled(GameButton)`
@@ -125,7 +145,7 @@ class GameHeader extends Component {
         >
           {ICONS[buttonIcon]}
         </GameHeaderButton>
-        {typeof pointsForTeamA !== "undefined" ? (
+        {typeof pointsForTeamB !== "undefined" ? (
           <GameHeaderScore align="right">
             <ScoreDots score={pointsForTeamB} reverse />
           </GameHeaderScore>

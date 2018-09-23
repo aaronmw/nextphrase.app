@@ -135,10 +135,18 @@ class App extends Component {
         (config.MAX_ROUND_TIME - config.MIN_ROUND_TIME) * Math.random()
     );
 
+    const rushDuration = Math.round(
+      config.MIN_RUSH_DURATION +
+        (config.MAX_RUSH_DURATION - config.MIN_RUSH_DURATION) * Math.random()
+    );
+
     this._tickRate = config.DEFAULT_TICK_RATE;
     this._speedUpTimer = setTimeout(() => {
       this._tickRate = config.FAST_TICK_RATE;
-    }, roundTime - config.RUSH_DURATION);
+      this.setState({
+        isRushing: true
+      });
+    }, roundTime - rushDuration);
 
     this._roundTimer = setTimeout(this.endRound, roundTime);
 
@@ -149,6 +157,9 @@ class App extends Component {
     clearTimeout(this._tickTimer);
     clearTimeout(this._speedUpTimer);
     clearTimeout(this._roundTimer);
+    this.setState({
+      isRushing: false
+    });
   };
 
   endRound = () => {
@@ -165,7 +176,8 @@ class App extends Component {
       phrases,
       phraseIndex,
       selectedLists,
-      isRotated
+      isRotated,
+      isRushing
     } = this.state;
 
     switch (activeRoute) {
@@ -186,6 +198,7 @@ class App extends Component {
         return (
           <InGame
             isRotated={isRotated}
+            isRushing={isRushing}
             phrase={phrases[phraseIndex % phrases.length]}
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}

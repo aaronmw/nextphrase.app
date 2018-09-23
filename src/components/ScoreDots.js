@@ -9,13 +9,13 @@ const Dot = styled.span`
   border-radius: 50%;
   border-style: solid;
   border-color: ${props => props.theme.secondary};
-  border-width: ${ props => props.filled ? "7px" : "2px" };
+  border-width: ${ props => props.filled ? "7px" : "7px" };
   background: ${ props => props.filled ? props.theme.secondary : "none" };
   opacity: ${ props => props.filled ? 1 : 0.15 };
   transition: all 0.25s ease-in-out;
 
   &:not(:first-child) {
-    margin-left: ${ props => props.theme.borderWidth };
+    margin-left: 5px;
   }
 `;
 
