@@ -25,6 +25,10 @@ class App extends Component {
     });
 
     this.toggleScreenRotation = this.toggleScreenRotation.bind(this);
+    const isRotated =
+      window.localStorage.getItem("isRotated") === "true" ? true : false;
+
+    console.log("Rotation in Local Storage:", isRotated);
 
     this.state = {
       phrases: shuffle(phrases),
@@ -33,7 +37,7 @@ class App extends Component {
       pointsForTeamA: 0,
       pointsForTeamB: 0,
       selectedLists,
-      isRotated: window.localStorage.getItem("isRotated") || false
+      isRotated
     };
   }
 
@@ -64,6 +68,19 @@ class App extends Component {
       JSON.stringify(newSelectedLists)
     );
     playSound("typewriter");
+  };
+
+  toggleScreenRotation = () => {
+    this.setState(state => {
+      const newState = !state.isRotated;
+      window.localStorage.setItem(
+        "isRotated",
+        newState === true ? "true" : "false"
+      );
+      return {
+        isRotated: newState
+      };
+    });
   };
 
   goTo = (routeName, audible = true) => {
@@ -137,16 +154,6 @@ class App extends Component {
     this.stopTimers();
     this.goTo("home", false);
     playSound("beep");
-  };
-
-  toggleScreenRotation = () => {
-    this.setState(state => {
-      const newState = !state.isRotated;
-      window.localStorage.setItem("isRotated", newState);
-      return {
-        isRotated: newState
-      };
-    });
   };
 
   render() {

@@ -13,9 +13,10 @@ export const GameBoard = styled.div`
   font-family: "Boogaloo", "Helvetica", sans-serif;
   text-transform: uppercase;
   font-weight: 400;
-  font-size: 2.6em;
+  font-size: 2.6rem;
+  transition: all 0.5s ease-in-out;
   ${props =>
-    props.isRotated
+    props.isRotated === true
       ? `
       padding-top: 0;
       padding-bottom: constant(safe-area-inset-top);

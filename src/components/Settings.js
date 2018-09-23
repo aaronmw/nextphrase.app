@@ -11,6 +11,7 @@ const SettingsContent = styled(GameContent)`
 
 const ListOption = styled.div`
   padding: 10px 20px;
+  padding-left: 40px;
   margin-bottom: ${props => props.theme.borderWidth};
   ${props =>
     props.selected
@@ -19,6 +20,14 @@ const ListOption = styled.div`
         `; color: ` +
         props.theme.primary
       : `opacity: 0.5;`};
+`;
+
+const SettingsHeading = styled.h1`
+  font-size: 1rem;
+  padding: 10px 20px;
+  margin-bottom: 5px;
+  // background-color: ${props => props.theme.secondary};
+  // color: ${props => props.theme.primary};
 `;
 
 class Settings extends Component {
@@ -37,10 +46,15 @@ class Settings extends Component {
     let availableLists = [];
     Object.keys(lists).forEach((listName, index) => {
       let isSelected = selectedLists.indexOf(listName) !== -1 ? true : false;
+      const boundTapHandler = this.toggleSelectedList.bind(
+        this,
+        listName,
+        !isSelected
+      );
       availableLists.push(
         <ListOption
           key={index}
-          onTouchEnd={this.toggleSelectedList.bind(this, listName, !isSelected)}
+          onTouchEnd={boundTapHandler}
           selected={isSelected}
         >
           {listName}
@@ -56,7 +70,9 @@ class Settings extends Component {
           disabled={!selectedLists.length}
         />
         <SettingsContent>
+          <SettingsHeading>Word Cartegories</SettingsHeading>
           {availableLists}
+          <SettingsHeading>Misc</SettingsHeading>
           <ListOption selected={isRotated} onTouchEnd={onToggleScreenRotation}>
             Rotate Screen
           </ListOption>
