@@ -8,19 +8,25 @@ let maxRoundTime;
 let minRushDuration;
 let maxRushDuration;
 if (DEBUG_MODE) {
-	minRoundTime = 6 * 1000;
-	maxRoundTime = 6 * 1000;
-	minRushDuration = 5 * 1000;
-	maxRushDuration = 5 * 1000;
+  minRoundTime = 6 * 1000;
+  maxRoundTime = 6 * 1000;
+  minRushDuration = 5 * 1000;
+  maxRushDuration = 5 * 1000;
 } else {
-	minRoundTime = 45 * 1000;
-	maxRoundTime = 60 * 1000;
-	minRushDuration = 5 * 1000;
-	maxRushDuration = 10 * 1000;
+  minRoundTime = 45 * 1000;
+  maxRoundTime = 60 * 1000;
+  minRushDuration = 5 * 1000;
+  maxRushDuration = 10 * 1000;
 }
 export const MIN_ROUND_TIME = minRoundTime;
 export const MAX_ROUND_TIME = maxRoundTime;
 export const MIN_RUSH_DURATION = minRushDuration;
 export const MAX_RUSH_DURATION = maxRushDuration;
 export const NEXT_BUTTON_FREEZE_TIME = 2;
-export const DEFAULT_LISTS = ["entertainment", "everyday life", "fun & games", "the world"];
+export const LONG_PRESS_DURATION = 1 * 1000;
+export const DEFAULT_LISTS = [
+  "entertainment",
+  "everyday life",
+  "fun & games",
+  "the world"
+];

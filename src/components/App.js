@@ -91,15 +91,32 @@ class App extends Component {
     }
   };
 
-  setScore = (teamA, teamB) => {
-    if (teamA === config.MAX_SCORE || teamB === config.MAX_SCORE) {
+  setScore = (newPointsForTeamA, newPointsForTeamB) => {
+    if (
+      newPointsForTeamA === config.MAX_SCORE ||
+      newPointsForTeamB === config.MAX_SCORE
+    ) {
       this.setState({ pointsForTeamA: 0, pointsForTeamB: 0 });
       playSound("celebration");
       return;
     }
 
-    this.setState({ pointsForTeamA: teamA, pointsForTeamB: teamB });
-    playSound("typewriter");
+    const currentPointsForTeamA = this.state.pointsForTeamA;
+    const currentPointsForTeamB = this.state.pointsForTeamB;
+
+    if (
+      newPointsForTeamA + newPointsForTeamB <
+      currentPointsForTeamA + currentPointsForTeamB
+    ) {
+      playSound("oops");
+    } else {
+      playSound("typewriter");
+    }
+
+    this.setState({
+      pointsForTeamA: newPointsForTeamA,
+      pointsForTeamB: newPointsForTeamB
+    });
   };
 
   startGame = () => {
