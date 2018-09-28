@@ -7,7 +7,7 @@ import './index.css';
 const THEME = {
   borderWidth: '8px',
   halfBorderWidth: '4px',
-  primary: '#2864A5',
+  primary: '#000000',
   secondary: 'white',
   highlight: 'rgba(255,255,255,0.2)',
 };

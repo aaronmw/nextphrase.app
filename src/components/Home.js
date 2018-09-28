@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from "react";
-import styled from "styled-components";
-import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
-import { LONG_PRESS_DURATION } from "../config";
+import React, { Component, PropTypes } from 'react';
+import styled from 'styled-components';
+import { GameBoard, GameHeader, GameButton, GameContent } from './GameElements';
+import { LONG_PRESS_DURATION } from '../config';
 
 const ScoreButton = styled(GameButton)`
   width: 50%;
@@ -23,32 +23,48 @@ const StartButton = styled(GameButton)`
 `;
 
 class Home extends Component {
-  isLongPress = () => {
-    const currentTime = Date.now();
-    const buttonDownTime = currentTime - this._buttonDownTime;
-    return buttonDownTime >= LONG_PRESS_DURATION;
-  };
-
   addPointForTeamA = e => {
-    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
-    if (this.isLongPress()) {
-      onTouchScore(pointsForTeamA - 1, pointsForTeamB);
-    } else {
+    if (this._scheduledTask) {
+      clearTimeout(this._scheduledTask);
+      this._scheduledTask = false;
+      const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
       onTouchScore(pointsForTeamA + 1, pointsForTeamB);
     }
   };
 
   addPointForTeamB = () => {
-    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
-    if (this.isLongPress()) {
-      onTouchScore(pointsForTeamA, pointsForTeamB - 1);
-    } else {
+    if (this._scheduledTask) {
+      clearTimeout(this._scheduledTask);
+      this._scheduledTask = false;
+      const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
       onTouchScore(pointsForTeamA, pointsForTeamB + 1);
     }
   };
 
-  setButtonDownTime = () => {
-    this._buttonDownTime = Date.now();
+  removePointFromTeamA = () => {
+    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
+    onTouchScore(pointsForTeamA - 1, pointsForTeamB);
+    this._scheduledTask = false;
+  };
+
+  removePointFromTeamB = () => {
+    const { pointsForTeamA, pointsForTeamB, onTouchScore } = this.props;
+    onTouchScore(pointsForTeamA, pointsForTeamB - 1);
+    this._scheduledTask = false;
+  };
+
+  scheduleRemovePointFromTeamA = () => {
+    this._scheduledTask = setTimeout(
+      this.removePointFromTeamA,
+      LONG_PRESS_DURATION
+    );
+  };
+
+  scheduleRemovePointFromTeamB = () => {
+    this._scheduledTask = setTimeout(
+      this.removePointFromTeamB,
+      LONG_PRESS_DURATION
+    );
   };
 
   render() {
@@ -70,13 +86,13 @@ class Home extends Component {
         />
         <GameContent>
           <ScoreButton
-            onTouchStart={this.setButtonDownTime}
+            onTouchStart={this.scheduleRemovePointFromTeamA}
             onTouchEnd={this.addPointForTeamA}
           >
             A
           </ScoreButton>
           <ScoreButton
-            onTouchStart={this.setButtonDownTime}
+            onTouchStart={this.scheduleRemovePointFromTeamB}
             onTouchEnd={this.addPointForTeamB}
           >
             B
