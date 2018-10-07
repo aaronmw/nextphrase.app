@@ -1,13 +1,13 @@
-import React, { Component, PropTypes } from "react";
-import styled, { keyframes } from "styled-components";
-import ScoreDots from "./ScoreDots";
+import React, { Component, PropTypes } from 'react';
+import styled, { keyframes } from 'styled-components';
+import ScoreDots from './ScoreDots';
 
 const rushingGameBoard = keyframes`
   0% {
     background-color: ${props => props.theme.primary};
   }
   50% {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.5);
   }
   100% {
     background-color: ${props => props.theme.primary};
@@ -22,7 +22,7 @@ export const GameBoard = styled.div`
   padding-top: env(safe-area-inset-top);
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.secondary};
-  font-family: "Boogaloo", "Helvetica", sans-serif;
+  font-family: 'Boogaloo', 'Helvetica', sans-serif;
   text-transform: uppercase;
   font-weight: 400;
   font-size: 2.6rem;
@@ -53,15 +53,15 @@ export const GameButton = styled.button`
   background: inherit;
   border: ${props =>
     props.borderless
-      ? "none"
-      : props.theme.borderWidth + " solid " + props.theme.secondary};
+      ? 'none'
+      : props.theme.borderWidth + ' solid ' + props.theme.secondary};
   text-transform: inherit;
   color: inherit;
   font: inherit;
   ${props =>
     props.icon
-      ? "font-family: FontAwesome;"
-      : ""} transition: rotate3d 0.5s ease-in-out;
+      ? 'font-family: FontAwesome;'
+      : ''} transition: rotate3d 0.5s ease-in-out;
 
   &:active {
     background-color: ${props => props.theme.highlight};
@@ -106,16 +106,16 @@ const GameHeaderScore = styled.div`
   top: 50%;
   transform: translateY(-50%);
   line-height: 0;
-  ${props => (props.align === "left" ? "left: 20px;" : "right: 20px;")};
+  ${props => (props.align === 'left' ? 'left: 20px;' : 'right: 20px;')};
 `;
 GameHeaderScore.propTypes = {
-  align: PropTypes.oneOf(["left", "right"]).isRequired
+  align: PropTypes.oneOf(['left', 'right']).isRequired
 };
 
 const ICONS = {
-  cog: "\uf013",
-  checkmark: "\uf00c",
-  pause: "\uf04c"
+  cog: '\uf013',
+  checkmark: '\uf00c',
+  pause: '\uf04c'
 };
 
 class GameHeader extends Component {
@@ -130,12 +130,12 @@ class GameHeader extends Component {
 
     return (
       <GameHeaderWrapper>
-        {typeof pointsForTeamA !== "undefined" ? (
+        {typeof pointsForTeamA !== 'undefined' ? (
           <GameHeaderScore align="left">
             <ScoreDots score={pointsForTeamA} />
           </GameHeaderScore>
         ) : (
-          ""
+          ''
         )}
         <GameHeaderButton
           onTouchEnd={onTouchButton}
@@ -145,12 +145,12 @@ class GameHeader extends Component {
         >
           {ICONS[buttonIcon]}
         </GameHeaderButton>
-        {typeof pointsForTeamB !== "undefined" ? (
+        {typeof pointsForTeamB !== 'undefined' ? (
           <GameHeaderScore align="right">
             <ScoreDots score={pointsForTeamB} reverse />
           </GameHeaderScore>
         ) : (
-          ""
+          ''
         )}
       </GameHeaderWrapper>
     );
