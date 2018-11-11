@@ -31,7 +31,7 @@ class InGame extends Component {
   componentDidMount() {
     this.unfreezeTimer = setTimeout(() => {
       this.setState({ isFrozen: false });
-    }, NEXT_BUTTON_FREEZE_TIME * 1000);
+    }, NEXT_BUTTON_FREEZE_TIME);
   }
 
   componentWillUnmount() {
@@ -47,7 +47,7 @@ class InGame extends Component {
 
     this.unfreezeTimer = setTimeout(() => {
       this.setState({ isFrozen: false });
-    }, NEXT_BUTTON_FREEZE_TIME * 1000);
+    }, NEXT_BUTTON_FREEZE_TIME);
 
     this.props.onTouchNext();
   };

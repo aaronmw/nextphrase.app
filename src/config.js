@@ -22,8 +22,8 @@ export const MIN_ROUND_TIME = minRoundTime;
 export const MAX_ROUND_TIME = maxRoundTime;
 export const MIN_RUSH_DURATION = minRushDuration;
 export const MAX_RUSH_DURATION = maxRushDuration;
-export const NEXT_BUTTON_FREEZE_TIME = 2;
-export const LONG_PRESS_DURATION = 1 * 1000;
+export const NEXT_BUTTON_FREEZE_TIME = 2 * 1000;
+export const LONG_PRESS_DURATION = 0.375 * 1000;
 export const DEFAULT_LISTS = [
   "entertainment",
   "everyday life",
