@@ -72,8 +72,8 @@ export const GameButton = styled.button`
     : ''
   }
 
-  &.tapped {
-    animation: ${fadeOut} 0.25 ease-in-out;
+  &:active {
+    background-color: ${props => props.theme.highlight};
   }
   &:focus {
     outline: none;
