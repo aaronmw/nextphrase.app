@@ -7,7 +7,7 @@ const rushingGameBoard = keyframes`
     background-color: ${props => props.theme.primary};
   }
   50% {
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: ${props => props.theme.highlight};
   }
   100% {
     background-color: ${props => props.theme.primary};
@@ -47,24 +47,33 @@ export const GameBoard = styled.div`
       : ``};
 `;
 
+const fadeOut = keyframes`
+  0% {
+    background-color: ${props => props.theme.highlight};
+  }
+  100% {
+    background-color: ${props => props.theme.primary};
+  }
+`;
+
 export const GameButton = styled.button`
   padding: 0 20px;
   cursor: pointer;
   background: inherit;
-  border: ${props =>
-    props.borderless
-      ? 'none'
-      : props.theme.borderWidth + ' solid ' + props.theme.secondary};
+  border: ${props => props.borderless
+    ? 'none'
+    : props.theme.borderWidth + ' solid ' + props.theme.secondary
+  };
   text-transform: inherit;
   color: inherit;
   font: inherit;
-  ${props =>
-    props.icon
-      ? 'font-family: FontAwesome;'
-      : ''} transition: rotate3d 0.5s ease-in-out;
+  ${props => props.icon
+    ? 'font-family: FontAwesome;'
+    : ''
+  }
 
-  &:active {
-    background-color: ${props => props.theme.highlight};
+  &.tapped {
+    animation: ${fadeOut} 0.25 ease-in-out;
   }
   &:focus {
     outline: none;
@@ -92,13 +101,13 @@ const GameHeaderButton = styled(GameButton)`
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.5em;
-  ${props =>
-    props.disabled
-      ? `
-    opacity: 0.25;
-    pointer-events: none;
-  `
-      : ``};
+  ${props => props.disabled
+    ? `
+      opacity: 0.25;
+      pointer-events: none;
+    `
+    : ''
+  }
 `;
 
 const GameHeaderScore = styled.div`

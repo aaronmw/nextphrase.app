@@ -1,8 +1,8 @@
-import React, { Component, PropTypes } from "react";
-import { NEXT_BUTTON_FREEZE_TIME } from "../config";
-import PhraseSwitcher from "./PhraseSwitcher";
-import styled from "styled-components";
-import { GameBoard, GameHeader, GameButton, GameContent } from "./GameElements";
+import React, { Component, PropTypes } from 'react';
+import { NEXT_BUTTON_FREEZE_TIME } from '../config';
+import PhraseSwitcher from './PhraseSwitcher';
+import styled from 'styled-components';
+import { GameBoard, GameHeader, GameButton, GameContent } from './GameElements';
 
 const NextButton = styled(GameButton)`
   position: absolute;
@@ -14,7 +14,7 @@ const NextButton = styled(GameButton)`
   transition: color 0.2s ease-in-out;
 
   ${props =>
-    props.isFrozen
+    props.isSkipDisabled
       ? `
     color: rgba(255,255,255,0.2);
 
@@ -22,16 +22,22 @@ const NextButton = styled(GameButton)`
       background: none;
     }
   `
-      : ""};
+      : ''};
 `;
 
 class InGame extends Component {
-  state = { isFrozen: true };
+  state = { isSkipDisabled: true };
+
+  freezeNextButton() {
+    this.setState({ isSkipDisabled: true });
+
+    this.unfreezeTimer = setTimeout(() => {
+      this.setState({ isSkipDisabled: false });
+    }, NEXT_BUTTON_FREEZE_TIME);
+  }
 
   componentDidMount() {
-    this.unfreezeTimer = setTimeout(() => {
-      this.setState({ isFrozen: false });
-    }, NEXT_BUTTON_FREEZE_TIME);
+    this.freezeNextButton();
   }
 
   componentWillUnmount() {
@@ -39,17 +45,12 @@ class InGame extends Component {
   }
 
   handleTouchNext = () => {
-    if (this.state.isFrozen) {
+    if (this.state.isSkipDisabled) {
       return;
+    } else {
+      this.props.onTouchNext();
+      this.freezeNextButton();
     }
-
-    this.setState({ isFrozen: true });
-
-    this.unfreezeTimer = setTimeout(() => {
-      this.setState({ isFrozen: false });
-    }, NEXT_BUTTON_FREEZE_TIME);
-
-    this.props.onTouchNext();
   };
 
   render() {
@@ -61,7 +62,7 @@ class InGame extends Component {
       isRotated,
       isRushing
     } = this.props;
-    const { isFrozen } = this.state;
+    const { isSkipDisabled } = this.state;
 
     return (
       <GameBoard isRotated={isRotated} isRushing={isRushing}>
@@ -73,8 +74,11 @@ class InGame extends Component {
         />
         <GameContent>
           <PhraseSwitcher phrase={phrase} />
-          <NextButton onTouchEnd={this.handleTouchNext} isFrozen={isFrozen}>
-            Next
+          <NextButton
+            onTouchEnd={this.handleTouchNext}
+            isSkipDisabled={isSkipDisabled}
+          >
+            {isSkipDisabled ? '•••' : 'Next'}
           </NextButton>
         </GameContent>
       </GameBoard>

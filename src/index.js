@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from 'styled-components';
 import App from './components/App';
 import './index.css';
 
@@ -9,10 +9,10 @@ const THEME = {
   halfBorderWidth: '4px',
   primary: '#000000',
   secondary: 'white',
-  highlight: 'rgba(255,255,255,0.2)',
+  highlight: 'rgba(255, 255, 255, 0.5)'
 };
 
-document.addEventListener('touchmove', function (e) {
+document.body.addEventListener('touchmove', function(e) {
   e.preventDefault();
 });
 

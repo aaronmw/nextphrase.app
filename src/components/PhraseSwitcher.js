@@ -1,19 +1,11 @@
-import React, { PropTypes, Component } from "react";
-import styled, { keyframes } from "styled-components";
+import React, { PropTypes, Component } from 'react';
+import styled, { keyframes } from 'styled-components';
 
-const Container = styled.div`
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  width: 100%;
-  height: 66.666%;
-`;
-
-const newPhrase = keyframes`
+const fallIn = keyframes`
   from {
     opacity: 0;
-    filter: blur(20px);
-    transform: scale(5) translateY(20%);
+    filter: blur(10px);
+    transform: scale(4) translateY(20%);
   }
   to {
     opacity: 1;
@@ -22,45 +14,78 @@ const newPhrase = keyframes`
   }
 `;
 
-const PhraseCanvas = styled.div`
+const flipInX = keyframes`
+  from {
+    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+
+  40% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+    animation-timing-function: ease-in;
+  }
+
+  60% {
+    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+    opacity: 1;
+  }
+
+  80% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+  }
+
+  to {
+    transform: perspective(400px);
+  }
+`;
+
+const Container = styled.div`
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1;
   top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  padding: 20px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  width: 100%;
+  height: 66.666%;
   line-height: 1.1;
-  background: ${ props => props.theme.secondary };
-  color: ${ props => props.theme.primary };
-  animation: ${newPhrase} 0.125s linear;
+  text-align: center;
+  color: ${props => props.theme.primary};
+  background: ${props => props.theme.secondary};
+`;
+
+const Phrase = styled.div`
+  position: relative;
+  padding: 4rem;
+  z-index: 1;
+  backface-visibility: visible !important;
+  animation: ${flipInX} 0.625s ease-in-out;
 `;
 
 class PhraseSwitcher extends Component {
   static propTypes = {
-    phrase: PropTypes.string.isRequired,
+    phrase: PropTypes.string.isRequired
   };
 
-  state = { lastPhrase: "" };
+  state = { previousPhrase: '' };
 
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.phrase !== this.props.phrase) {
-      this.setState({ lastPhrase: this.props.phrase });
+  componentWillReceiveProps(incomingProps) {
+    // If the phrase changes...
+    if (incomingProps.phrase !== this.props.phrase) {
+      // Keep a very brief history, for animation
+      this.setState({ previousPhrase: this.props.phrase });
     }
   }
 
-  render () {
+  render() {
     const { phrase } = this.props;
-    const { lastPhrase } = this.state;
+    const { previousPhrase } = this.state;
 
     return (
       <Container>
-        <PhraseCanvas key="last-phrase">{ lastPhrase }</PhraseCanvas>
-        <PhraseCanvas key={phrase}>{ phrase }</PhraseCanvas>
+        {/* <Phrase key={`unique ${phrase}`}>{previousPhrase}</Phrase> */}
+        <Phrase key={phrase}>{phrase}</Phrase>
       </Container>
     );
   }

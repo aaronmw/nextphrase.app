@@ -3,9 +3,11 @@
   margin: 0;
   box-sizing: border-box;
   user-select: none;
-  /*outline: 1px dotted red;*/
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
-:root, html, body {
+:root,
+html,
+body {
   background: #000000;
 }
 body {
