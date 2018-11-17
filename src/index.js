@@ -9,7 +9,8 @@ const THEME = {
   halfBorderWidth: '4px',
   primary: '#000000',
   secondary: 'white',
-  highlight: 'rgba(255, 255, 255, 0.5)'
+  highlight: 'rgba(255, 255, 255, 0.5)',
+  frozenOpacity: 0.1
 };
 
 document.body.addEventListener('touchmove', function(e) {

@@ -9,8 +9,11 @@ let minRushDuration;
 let maxRushDuration;
 let nextButtonFreezeTime;
 if (DEBUG_MODE) {
-  minRoundTime = 60 * 60 * 1000;
-  maxRoundTime = 60 * 60 * 1000;
+  // minRoundTime = 60 * 60 * 1000;
+  // maxRoundTime = 60 * 60 * 1000;
+  minRoundTime = 500;
+  maxRoundTime = 500;
+
   minRushDuration = 5 * 1000;
   maxRushDuration = 5 * 1000;
   nextButtonFreezeTime = 1;

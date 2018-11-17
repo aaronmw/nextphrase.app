@@ -67,7 +67,7 @@ class Settings extends Component {
         <GameHeader
           buttonIcon="checkmark"
           onTouchButton={onTouchDone}
-          disabled={!selectedLists.length}
+          isFrozen={!selectedLists.length}
         />
         <SettingsContent>
           <SettingsHeading>Word Cartegories</SettingsHeading>

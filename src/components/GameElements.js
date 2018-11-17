@@ -88,9 +88,14 @@ const GameHeaderWrapper = styled.div`
   line-height: 100%;
   white-space: nowrap;
   width: 100%;
-  border: ${props => props.theme.borderWidth} solid
-    ${props => props.theme.secondary};
+  border-width: ${props => props.theme.borderWidth};
+  border-style: solid;
+  border-color: ${props => props.theme.secondary};
   border-bottom: none;
+  ${props => props.isFrozen
+    ? `z-index: 1; opacity: ${props.theme.frozenOpacity};`
+    : ''
+  }
 `;
 
 const GameHeaderButton = styled(GameButton)`
@@ -101,7 +106,7 @@ const GameHeaderButton = styled(GameButton)`
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.5em;
-  ${props => props.disabled
+  ${props => props.isFrozen
     ? `
       opacity: 0.25;
       pointer-events: none;
@@ -134,11 +139,11 @@ class GameHeader extends Component {
       pointsForTeamB,
       onTouchButton,
       buttonIcon,
-      disabled
+      isFrozen
     } = this.props;
 
     return (
-      <GameHeaderWrapper>
+      <GameHeaderWrapper isFrozen={isFrozen}>
         {typeof pointsForTeamA !== 'undefined' ? (
           <GameHeaderScore align="left">
             <ScoreDots score={pointsForTeamA} />
@@ -147,10 +152,10 @@ class GameHeader extends Component {
           ''
         )}
         <GameHeaderButton
-          onTouchEnd={onTouchButton}
+          onTouchEnd={() => isFrozen ? false : onTouchButton() }
           borderless
           icon
-          disabled={disabled}
+          isDisabled={isFrozen}
         >
           {ICONS[buttonIcon]}
         </GameHeaderButton>
@@ -171,7 +176,7 @@ GameHeader.propTypes = {
   pointsForTeamB: PropTypes.number,
   onTouchButton: PropTypes.func.isRequired,
   buttonIcon: PropTypes.string.isRequired,
-  disabled: PropTypes.bool
+  isFrozen: PropTypes.bool
 };
 
 export { GameHeader };

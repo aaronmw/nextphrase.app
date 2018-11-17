@@ -14,6 +14,7 @@ class App extends Component {
     const initialState = {
       phrases: [],
       phraseIndex: 0,
+      roundJustCompleted: false,
       activeRoute: 'home',
       pointsForTeamA: 0,
       pointsForTeamB: 0,
@@ -22,15 +23,7 @@ class App extends Component {
     };
 
     /*
-      We need to load any of these state vars
-      from localStorage:
-
-      - isRotated
-      - selectedLists
-      - phrases
-      - phraseIndex
-      - pointsForTeamA
-      - pointsForTeamB
+      Check localStorage for any of our initialState
     */
     Object.keys(initialState).forEach(stateVariable => {
       const savedStateVariable = window.localStorage.getItem(stateVariable);
@@ -111,6 +104,14 @@ class App extends Component {
   };
 
   setScore = (newPointsForTeamA, newPointsForTeamB) => {
+    this.setState({
+      roundJustCompleted: false
+    });
+    window.localStorage.setItem(
+      'roundJustCompleted',
+      JSON.stringify(false)
+    );
+
     newPointsForTeamA = Math.max(0, newPointsForTeamA);
     newPointsForTeamB = Math.max(0, newPointsForTeamB);
 
@@ -152,6 +153,9 @@ class App extends Component {
   };
 
   startGame = () => {
+    if (this.state.roundJustCompleted) {
+      return;
+    }
     this.incrementPhraseIndex();
     this.startTimers();
     this.goTo('in-game');
@@ -220,6 +224,7 @@ class App extends Component {
   endRound = () => {
     this.stopTimers();
     this.goTo('home', false);
+    this.setState({ roundJustCompleted: true });
     playSound('beep');
   };
 
@@ -230,6 +235,7 @@ class App extends Component {
       pointsForTeamB,
       phrases,
       phraseIndex,
+      roundJustCompleted,
       selectedLists,
       isRotated,
       isRushing
@@ -241,6 +247,7 @@ class App extends Component {
         return (
           <Home
             isRotated={isRotated}
+            roundJustCompleted={roundJustCompleted}
             pointsForTeamA={pointsForTeamA}
             pointsForTeamB={pointsForTeamB}
             onTouchStart={this.startGame}

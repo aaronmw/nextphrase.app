@@ -7,8 +7,11 @@ const ScoreButton = styled(GameButton)`
   width: 50%;
   height: 33%;
   line-height: 100%;
-  border-bottom: none;
 
+  ${props => props.isHighlighted
+    ? 'position: relative; z-index: 1000;'
+    : ''
+  }
   &:nth-child(1) {
     border-right-width: ${props => props.theme.halfBorderWidth};
   }
@@ -20,6 +23,11 @@ const ScoreButton = styled(GameButton)`
 const StartButton = styled(GameButton)`
   width: 100%;
   height: 67%;
+  border-top: none;
+  ${props => props.isFrozen
+    ? `opacity: ${props.theme.frozenOpacity};`
+    : ''
+  }
 `;
 
 class Home extends Component {
@@ -73,12 +81,14 @@ class Home extends Component {
       pointsForTeamB,
       onTouchStart,
       onTouchSettings,
-      isRotated
+      isRotated,
+      roundJustCompleted
     } = this.props;
 
     return (
       <GameBoard isRotated={isRotated}>
         <GameHeader
+          isFrozen={roundJustCompleted}
           buttonIcon="cog"
           onTouchButton={onTouchSettings}
           pointsForTeamA={pointsForTeamA}
@@ -88,6 +98,7 @@ class Home extends Component {
           <ScoreButton
             onTouchStart={this.scheduleRemovePointFromTeamA}
             onTouchEnd={this.addPointForTeamA}
+            isHighlighted={roundJustCompleted}
           >
             A
           </ScoreButton>
@@ -97,7 +108,12 @@ class Home extends Component {
           >
             B
           </ScoreButton>
-          <StartButton onTouchEnd={onTouchStart}>Start</StartButton>
+          <StartButton
+            isFrozen={roundJustCompleted}
+            onTouchEnd={onTouchStart}
+          >
+            Start
+          </StartButton>
         </GameContent>
       </GameBoard>
     );
