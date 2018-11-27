@@ -4,19 +4,35 @@
   "homepage": "http://whatthephrase.aaronwright.ca",
   "private": true,
   "devDependencies": {
-    "gh-pages": "^0.12.0",
-    "react-scripts": "^1.1.5"
+    "@babel/core": "^7.1.6",
+    "@storybook/addon-actions": "^4.0.9",
+    "@storybook/addon-links": "^4.0.9",
+    "@storybook/addons": "^4.0.9",
+    "@storybook/react": "^4.0.9",
+    "babel-loader": "^8.0.4",
+    "gh-pages": "^2.0.1",
+    "react-scripts": "^2.1.1"
   },
   "dependencies": {
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "styled-components": "^3.4.9"
+    "lodash": "^4.17.11",
+    "polished": "^2.3.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "styled-components": "^4.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "deploy": "npm run build&&gh-pages -d build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
-  }
+    "eject": "react-scripts eject",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

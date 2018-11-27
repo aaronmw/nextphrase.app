@@ -1,19 +1,13 @@
 const DEBUG_MODE = false;
 
-export const MAX_SCORE = 7;
-export const DEFAULT_TICK_RATE = 500;
-export const FAST_TICK_RATE = 250;
 let minRoundTime;
 let maxRoundTime;
 let minRushDuration;
 let maxRushDuration;
 let nextButtonFreezeTime;
 if (DEBUG_MODE) {
-  // minRoundTime = 60 * 60 * 1000;
-  // maxRoundTime = 60 * 60 * 1000;
   minRoundTime = 500;
   maxRoundTime = 500;
-
   minRushDuration = 5 * 1000;
   maxRushDuration = 5 * 1000;
   nextButtonFreezeTime = 1;
@@ -29,6 +23,9 @@ export const MAX_ROUND_TIME = maxRoundTime;
 export const MIN_RUSH_DURATION = minRushDuration;
 export const MAX_RUSH_DURATION = maxRushDuration;
 export const NEXT_BUTTON_FREEZE_TIME = nextButtonFreezeTime;
+export const MAX_SCORE = 7;
+export const DEFAULT_TICK_RATE = 500;
+export const FAST_TICK_RATE = 250;
 export const LONG_PRESS_DURATION = 0.375 * 1000;
 export const DEFAULT_LISTS = [
   'entertainment',
@@ -36,3 +33,14 @@ export const DEFAULT_LISTS = [
   'fun & games',
   'the world'
 ];
+export const DESIGN_TOKENS = {
+  colors: {
+    background: '#000',
+    foreground: '#fff',
+    faded: 'rgba(255, 255, 255, 0.1)',
+    highlight: 'rgba(255, 255, 255, 0.5)',
+  },
+  borders: {
+    width: '4px',
+  }
+};
