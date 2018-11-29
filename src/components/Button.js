@@ -46,14 +46,13 @@ class Button extends Component {
   }
 
   render() {
-    const { children, className, inflated, ...others } = this.props;
+    const { children, className, ...others } = this.props;
     return (
       <ButtonSurface
+        {...others}
         className={className}
-        inflated={inflated}
         onTouchStart={this.handleTouchStart}
         onTouchEnd={this.handleTouchEnd}
-        {...others}
       >
         {children}
       </ButtonSurface>
