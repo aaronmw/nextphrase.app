@@ -9,9 +9,9 @@ const Container = styled.div`
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 10vh 50vw auto;
   grid-template-areas:
-    "header      header"
-    "leftbutton  rightbutton"
-    "startbutton startbutton";
+    'header      header'
+    'leftbutton  rightbutton'
+    'startbutton startbutton';
 `;
 
 const Header = styled(Button)`
@@ -34,21 +34,23 @@ class Layout extends Component {
   render() {
     return (
       <Container>
-        <Header>
-          Header
-        </Header>
-        <TeamAButton>
+        <Header>Header</Header>
+        <TeamAButton
+          onPress={e => this.addPointFor('A')}
+          onLongPress={e => this.removePointFrom('A')}
+        >
           A
         </TeamAButton>
-        <TeamBButton>
+        <TeamBButton
+          onPress={e => this.addPointFor('B')}
+          onLongPress={e => this.removePointFrom('B')}
+        >
           B
         </TeamBButton>
-        <StartButton>
-          Start
-        </StartButton>
+        <StartButton>Start</StartButton>
       </Container>
     );
   }
-};
+}
 
 export default Layout;

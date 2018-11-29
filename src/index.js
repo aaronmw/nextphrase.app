@@ -6,4 +6,6 @@ document.body.addEventListener('touchmove', function(e) {
   e.preventDefault();
 });
 
+window.oncontextmenu = function() { return false; }
+
 ReactDOM.render(<App />, document.getElementById('root'));
