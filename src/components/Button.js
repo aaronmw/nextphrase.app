@@ -1,17 +1,20 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { LONG_PRESS_DURATION } from '../config';
+import { LONG_PRESS_DURATION, DESIGN_TOKENS } from '../config';
+import { GridArea } from './GridLayout';
 
-const ButtonSurface = styled.button`
-  display: flex;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid white;
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
+const ButtonSurface = styled(GridArea)`
+  ${props => props.inflated ? `
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  ` : ''}
+
+  &:active {
+    background-color: ${DESIGN_TOKENS.colors.highlight};
+  }
 `;
 
 class Button extends Component {
@@ -43,12 +46,14 @@ class Button extends Component {
   }
 
   render() {
-    const { children, className } = this.props;
+    const { children, className, inflated, ...others } = this.props;
     return (
       <ButtonSurface
         className={className}
+        inflated={inflated}
         onTouchStart={this.handleTouchStart}
         onTouchEnd={this.handleTouchEnd}
+        {...others}
       >
         {children}
       </ButtonSurface>

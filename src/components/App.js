@@ -3,15 +3,14 @@ import * as config from '../config';
 // import { playSound } from '../utils/sounds';
 import { shuffle, reduce } from 'lodash';
 import phrases from '../data/phrases';
-import Layout from './Layout';
+import GridLayout, { GridArea } from './GridLayout';
 import { DESIGN_TOKENS } from '../config';
 import { createGlobalStyle } from 'styled-components';
+import Button from './Button';
 
 /**
  * TODO:
  *
- * - create layout
- * - add buttons
  * - add settings
  *
  */
@@ -32,6 +31,13 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     user-select: none;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  :root {
+    font-size: 42px;
+    line-height: 24px;
+    font-family: 'Boogaloo', sans-serif;
+    text-transform: uppercase;
   }
 
   body {
@@ -85,26 +91,27 @@ class App extends Component {
   }
 
   render() {
-    // const { activeRouteName } = this.state;
-
     return (
       <React.Fragment>
         <GlobalStyle />
-        <Layout />
+        <GridLayout
+          columns="1fr 1fr"
+          rows="10vh 50vw auto"
+          areas={`
+            'header      header'
+            'leftbutton  rightbutton'
+            'startbutton startbutton'
+          `}
+        >
+          <GridArea snapTo="header">
+            I'm in the header!
+          </GridArea>
+          <Button inflated={true} snapTo="leftbutton">A</Button>
+          <Button inflated={true} snapTo="rightbutton">B</Button>
+          <Button inflated={true} snapTo="startbutton">Start</Button>
+        </GridLayout>
       </React.Fragment>
     );
-
-    // switch (activeRouteName) {
-    //   case 'start':
-    //   default:
-    //     return <div>Start</div>;
-
-    //   case 'game':
-    //     return <div>In-Game</div>;
-
-    //   case 'settings':
-    //     return <div>Settings</div>;
-    // }
   }
 }
 
