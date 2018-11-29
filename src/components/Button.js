@@ -18,21 +18,18 @@ class Button extends Component {
   constructor() {
     super();
 
-    this.handleTouchStart = this.handleTouchStart.bind(this);
-    this.handleTouchEnd = this.handleTouchEnd.bind(this);
-
     this.state = {
       touchStartedAt: null
     };
   }
 
-  handleTouchStart() {
+  handleTouchStart = () => {
     this.setState({
       touchStartedAt: Date.now()
     });
   }
 
-  handleTouchEnd() {
+  handleTouchEnd = () => {
     const touchDuration = Date.now() - this.state.touchStartedAt;
     if (touchDuration < LONG_PRESS_DURATION) {
       console.log('TAP');
