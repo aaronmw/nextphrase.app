@@ -6,6 +6,7 @@ import phrases from '../data/phrases';
 import GridLayout, { GridArea } from './GridLayout';
 import { DESIGN_TOKENS } from '../config';
 import { createGlobalStyle } from 'styled-components';
+import Button from './Button';
 
 /**
  * TODO:
@@ -63,17 +64,13 @@ class App extends Component {
       ),
       phrasesSeen: [],
       activeRouteName: 'start',
-      points: {
-        A: 0,
-        B: 0
-      },
       settings: {
         selectedLists: config.DEFAULT_LISTS,
         rotateScreen: false
       }
     };
 
-    // Load state from localStorage
+    // Load state from localstorage
     Object.assign(
       this.state,
       JSON.parse(window.localStorage.getItem('gameState')) || {}
@@ -84,33 +81,16 @@ class App extends Component {
       return this.state.phrasesSeen.includes(phrase) === false;
     });
 
-    // Shuffle whatever phrases are left
-    this.state.phrases = shuffle(this.state.phrase);
-
     console.log(this.state);
   }
 
   setGameState(newState) {
     this.setState(newState, () => {
       window.localStorage.setItem('gameState', JSON.stringify(this.state));
-      console.log(this.state);
     });
   }
 
-  addPoint = (teamName, delta) => {
-    this.setGameState({
-      ...this.state,
-      points: {
-        ...this.state.points,
-        [teamName]: this.state.points[teamName] + delta
-      }
-    });
-  };
-
   render() {
-    const {
-      points: { A: pointsForA, B: pointsForB }
-    } = this.props;
     return (
       <React.Fragment>
         <GlobalStyle />
@@ -124,24 +104,11 @@ class App extends Component {
           `}
         >
           <GridArea snapTo="header">
-            {[...Array(7)].map((e, i) => <span className="busterCards" key={i}>♦</span>)}
-
+            I'm in the header!
           </GridArea>
-          <GridArea
-            snapTo="leftbutton"
-            tapHandler={() => this.addPoint('A', 1)}
-            longPressHandler={() => this.addPoint('A', -1)}
-          >
-            A
-          </GridArea>
-          <GridArea
-            snapTo="rightbutton"
-            tapHandler={() => this.addPoint('B', 1)}
-            longPressHandler={() => this.addPoint('B', -1)}
-          >
-            B
-          </GridArea>
-          <GridArea snapTo="startbutton">Start</GridArea>
+          <Button inflated={true} snapTo="leftbutton">A</Button>
+          <Button inflated={true} snapTo="rightbutton">B</Button>
+          <Button inflated={true} snapTo="startbutton">Start</Button>
         </GridLayout>
       </React.Fragment>
     );
