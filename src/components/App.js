@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as config from '../config';
-// import { playSound } from '../utils/sounds';
+import styled from 'styled-components';
+import { playSound } from '../utils/sounds';
 import { shuffle, reduce } from 'lodash';
 import phrases from '../data/phrases';
 import GridLayout, { GridArea } from './GridLayout';
@@ -47,6 +48,26 @@ const GlobalStyle = createGlobalStyle`
     height: 100vh;
     width: 100vw;
   }
+`;
+
+const Dot = styled.div`
+  display: inline-block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 1000px;
+  font-size: 0;
+  line-height: 0;
+
+  ${props => props.filled ? `
+    background: ${DESIGN_TOKENS.colors.foreground};
+  ` : `
+    border: 2px solid ${DESIGN_TOKENS.colors.foreground};
+  `}
+`;
+
+const GameHeader = styled(GridArea)`
+  display: flex;
+  width: 100%;
 `;
 
 class App extends Component {
@@ -97,6 +118,12 @@ class App extends Component {
     });
   }
 
+  toggleScreenRotation = () => {
+    this.setGameState({
+      isRotated: !this.state.isRotated
+    });
+  }
+
   addPoint = (teamName, delta) => {
     this.setGameState({
       ...this.state,
@@ -110,7 +137,8 @@ class App extends Component {
   render() {
     const {
       points: { A: pointsForA, B: pointsForB }
-    } = this.props;
+    } = this.state;
+
     return (
       <React.Fragment>
         <GlobalStyle />
@@ -123,10 +151,17 @@ class App extends Component {
             'startbutton startbutton'
           `}
         >
-          <GridArea snapTo="header">
-            {[...Array(7)].map((e, i) => <span className="busterCards" key={i}>♦</span>)}
-
-          </GridArea>
+          <GameHeader snapTo="header">
+            <div>
+              {[...Array(7)].map((e, i) => <Dot filled={(i < pointsForA)} key={i} />)}
+            </div>
+            <div>
+              S
+            </div>
+            <div>
+              {[...Array(7)].map((e, i) => <Dot filled={(i < pointsForB)} key={i} />)}
+            </div>
+          </GameHeader>
           <GridArea
             snapTo="leftbutton"
             tapHandler={() => this.addPoint('A', 1)}
