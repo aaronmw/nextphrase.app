@@ -1,12 +1,12 @@
-import webAudioToolkit from "../utils/webAudioToolkit";
+import webAudioToolkit from '../utils/webAudioToolkit';
 
 const SOUNDS = [
-  { name: "tickTock", path: "/sounds/tick.wav" },
-  { name: "typewriter", path: "/sounds/typewriter.wav" },
-  { name: "beep", path: "/sounds/beep.wav" },
-  { name: "celebration", path: "/sounds/celebration.wav" },
-  { name: "woosh", path: "/sounds/woosh.wav" },
-  { name: "oops", path: "/sounds/oops.wav" }
+  { name: 'tickTock', path: '/sounds/tick.wav' },
+  { name: 'typewriter', path: '/sounds/typewriter.wav' },
+  { name: 'beep', path: '/sounds/beep.wav' },
+  { name: 'celebration', path: '/sounds/celebration.wav' },
+  { name: 'woosh', path: '/sounds/woosh.wav' },
+  { name: 'oops', path: '/sounds/oops.wav' }
 ];
 
 const SOUND_BUFFERS = {};

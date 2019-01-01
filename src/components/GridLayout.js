@@ -11,8 +11,10 @@ const Container = styled.div`
   grid-template-areas: ${props => props.areas};
 `;
 
-const GridLayout = ({ className, children, ...others }) => (
-  <Container className={className} {...others}>{children}</Container>
+const GridLayout = ({ className, children, ...rest }) => (
+  <Container {...rest} className={className}>
+    {children}
+  </Container>
 );
 export default GridLayout;
 
@@ -24,14 +26,24 @@ const StyledGridArea = styled.div`
   justify-content: center;
   align-items: center;
 
-  &:active {
-    background-color: ${DESIGN_TOKENS.colors.highlight};
-  }
+  ${props =>
+    props.tapHandler
+      ? `
+    &:active {
+      background-color: ${DESIGN_TOKENS.colors.highlight};
+    }
+  `
+      : ''}
 `;
 
 let tapTimer = null;
 
 class GridArea extends Component {
+  static defaultProps = {
+    tapHandler: null,
+    longPressHandler: null
+  };
+
   constructor() {
     super();
 
@@ -45,12 +57,14 @@ class GridArea extends Component {
       touchStartedAt: Date.now()
     });
     tapTimer = setTimeout(this.props.longPressHandler, LONG_PRESS_DURATION);
-  }
+  };
 
   handleTouchEnd = () => {
     const touchDuration = Date.now() - this.state.touchStartedAt;
     if (touchDuration < LONG_PRESS_DURATION) {
-      this.props.tapHandler();
+      if (this.props.tapHandler) {
+        this.props.tapHandler();
+      }
       tapTimer = clearTimeout(tapTimer);
       console.log('TAP');
     } else {
@@ -60,22 +74,27 @@ class GridArea extends Component {
     this.setState({
       touchStartedAt: null
     });
-  }
+  };
 
   render() {
-    const { children, className, ...rest } = this.props;
+    const {
+      children,
+      className,
+      tapHandler,
+      longPressHandler,
+      ...rest
+    } = this.props;
     return (
       <StyledGridArea
         {...rest}
         className={className}
-        onTouchStart={this.handleTouchStart}
-        onTouchEnd={this.handleTouchEnd}
+        onTouchStart={(tapHandler || longPressHandler ? this.handleTouchStart : () => {})}
+        onTouchEnd={(tapHandler || longPressHandler ? this.handleTouchEnd : () => {})}
       >
         {children}
       </StyledGridArea>
     );
   }
 }
-
 
 export { GridArea };

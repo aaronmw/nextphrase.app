@@ -50,6 +50,14 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+const Dots = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+
+  ${props => (props.reversed ? `flex-direction: row-reverse;` : '')}
+`;
+
 const Dot = styled.div`
   display: inline-block;
   width: 0.375rem;
@@ -57,10 +65,14 @@ const Dot = styled.div`
   border-radius: 1000px;
   font-size: 0;
   line-height: 0;
+  margin: 0 2px;
 
-  ${props => props.filled ? `
+  ${props =>
+    props.filled
+      ? `
     background: ${DESIGN_TOKENS.colors.foreground};
-  ` : `
+  `
+      : `
     border: 2px solid ${DESIGN_TOKENS.colors.foreground};
   `}
 `;
@@ -68,6 +80,7 @@ const Dot = styled.div`
 const GameHeader = styled(GridArea)`
   display: flex;
   width: 100%;
+  justify-content: space-evenly;
 `;
 
 class App extends Component {
@@ -107,26 +120,36 @@ class App extends Component {
 
     // Shuffle whatever phrases are left
     this.state.phrases = shuffle(this.state.phrase);
-
-    console.log(this.state);
   }
 
-  setGameState(newState) {
-    this.setState(newState, () => {
+  componentDidUpdate = (prevProps, prevState) => {
+    if (this.state.points !== prevState.points) {
+      const {
+        points: { A: pointsForA, B: pointsForB }
+      } = this.state;
+
       window.localStorage.setItem('gameState', JSON.stringify(this.state));
-      console.log(this.state);
-    });
-  }
+
+      if ([pointsForA, pointsForB].find(score => score >= config.MAX_SCORE)) {
+        this.setState({
+          points: {
+            A: 0,
+            B: 0
+          }
+        });
+        playSound('celebration')
+      }
+    }
+  };
 
   toggleScreenRotation = () => {
-    this.setGameState({
+    this.setState({
       isRotated: !this.state.isRotated
     });
-  }
+  };
 
   addPoint = (teamName, delta) => {
-    this.setGameState({
-      ...this.state,
+    this.setState({
       points: {
         ...this.state.points,
         [teamName]: this.state.points[teamName] + delta
@@ -152,15 +175,17 @@ class App extends Component {
           `}
         >
           <GameHeader snapTo="header">
-            <div>
-              {[...Array(7)].map((e, i) => <Dot filled={(i < pointsForA)} key={i} />)}
-            </div>
-            <div>
-              S
-            </div>
-            <div>
-              {[...Array(7)].map((e, i) => <Dot filled={(i < pointsForB)} key={i} />)}
-            </div>
+            <Dots>
+              {[...Array(7)].map((e, i) => (
+                <Dot filled={i < pointsForA} key={i} />
+              ))}
+            </Dots>
+            <div><i className="fal fa-cog"></i></div>
+            <Dots reversed={true}>
+              {[...Array(7)].map((e, i) => (
+                <Dot filled={i < pointsForB} key={i} />
+              ))}
+            </Dots>
           </GameHeader>
           <GridArea
             snapTo="leftbutton"
