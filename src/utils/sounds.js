@@ -1,7 +1,9 @@
 import webAudioToolkit from '../utils/webAudioToolkit';
 
 const SOUNDS = [
-  { name: 'tickTock', path: '/sounds/tick.wav' },
+  { name: 'a', path: '/sounds/a.wav' },
+  { name: 'b', path: '/sounds/b.wav' },
+  { name: 'tick', path: '/sounds/tick.wav' },
   { name: 'typewriter', path: '/sounds/typewriter.wav' },
   { name: 'beep', path: '/sounds/beep.wav' },
   { name: 'celebration', path: '/sounds/celebration.wav' },

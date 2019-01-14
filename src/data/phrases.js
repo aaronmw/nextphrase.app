@@ -1900,7 +1900,7 @@ export default {
     "Lunch Date",
     "Track Meet",
     "Win The Lottery",
-    "Homerun",
+    "Home run",
     "Playing With Fire",
     "Hail Mary Pass",
     "Video Arcade",
@@ -3208,7 +3208,7 @@ export default {
     "Stonehenge",
     "Mt Kilimanjaro"
   ],
-  StarWars: [
+  "star wars": [
     "Ison Corridor",
     "Comlink",
     "Mon Mothma",
