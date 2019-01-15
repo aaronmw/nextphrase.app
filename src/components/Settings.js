@@ -8,10 +8,10 @@ const Settings = styled(GameSurface)`
   justify-content: flex-start;
   flex-direction: column;
   padding: 5vw;
-  bottom: ${DESIGN_TOKENS.borders.width};
-  left: ${DESIGN_TOKENS.borders.width};
-  right: ${DESIGN_TOKENS.borders.width};
-  top: calc(25vw + ${DESIGN_TOKENS.borders.width} * 2);
+  bottom: ${DESIGN_TOKENS.dimensions.gutterSize};
+  left: ${DESIGN_TOKENS.dimensions.gutterSize};
+  right: ${DESIGN_TOKENS.dimensions.gutterSize};
+  top: calc(25vw + ${DESIGN_TOKENS.dimensions.gutterSize} * 2);
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 

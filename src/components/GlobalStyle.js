@@ -24,6 +24,7 @@ const GlobalStyle = createGlobalStyle`
     line-height: 42px;
     font-family: 'Boogaloo', sans-serif;
     text-transform: uppercase;
+    background-color: ${DESIGN_TOKENS.colors.background};
   }
 
   body {
@@ -31,7 +32,9 @@ const GlobalStyle = createGlobalStyle`
     color: ${DESIGN_TOKENS.colors.foreground};
     overflow: hidden;
     position: fixed;
-    height: 100vh;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    top: env(safe-area-inset-top);
+    bottom: env(safe-area-inset-bottom);
     width: 100vw;
   }
 `;

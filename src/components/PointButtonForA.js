@@ -3,7 +3,7 @@ import { DESIGN_TOKENS } from '../config';
 import PointButton from './PointButton';
 
 const PointButtonForA = styled(PointButton)`
-  left: ${DESIGN_TOKENS.borders.width};
+  left: ${DESIGN_TOKENS.dimensions.gutterSize};
   ${props => !props.isVisible && `transform: translateX(-110%);`}
 `;
 

@@ -28,21 +28,26 @@ export const DEFAULT_TICK_RATE = 500;
 export const FAST_TICK_RATE = 250;
 export const LONG_PRESS_DURATION = 0.375 * 1000;
 export const DEFAULT_LISTS = {
-  'entertainment': true,
+  entertainment: true,
   'star wars': false,
   'everyday life': true,
   'fun & games': true,
   'the world': true
 };
+
+let gutterSize = '6px';
+
 export const DESIGN_TOKENS = {
   colors: {
     background: '#000',
     foreground: '#fff',
     faded: 'rgba(255, 255, 255, 0.1)',
-    highlight: 'rgba(255, 255, 255, 0.5)',
+    highlight: 'rgba(255, 255, 255, 0.5)'
   },
-  borders: {
-    width: '6px',
+  dimensions: {
+    gutterSize: gutterSize,
+    headerHeight: '20vw',
+    secondaryButtonSize: `calc(50vw - (${gutterSize} * 1.5))`,
   },
   timings: {
     duration: 250,

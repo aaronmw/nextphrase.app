@@ -5,7 +5,7 @@ import Button from './Button';
 const ToggleButton = styled(Button)`
   width: 100%;
   position: relative;
-  margin-bottom: ${DESIGN_TOKENS.borders.width};
+  margin-bottom: ${DESIGN_TOKENS.dimensions.gutterSize};
   justify-content: space-between;
   opacity: 0.5;
   &:after {
