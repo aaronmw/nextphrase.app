@@ -33,6 +33,7 @@ class App extends Component {
       phrasesSeen: [],
       activeRouteName: 'home',
       isTransitioning: false,
+      isNextButtonFrozen: false,
       lastTickTime: Date.now(),
       points: {
         A: 0,
@@ -132,9 +133,18 @@ class App extends Component {
 
   nextPhrase = () => {
     this.setState(state => ({
+      isNextButtonFrozen: true,
       phrase: this.phrases.shift(),
       phrasesSeen: state.phrasesSeen.concat(state.phrase)
     }));
+
+    setTimeout(
+      () =>
+        this.setState({
+          isNextButtonFrozen: false
+        }),
+      config.NEXT_BUTTON_FREEZE_TIME
+    );
   };
 
   abortRound = () => {
@@ -201,7 +211,8 @@ class App extends Component {
       lists,
       phrase,
       lastTickTime,
-      isRotated
+      isRotated,
+      isNextButtonFrozen
     } = this.state;
 
     return (
@@ -268,6 +279,7 @@ class App extends Component {
         </StartButton>
         <NextButton
           isVisible={this.routeIsActive('in-game')}
+          isFrozen={isNextButtonFrozen}
           onTap={this.nextPhrase}
         >
           NEXT
@@ -278,9 +290,7 @@ class App extends Component {
           </Phrase>
         </PhraseCanvas>
         <Settings isVisible={this.routeIsActive('settings')}>
-          <CategoryLabel>
-            Show Phrases From...
-          </CategoryLabel>
+          <CategoryLabel>Show Phrases From...</CategoryLabel>
           {Object.keys(lists)
             .sort()
             .map(category => (
@@ -292,9 +302,7 @@ class App extends Component {
                 {category}
               </ToggleButton>
             ))}
-          <CategoryLabel>
-            Speakers on bottom?
-          </CategoryLabel>
+          <CategoryLabel>Speakers on bottom?</CategoryLabel>
           <ToggleButton
             isActive={isRotated}
             onTap={e => this.toggleScreenRotation()}
