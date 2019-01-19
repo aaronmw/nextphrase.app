@@ -24,6 +24,7 @@ const GlobalStyle = createGlobalStyle`
     line-height: 42px;
     font-family: 'Boogaloo', sans-serif;
     text-transform: uppercase;
+    background-color: ${DESIGN_TOKENS.colors.background};
   }
 
   body {
