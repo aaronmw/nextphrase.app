@@ -1,9 +1,9 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { dimensions } from '../config';
 import PointButton from './PointButton';
 
 const PointButtonForB = styled(PointButton)`
-  right: ${DESIGN_TOKENS.borders.width};
+  right: ${dimensions.borderWidth};
   ${props => !props.isVisible && `transform: translateX(110%);`}
 `;
 

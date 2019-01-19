@@ -1,5 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { colors } from '../config';
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -27,12 +27,29 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    background-color: ${DESIGN_TOKENS.colors.foreground};
-    color: ${DESIGN_TOKENS.colors.foreground};
-    overflow: hidden;
-    position: fixed;
+    background-color: ${colors.foreground};
+    color: ${colors.foreground};
+    position: absolute;
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
+
+    &:before,
+    &:after {
+      content: '';
+      position: fixed;
+      width: 100vw;
+      background-color: ${colors.background};
+      z-index: 100;
+    }
+    &:before {
+      height: calc(env(safe-area-inset-top));
+      top: 0;
+    }
+    &:after {
+      height: calc(env(safe-area-inset-bottom));
+      bottom: 0;
+    }
   }
 `;
 

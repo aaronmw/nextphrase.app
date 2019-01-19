@@ -1,13 +1,14 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { timings } from '../config';
 
 const GameBoard = styled.div`
   position: absolute;
   width: 100vw;
   height: 100vh;
-  transition: transform ${DESIGN_TOKENS.timings.duration / 1000}s ease-in-out;
+  transition: transform ${timings.duration / 1000}s ease-in-out;
   ${props => props.isRotated && `
     transform: rotate(180deg);
+    top: calc(env(safe-area-inset-top) - env(safe-area-inset-bottom));
   `}
 `;
 

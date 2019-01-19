@@ -1,17 +1,17 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { dimensions } from '../config';
 import Button from './Button';
 
 const StartButton = styled(Button).attrs({
   tapSound: 'woosh'
 })`
-  bottom: ${DESIGN_TOKENS.borders.width};
-  left: ${DESIGN_TOKENS.borders.width};
-  right: ${DESIGN_TOKENS.borders.width};
-  height: calc(
-    100vh - (50vw - (${DESIGN_TOKENS.borders.width} * 1.5)) - (25vw) -
-      (${DESIGN_TOKENS.borders.width} * 4)
+  top: calc(
+    ${dimensions.headerHeight} + ${dimensions.pointButtonHeight} +
+      calc(${dimensions.borderWidth} * 3) + env(safe-area-inset-top)
   );
+  right: ${dimensions.borderWidth};
+  bottom: calc(${dimensions.borderWidth} + env(safe-area-inset-bottom));
+  left: ${dimensions.borderWidth};
   ${props => !props.isVisible && `transform: translateY(100%);`}
 `;
 

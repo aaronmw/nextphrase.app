@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { dimensions } from '../config';
 import GameSurface from './GameSurface';
 
 const Settings = styled(GameSurface)`
@@ -8,10 +8,10 @@ const Settings = styled(GameSurface)`
   justify-content: flex-start;
   flex-direction: column;
   padding: 5vw;
-  bottom: ${DESIGN_TOKENS.borders.width};
-  left: ${DESIGN_TOKENS.borders.width};
-  right: ${DESIGN_TOKENS.borders.width};
-  top: calc(25vw + ${DESIGN_TOKENS.borders.width} * 2);
+  bottom: calc(${dimensions.borderWidth} + env(safe-area-inset-bottom));
+  left: ${dimensions.borderWidth};
+  right: ${dimensions.borderWidth};
+  top: calc(${dimensions.headerHeight} + (${dimensions.borderWidth} * 2) + env(safe-area-inset-top));
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 

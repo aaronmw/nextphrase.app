@@ -7,8 +7,10 @@ class Button extends Component {
   handleTouchStart = e => {
     this.startedTouchAt = Date.now();
     this.longPressTimer = setTimeout(() => {
-      this.props.onLongPress();
-      playSound(this.props.longPressSound || 'typewriter');
+      if (this.props.onLongPress) {
+        this.props.onLongPress();
+        playSound(this.props.longPressSound || 'typewriter');
+      }
     }, config.LONG_PRESS_DURATION);
   };
 

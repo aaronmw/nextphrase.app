@@ -1,7 +1,7 @@
 import { random, shuffle, times } from 'lodash';
 import React, { Component } from 'react';
 import * as config from '../config';
-import { DESIGN_TOKENS } from '../config';
+import { timings } from '../config';
 import phrases from '../data/phrases';
 import { playSound } from '../utils/sounds';
 import CategoryLabel from './CategoryLabel';
@@ -186,7 +186,7 @@ class App extends Component {
       this.setState({
         isTransitioning: false
       });
-    }, DESIGN_TOKENS.timings.duration);
+    }, timings.duration);
   };
 
   routeIsActive = routeName => {
@@ -250,7 +250,6 @@ class App extends Component {
           isVisible={this.routeIsActive('home')}
           onTap={e => this.addPoint('A', 1)}
           onLongPress={e => this.addPoint('A', -1)}
-          tapSound="a"
         >
           A
         </PointButtonForA>
@@ -258,7 +257,6 @@ class App extends Component {
           isVisible={this.routeIsActive('home')}
           onTap={e => this.addPoint('B', 1)}
           onLongPress={e => this.addPoint('B', -1)}
-          tapSound="b"
         >
           B
         </PointButtonForB>

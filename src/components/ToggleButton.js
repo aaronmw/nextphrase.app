@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { dimensions } from '../config';
 import Button from './Button';
 
 const ToggleButton = styled(Button)`
   width: 100%;
   position: relative;
-  margin-bottom: ${DESIGN_TOKENS.borders.width};
+  margin-bottom: ${dimensions.borderWidth};
   justify-content: space-between;
   opacity: 0.5;
   &:after {

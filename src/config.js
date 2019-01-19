@@ -28,27 +28,32 @@ export const DEFAULT_TICK_RATE = 500;
 export const FAST_TICK_RATE = 250;
 export const LONG_PRESS_DURATION = 0.375 * 1000;
 export const DEFAULT_LISTS = {
-  'entertainment': true,
+  entertainment: true,
   'star wars': false,
   'everyday life': true,
   'fun & games': true,
   'the world': true
 };
-export const DESIGN_TOKENS = {
-  colors: {
-    background: '#000',
-    foreground: '#fff',
-    faded: 'rgba(255, 255, 255, 0.1)',
-    highlight: 'rgba(255, 255, 255, 0.5)',
-  },
-  borders: {
-    width: '6px',
-  },
-  timings: {
-    duration: 250,
-    // transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-    // transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
-    transitionOnEnter: 'ease-in-out',
-    transitionOnExit: 'ease-in-out'
-  }
+
+export const timings = {
+  duration: 250,
+  // transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+  // transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
+  transitionOnEnter: 'ease-in-out',
+  transitionOnExit: 'ease-in-out'
+};
+
+export const colors = {
+  background: 'teal',
+  foreground: '#fff',
+  faded: 'rgba(255, 255, 255, 0.1)',
+  highlight: 'rgba(255, 255, 255, 0.5)'
+};
+
+const borderWidth = '6px';
+
+export const dimensions = {
+  borderWidth: borderWidth,
+  headerHeight: '20vw',
+  pointButtonHeight: `(50vw - (${borderWidth} * 1.5))`
 };

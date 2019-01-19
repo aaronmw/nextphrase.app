@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { DESIGN_TOKENS } from '../config';
+import { colors } from '../config';
 
 const Dot = styled.div`
   display: inline-block;
@@ -9,7 +9,7 @@ const Dot = styled.div`
   height: 0.35rem;
   margin: 0 2px;
   border-radius: 1000px;
-  border: 2px solid ${DESIGN_TOKENS.colors.foreground};
+  border: 2px solid ${colors.foreground};
   font-size: 0;
   line-height: 0;
   opacity: 0.4;
@@ -18,7 +18,7 @@ const Dot = styled.div`
     props.isActive &&
     `
     opacity: 1;
-    background: ${DESIGN_TOKENS.colors.foreground};
+    background: ${colors.foreground};
   `}
 `;
 
