@@ -59,20 +59,18 @@ class App extends Component {
   };
 
   loadPhrases = () => {
-    // Smoosh the phrases from the lists we want to see
     this.phrases = [];
+
     Object.keys(this.state.lists).forEach(listName => {
       if (this.state.lists[listName]) {
         this.phrases = this.phrases.concat(phrases[listName]);
       }
     });
 
-    // Remove phrasesSeen from phrases
     this.phrases = this.phrases.filter(phrase => {
       return this.state.phrasesSeen.includes(phrase) === false;
     });
 
-    // Shuffle whatever phrases are left
     this.phrases = shuffle(this.phrases);
   };
 
@@ -132,19 +130,39 @@ class App extends Component {
   };
 
   nextPhrase = () => {
-    this.setState(state => ({
-      isNextButtonFrozen: true,
-      phrase: this.phrases.shift(),
-      phrasesSeen: state.phrasesSeen.concat(state.phrase)
-    }));
+    const newPhrase = this.phrases.shift();
 
-    setTimeout(
-      () =>
-        this.setState({
-          isNextButtonFrozen: false
-        }),
-      config.NEXT_BUTTON_FREEZE_TIME
-    );
+    if (this.phrases.length === 0) {
+      this.setState(
+        {
+          phrasesSeen: []
+        },
+        () => {
+          this.loadPhrases();
+          this.nextPhrase();
+        }
+      );
+
+      return;
+    }
+
+    this.setState(state => {
+      const newState = {
+        isNextButtonFrozen: true,
+        phrase: newPhrase,
+        phrasesSeen: state.phrasesSeen.concat(state.phrase)
+      };
+
+      setTimeout(
+        () =>
+          this.setState({
+            isNextButtonFrozen: false
+          }),
+        config.NEXT_BUTTON_FREEZE_TIME
+      );
+
+      return newState;
+    });
   };
 
   abortRound = () => {
