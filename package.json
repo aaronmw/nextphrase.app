@@ -1,7 +1,7 @@
 {
   "name": "catchphrase",
   "version": "0.1.0",
-  "homepage": "http://whatthephrase.aaronwright.ca",
+  "homepage": "http://www.nextphrase.com",
   "private": true,
   "devDependencies": {
     "@babel/core": "^7.1.6",
