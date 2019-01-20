@@ -32,6 +32,7 @@ class App extends Component {
       phrase: '...loading...',
       phrasesSeen: [],
       activeRouteName: 'home',
+      isFactoryResetting: false,
       isTransitioning: false,
       isNextButtonFrozen: false,
       lastTickTime: Date.now(),
@@ -129,19 +130,35 @@ class App extends Component {
     this.transitionToRoute('in-game');
   };
 
+  resetPhraseList = () => {
+    this.setState(
+      {
+        phrasesSeen: [],
+        isFactoryResetting: false
+      },
+      () => {
+        this.loadPhrases();
+        this.nextPhrase();
+      }
+    );
+  };
+
+  factoryReset = () => {
+    this.setState({
+      isFactoryResetting: true
+    });
+
+    setTimeout(() => {
+      this.resetPhraseList();
+      this.transitionToRoute('home');
+    }, 1000);
+  };
+
   nextPhrase = () => {
     const newPhrase = this.phrases.shift();
 
     if (this.phrases.length === 0) {
-      this.setState(
-        {
-          phrasesSeen: []
-        },
-        () => {
-          this.loadPhrases();
-          this.nextPhrase();
-        }
-      );
+      this.resetPhraseList();
 
       return;
     }
@@ -230,7 +247,8 @@ class App extends Component {
       phrase,
       lastTickTime,
       isRotated,
-      isNextButtonFrozen
+      isNextButtonFrozen,
+      isFactoryResetting
     } = this.state;
 
     return (
@@ -315,17 +333,20 @@ class App extends Component {
               <ToggleButton
                 key={category}
                 isActive={lists[category]}
-                onTap={e => this.toggleSelectedList(category)}
+                onTap={() => this.toggleSelectedList(category)}
               >
                 {category}
               </ToggleButton>
             ))}
+
           <CategoryLabel>Speakers on bottom?</CategoryLabel>
-          <ToggleButton
-            isActive={isRotated}
-            onTap={e => this.toggleScreenRotation()}
-          >
+          <ToggleButton isActive={isRotated} onTap={this.toggleScreenRotation}>
             Rotate Screen
+          </ToggleButton>
+
+          <CategoryLabel>Advanced!</CategoryLabel>
+          <ToggleButton isActive={isFactoryResetting} onTap={this.factoryReset}>
+            Factory Reset?
           </ToggleButton>
         </Settings>
       </GameBoard>

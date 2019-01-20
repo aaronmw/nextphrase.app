@@ -9,7 +9,7 @@ const NextButton = styled(Button).attrs({
   left: ${dimensions.borderWidth};
   right: ${dimensions.borderWidth};
   height: calc(${dimensions.pointButtonHeight});
-  ${props => !props.isVisible && `transform: translateY(100%);`}
+  ${props => !props.isVisible && `transform: translateY(110%);`}
   ${props => props.isFrozen && `opacity: 0.5; pointer-events: none;`}
 `;
 
