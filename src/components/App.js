@@ -25,26 +25,27 @@ import StartButton from './StartButton';
 import ToggleButton from './ToggleButton';
 
 class App extends Component {
+  initialState = {
+    phrase: '...loading...',
+    phrasesSeen: [],
+    activeRouteName: 'home',
+    isFactoryResetting: false,
+    isTransitioning: false,
+    isNextButtonFrozen: false,
+    lastTickTime: Date.now(),
+    points: {
+      A: 0,
+      B: 0
+    },
+    lists: config.DEFAULT_LISTS,
+    isRotated: false
+  };
+
   constructor(props) {
     super(props);
 
-    this.state = {
-      phrase: '...loading...',
-      phrasesSeen: [],
-      activeRouteName: 'home',
-      isFactoryResetting: false,
-      isTransitioning: false,
-      isNextButtonFrozen: false,
-      lastTickTime: Date.now(),
-      points: {
-        A: 0,
-        B: 0
-      },
-      lists: config.DEFAULT_LISTS,
-      isRotated: false
-    };
+    this.state = Object.assign({}, this.initialState);
 
-    // Load state from localStorage
     Object.assign(
       this.state,
       JSON.parse(window.localStorage.getItem('gameState')) || {}
@@ -91,7 +92,6 @@ class App extends Component {
     this.setState(state => ({
       isRotated: !state.isRotated
     }));
-    console.log(this.state);
   };
 
   tick = () => {
@@ -102,16 +102,13 @@ class App extends Component {
   };
 
   startRound = () => {
-    // Stop all of this at the end of the round
     const roundTimeLimit = random(config.MIN_ROUND_TIME, config.MAX_ROUND_TIME);
     this.stopRoundTimeout = setTimeout(this.stopRound, roundTimeLimit);
 
-    // Start ticking
     this.tickerInterval = setInterval(() => {
       this.tick();
     }, 1000);
 
-    // Tick faster near the end
     const rushDuration = random(
       config.MIN_RUSH_DURATION,
       config.MAX_RUSH_DURATION
@@ -123,10 +120,8 @@ class App extends Component {
       }, 250);
     }, roundTimeLimit - rushDuration);
 
-    // Advance to the next phrase
     this.nextPhrase();
 
-    // Show the game screen
     this.transitionToRoute('in-game');
   };
 
@@ -149,9 +144,10 @@ class App extends Component {
     });
 
     setTimeout(() => {
-      this.resetPhraseList();
-      this.transitionToRoute('home');
-    }, 1000);
+      this.setState(this.initialState, () => {
+        this.transitionToRoute('home');
+      });
+    }, 750);
   };
 
   nextPhrase = () => {
