@@ -251,7 +251,10 @@ class App extends Component {
       <GameBoard isRotated={isRotated}>
         <GlobalStyle />
         <Header>
-          <ScoreDotsForA isVisible={!this.routeIsActive('settings')}>
+          <ScoreDotsForA
+            isVisible={!this.routeIsActive('settings')}
+            reversed={true}
+          >
             {times(config.MAX_SCORE, index => (
               <Dot isActive={index < pointsForA} key={index} />
             ))}
@@ -280,10 +283,7 @@ class App extends Component {
               <Icon>&#xf359;</Icon>
             </HeaderButton>
           </HeaderSection>
-          <ScoreDotsForB
-            isVisible={!this.routeIsActive('settings')}
-            reversed={true}
-          >
+          <ScoreDotsForB isVisible={!this.routeIsActive('settings')}>
             {times(config.MAX_SCORE, index => (
               <Dot isActive={index < pointsForB} key={index} />
             ))}

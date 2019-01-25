@@ -2,23 +2,20 @@ import styled from 'styled-components';
 import { colors } from '../config';
 
 const Dot = styled.div`
+  font-family: 'Font Awesome 5 Pro';
   display: inline-block;
-  flex-grow: 0;
-  flex-shrink: 0;
-  width: 0.35rem;
-  height: 0.35rem;
+  font-size: 0.35rem;
   margin: 0 2px;
-  border-radius: 1000px;
-  border: 2px solid ${colors.foreground};
-  font-size: 0;
-  line-height: 0;
-  opacity: 0.6;
+  font-weight: 900;
 
+  &:before {
+    content: '\f004';
+  }
   ${props =>
     props.isActive &&
     `
-    opacity: 1;
-    background: ${colors.foreground};
+    font-weight: 100;
+    opacity: 0.6;
   `}
 `;
 
