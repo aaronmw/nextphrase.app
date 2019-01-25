@@ -44,7 +44,7 @@ export const timings = {
 };
 
 export const colors = {
-  background: '#ff0467',
+  background: '#00b2a9',
   foreground: '#fff',
   faded: 'rgba(255, 255, 255, 0.1)',
   highlight: 'rgba(255, 255, 255, 0.5)'
