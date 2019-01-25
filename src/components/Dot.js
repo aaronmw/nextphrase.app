@@ -12,7 +12,7 @@ const Dot = styled.div`
   border: 2px solid ${colors.foreground};
   font-size: 0;
   line-height: 0;
-  opacity: 0.4;
+  opacity: 0.6;
 
   ${props =>
     props.isActive &&

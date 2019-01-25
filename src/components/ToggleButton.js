@@ -7,7 +7,7 @@ const ToggleButton = styled(Button)`
   position: relative;
   margin-bottom: ${dimensions.borderWidth};
   justify-content: space-between;
-  opacity: 0.5;
+  opacity: 0.6;
   &:after {
     content: '';
     position: absolute;
