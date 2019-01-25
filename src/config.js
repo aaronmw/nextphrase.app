@@ -37,15 +37,15 @@ export const DEFAULT_LISTS = {
 
 export const timings = {
   duration: 250,
-  // transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-  // transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
-  transitionOnEnter: 'ease-in-out',
-  transitionOnExit: 'ease-in-out'
+  transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+  transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
+  // transitionOnEnter: 'ease-in-out',
+  // transitionOnExit: 'ease-in-out'
 };
 
 export const colors = {
-  background: '#0F1628',
-  foreground: '#ABBAE1',
+  background: '#ff0467',
+  foreground: '#fff',
   faded: 'rgba(255, 255, 255, 0.1)',
   highlight: 'rgba(255, 255, 255, 0.5)'
 };
