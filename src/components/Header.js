@@ -11,7 +11,7 @@ const Header = styled(GameSurface)`
   justify-content: space-evenly;
   align-items: center;
   height: ${dimensions.headerHeight};
-  background-color: ${colors.backgroundDark};
+  background-color: ${colors.background};
   ${props => props.isRushing && RushBackground}
   ${props => props.isFrozen && `opacity: 0.5; pointer-events: none;`}
 `;
