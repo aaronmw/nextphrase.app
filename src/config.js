@@ -1,32 +1,21 @@
-const DEBUG_MODE = false;
+import { shade } from 'polished';
 
-let minRoundTime;
-let maxRoundTime;
-let minRushDuration;
-let maxRushDuration;
-let nextButtonFreezeTime;
-if (DEBUG_MODE) {
-  minRoundTime = 6 * 1000;
-  maxRoundTime = 6 * 1000;
-  minRushDuration = 3 * 1000;
-  maxRushDuration = 3 * 1000;
-  nextButtonFreezeTime = 1;
-} else {
-  minRoundTime = 45 * 1000;
-  maxRoundTime = 60 * 1000;
-  minRushDuration = 5 * 1000;
-  maxRushDuration = 10 * 1000;
-  nextButtonFreezeTime = 2 * 1000;
-}
-export const MIN_ROUND_TIME = minRoundTime;
-export const MAX_ROUND_TIME = maxRoundTime;
-export const MIN_RUSH_DURATION = minRushDuration;
-export const MAX_RUSH_DURATION = maxRushDuration;
-export const NEXT_BUTTON_FREEZE_TIME = nextButtonFreezeTime;
+const DEBUG_MODE = true;
+const DEBUG_ROUND_TIME = 3;
+const DEBUG_RUSH_DURATION = DEBUG_ROUND_TIME - 1;
+const DEBUG_NEXT_BUTTON_FREEZE_TIME = 1;
+
+export const MIN_ROUND_TIME = (DEBUG_MODE ? DEBUG_ROUND_TIME : DEBUG_ROUND_TIME - 15) * 1000;
+export const MAX_ROUND_TIME = (DEBUG_MODE ? DEBUG_ROUND_TIME : 60) * 1000;
+export const MIN_RUSH_DURATION = (DEBUG_MODE ? DEBUG_RUSH_DURATION : 5) * 1000;
+export const MAX_RUSH_DURATION = (DEBUG_MODE ? DEBUG_RUSH_DURATION : 10) * 1000;
+export const NEXT_BUTTON_FREEZE_TIME =
+  (DEBUG_MODE ? DEBUG_NEXT_BUTTON_FREEZE_TIME : 2) * 1000;
 export const MAX_SCORE = 7;
 export const DEFAULT_TICK_RATE = 500;
 export const FAST_TICK_RATE = 250;
 export const LONG_PRESS_DURATION = 0.375 * 1000;
+
 export const DEFAULT_LISTS = {
   entertainment: true,
   'star wars': false,
@@ -43,11 +32,15 @@ export const timings = {
   // transitionOnExit: 'ease-in-out'
 };
 
+const backgroundColor = '#00b2a9';
+
 export const colors = {
-  background: '#00b2a9',
+  teamA: '#004ea9',
+  teamB: 'tomato',
+  background: backgroundColor,
+  backgroundDark: shade(0.3, backgroundColor),
   foreground: '#fff',
-  faded: 'rgba(255, 255, 255, 0.1)',
-  highlight: 'rgba(255, 255, 255, 0.5)'
+  faded: '#8FFFF9'
 };
 
 const borderWidth = '6px';

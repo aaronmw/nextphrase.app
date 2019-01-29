@@ -13,6 +13,7 @@ const StartButton = styled(Button).attrs({
   bottom: calc(${dimensions.borderWidth} + env(safe-area-inset-bottom));
   left: ${dimensions.borderWidth};
   ${props => !props.isVisible && `transform: translateY(100%);`}
+  ${props => props.isFrozen && `opacity: 0.5; pointer-events: none;`}
 `;
 
 export default StartButton;

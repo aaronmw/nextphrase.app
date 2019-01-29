@@ -1,6 +1,7 @@
 import styled from 'styled-components';
-import { dimensions } from '../config';
+import { colors, dimensions } from '../config';
 import GameSurface from './GameSurface';
+import { RushBackground } from './RushAnimation';
 
 const Header = styled(GameSurface)`
   top: calc(${dimensions.borderWidth} + env(safe-area-inset-top));
@@ -10,6 +11,9 @@ const Header = styled(GameSurface)`
   justify-content: space-evenly;
   align-items: center;
   height: ${dimensions.headerHeight};
+  background-color: ${colors.backgroundDark};
+  ${props => props.isRushing && RushBackground}
+  ${props => props.isFrozen && `opacity: 0.5; pointer-events: none;`}
 `;
 
 export default Header;

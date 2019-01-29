@@ -6,6 +6,8 @@ const SOUNDS = [
   { name: 'tick', path: '/sounds/tick.wav' },
   { name: 'typewriter', path: '/sounds/typewriter.wav' },
   { name: 'beep', path: '/sounds/beep.wav' },
+  { name: 'boom', path: '/sounds/boom.wav' },
+  { name: 'buzz', path: '/sounds/buzz.wav' },
   { name: 'celebration', path: '/sounds/celebration.wav' },
   { name: 'woosh', path: '/sounds/woosh.wav' },
   { name: 'oops', path: '/sounds/oops.wav' }

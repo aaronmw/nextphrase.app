@@ -1,15 +1,15 @@
 import styled from 'styled-components';
-import { dimensions } from '../config';
+import { colors } from '../config';
 import Button from './Button';
 
 const ToggleButton = styled(Button)`
   width: 100%;
   position: relative;
-  margin-bottom: ${dimensions.borderWidth};
   justify-content: space-between;
-  opacity: 0.6;
+
   &:after {
     content: '';
+    color: ${colors.faded};
     position: absolute;
     right: 0;
     font-family: 'Font Awesome 5 Pro';
@@ -17,9 +17,9 @@ const ToggleButton = styled(Button)`
   ${props =>
     props.isActive &&
     `
-    opacity: 1;
     &:after {
       content: '';
+      color: ${colors.foreground};
     }
   `}
 `;

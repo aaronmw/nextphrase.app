@@ -15,7 +15,7 @@ const Dot = styled.div`
     props.isActive &&
     `
     font-weight: 100;
-    opacity: 0.6;
+    color: ${colors.faded};
   `}
 `;
 

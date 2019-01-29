@@ -9,7 +9,7 @@ const HeaderButton = styled(Button).attrs({
   height: 12vw;
   font-size: 0.6rem;
   background: transparent;
-  z-index: 10000;
+  /* z-index: 10000; */
   ${props => !props.isVisible && `transform: translateY(-100%);`}
 `;
 

@@ -1,18 +1,23 @@
-import { random, shuffle, times } from 'lodash';
+import { omit, random, shuffle, startCase, times } from 'lodash';
 import React, { Component } from 'react';
 import * as config from '../config';
-import { timings } from '../config';
+import { colors, timings } from '../config';
 import phrases from '../data/phrases';
 import { playSound } from '../utils/sounds';
-import CategoryLabel from './CategoryLabel';
+import ButtonMention from './ButtonMention';
 import Dot from './Dot';
 import GameBoard from './GameBoard';
 import GlobalStyle from './GlobalStyle';
 import Header from './Header';
 import HeaderButton from './HeaderButton';
 import HeaderSection from './HeaderSection';
+import HowToPlay from './HowToPlay';
 import Icon from './Icon';
+import LoadingScreen from './LoadingScreen';
+import Logo from './Logo';
+import NewGameButton from './NewGameButton';
 import NextButton from './NextButton';
+import NoWrap from './NoWrap';
 import Phrase from './Phrase';
 import PhraseCanvas from './PhraseCanvas';
 import PointButtonForA from './PointButtonForA';
@@ -20,7 +25,11 @@ import PointButtonForB from './PointButtonForB';
 import Pulse from './Pulse';
 import ScoreDotsForA from './ScoreDotsForA';
 import ScoreDotsForB from './ScoreDotsForB';
+import Section from './Section';
+import SectionTitle from './SectionTitle';
+import SectionContent from './SectionContent';
 import Settings from './Settings';
+import SettingsButton from './SettingsButton';
 import StartButton from './StartButton';
 import ToggleButton from './ToggleButton';
 
@@ -28,8 +37,10 @@ class App extends Component {
   initialState = {
     phrase: '...loading...',
     phrasesSeen: [],
-    activeRouteName: 'home',
+    previousRouteName: '',
+    activeRouteName: 'loading',
     isFactoryResetting: false,
+    isRushing: false,
     isTransitioning: false,
     isNextButtonFrozen: false,
     lastTickTime: Date.now(),
@@ -51,12 +62,20 @@ class App extends Component {
       JSON.parse(window.localStorage.getItem('gameState')) || {}
     );
 
+    if (this.state.points.A + this.state.points.B === 0) {
+      this.state.activeRouteName = 'loading';
+    }
+
     this.loadPhrases();
   }
 
   componentDidUpdate = (prevProps, prevState) => {
     if (this.state !== prevState) {
-      window.localStorage.setItem('gameState', JSON.stringify(this.state));
+      const persistedState = omit(this.state, ['isTransitioning']);
+      window.localStorage.setItem(
+        'gameState',
+        JSON.stringify(persistedState, null, '\t')
+      );
     }
   };
 
@@ -103,6 +122,7 @@ class App extends Component {
 
   startRound = () => {
     const roundTimeLimit = random(config.MIN_ROUND_TIME, config.MAX_ROUND_TIME);
+
     this.stopRoundTimeout = setTimeout(this.stopRound, roundTimeLimit);
 
     this.tickerInterval = setInterval(() => {
@@ -113,16 +133,22 @@ class App extends Component {
       config.MIN_RUSH_DURATION,
       config.MAX_RUSH_DURATION
     );
-    this.rushTimeout = setTimeout(() => {
-      this.tickerInterval = clearInterval(this.tickerInterval);
-      this.tickerInterval = setInterval(() => {
-        this.tick();
-      }, 250);
-    }, roundTimeLimit - rushDuration);
+
+    this.rushTimeout = setTimeout(this.rush, roundTimeLimit - rushDuration);
 
     this.nextPhrase();
 
     this.transitionToRoute('in-game');
+  };
+
+  rush = () => {
+    this.setState({
+      isRushing: true
+    });
+    this.tickerInterval = clearInterval(this.tickerInterval);
+    this.tickerInterval = setInterval(() => {
+      this.tick();
+    }, 250);
   };
 
   resetPhraseList = () => {
@@ -145,7 +171,7 @@ class App extends Component {
 
     setTimeout(() => {
       this.setState(this.initialState, () => {
-        this.transitionToRoute('home');
+        this.transitionToRoute('loading');
       });
     }, 750);
   };
@@ -182,12 +208,16 @@ class App extends Component {
     this.tickerInterval = clearInterval(this.tickerInterval);
     this.stopRoundTimeout = clearInterval(this.stopRoundTimeout);
     this.rushTimeout = clearInterval(this.rushTimeout);
+    this.setState({
+      isRushing: false
+    });
     this.transitionToRoute('home');
   };
 
   stopRound = () => {
     this.abortRound();
-    playSound('beep');
+    playSound('buzz');
+    this.transitionToRoute('post-round');
   };
 
   addPoint = (teamName, delta) => {
@@ -214,12 +244,17 @@ class App extends Component {
           B: 0
         }
       });
+
       playSound('celebration');
+      this.transitionToRoute('loading');
+    } else {
+      this.transitionToRoute('home');
     }
   };
 
   transitionToRoute = routeName => {
     this.setState({
+      previousRouteName: this.state.activeRouteName,
       activeRouteName: routeName,
       isTransitioning: true
     });
@@ -230,10 +265,11 @@ class App extends Component {
     }, timings.duration);
   };
 
-  routeIsActive = routeName => {
-    return (
-      this.state.activeRouteName === routeName && !this.state.isTransitioning
-    );
+  activeRouteIs = routeName => {
+    routeName = Array.isArray(routeName) ? routeName : [routeName];
+    const routeIsActive = routeName.indexOf(this.state.activeRouteName) !== -1;
+    const skipTransition = routeIsActive && routeName.indexOf(this.state.previousRouteName) !== -1;
+    return skipTransition ? routeIsActive : routeIsActive && !this.state.isTransitioning;
   };
 
   render() {
@@ -243,6 +279,7 @@ class App extends Component {
       phrase,
       lastTickTime,
       isRotated,
+      isRushing,
       isNextButtonFrozen,
       isFactoryResetting
     } = this.state;
@@ -250,9 +287,12 @@ class App extends Component {
     return (
       <GameBoard isRotated={isRotated}>
         <GlobalStyle />
-        <Header>
+        <Header
+          isRushing={isRushing}
+          isFrozen={this.activeRouteIs('post-round')}
+        >
           <ScoreDotsForA
-            isVisible={!this.routeIsActive('settings')}
+            isVisible={this.activeRouteIs(['home', 'in-game', 'post-round'])}
             reversed={true}
           >
             {times(config.MAX_SCORE, index => (
@@ -261,90 +301,201 @@ class App extends Component {
           </ScoreDotsForA>
           <HeaderSection style={{ width: '12vw' }}>
             <HeaderButton
-              isVisible={this.routeIsActive('home')}
-              onTap={e => {
-                this.transitionToRoute('settings');
-              }}
+              isVisible={this.activeRouteIs('loading')}
+              onTap={() => this.transitionToRoute('how-to-play-via-loading')}
+            >
+              HOW&nbsp;TO&nbsp;PLAY
+            </HeaderButton>
+            <HeaderButton
+              isVisible={this.activeRouteIs('home')}
+              onTap={() => this.transitionToRoute('settings')}
             >
               <Icon>&#xf013;</Icon>
             </HeaderButton>
             <HeaderButton
-              isVisible={this.routeIsActive('in-game')}
+              isVisible={this.activeRouteIs('in-game')}
               onTap={this.abortRound}
             >
               <Icon>&#xf28d;</Icon>
             </HeaderButton>
             <HeaderButton
-              isVisible={this.routeIsActive('settings')}
-              onTap={e => {
-                this.transitionToRoute('home');
-              }}
+              isVisible={this.activeRouteIs('settings')}
+              onTap={() => this.transitionToRoute('home')}
+            >
+              <Icon>&#xf359;</Icon>
+            </HeaderButton>
+            <HeaderButton
+              isVisible={this.activeRouteIs('how-to-play-via-loading')}
+              onTap={() => this.transitionToRoute('loading')}
+            >
+              <Icon>&#xf359;</Icon>
+            </HeaderButton>
+            <HeaderButton
+              isVisible={this.activeRouteIs('how-to-play-via-settings')}
+              onTap={() => this.transitionToRoute('settings')}
             >
               <Icon>&#xf359;</Icon>
             </HeaderButton>
           </HeaderSection>
-          <ScoreDotsForB isVisible={!this.routeIsActive('settings')}>
+          <ScoreDotsForB
+            isVisible={this.activeRouteIs(['home', 'in-game', 'post-round'])}
+          >
             {times(config.MAX_SCORE, index => (
               <Dot isActive={index < pointsForB} key={index} />
             ))}
           </ScoreDotsForB>
         </Header>
+        <LoadingScreen isVisible={this.activeRouteIs('loading')}>
+          <Logo />
+        </LoadingScreen>
+        <NewGameButton
+          isVisible={this.activeRouteIs('loading')}
+          onTap={() => this.transitionToRoute('home')}
+        >
+          New Game
+        </NewGameButton>
         <PointButtonForA
-          isVisible={this.routeIsActive('home')}
-          onTap={e => this.addPoint('A', 1)}
-          onLongPress={e => this.addPoint('A', -1)}
+          isVisible={this.activeRouteIs(['home', 'post-round'])}
+          onTap={() => this.addPoint('A', 1)}
+          onLongPress={() => this.addPoint('A', -1)}
         >
           A
         </PointButtonForA>
         <PointButtonForB
-          isVisible={this.routeIsActive('home')}
-          onTap={e => this.addPoint('B', 1)}
-          onLongPress={e => this.addPoint('B', -1)}
+          isVisible={this.activeRouteIs(['home', 'post-round'])}
+          onTap={() => this.addPoint('B', 1)}
+          onLongPress={() => this.addPoint('B', -1)}
         >
           B
         </PointButtonForB>
         <StartButton
-          isVisible={this.routeIsActive('home')}
+          isVisible={this.activeRouteIs(['home', 'post-round'])}
+          isFrozen={this.activeRouteIs('post-round')}
           onTap={this.startRound}
         >
           START
         </StartButton>
         <NextButton
-          isVisible={this.routeIsActive('in-game')}
+          isVisible={this.activeRouteIs('in-game')}
           isFrozen={isNextButtonFrozen}
+          isRushing={isRushing}
           onTap={this.nextPhrase}
         >
           NEXT
         </NextButton>
-        <PhraseCanvas isVisible={this.routeIsActive('in-game')}>
+        <PhraseCanvas
+          isVisible={this.activeRouteIs('in-game')}
+          isRushing={isRushing}
+        >
           <Phrase key={phrase}>
             <Pulse key={lastTickTime}>{phrase}</Pulse>
           </Phrase>
         </PhraseCanvas>
-        <Settings isVisible={this.routeIsActive('settings')}>
-          <CategoryLabel>Show Phrases From...</CategoryLabel>
-          {Object.keys(lists)
-            .sort()
-            .map(category => (
-              <ToggleButton
-                key={category}
-                isActive={lists[category]}
-                onTap={() => this.toggleSelectedList(category)}
+        <Settings isVisible={this.activeRouteIs('settings')}>
+          <Section>
+            <SectionTitle>Need help?</SectionTitle>
+            <SectionContent>
+              <SettingsButton
+                onTap={() => this.transitionToRoute('how-to-play-via-settings')}
               >
-                {category}
+                Learn how to play
+              </SettingsButton>
+            </SectionContent>
+          </Section>
+          <Section>
+            <SectionTitle>Show Phrases From...</SectionTitle>
+            <SectionContent>
+              {Object.keys(lists)
+                .sort()
+                .map(category => (
+                  <ToggleButton
+                    key={category}
+                    isActive={lists[category]}
+                    onTap={() => this.toggleSelectedList(category)}
+                  >
+                    {startCase(category)}
+                  </ToggleButton>
+                ))}
+            </SectionContent>
+          </Section>
+
+          <Section>
+            <SectionTitle>Speakers on bottom?</SectionTitle>
+            <SectionContent>
+              <ToggleButton
+                isActive={isRotated}
+                onTap={this.toggleScreenRotation}
+              >
+                Rotate Screen
               </ToggleButton>
-            ))}
+            </SectionContent>
+          </Section>
 
-          <CategoryLabel>Speakers on bottom?</CategoryLabel>
-          <ToggleButton isActive={isRotated} onTap={this.toggleScreenRotation}>
-            Rotate Screen
-          </ToggleButton>
-
-          <CategoryLabel>Advanced!</CategoryLabel>
-          <ToggleButton isActive={isFactoryResetting} onTap={this.factoryReset}>
-            Factory Reset?
-          </ToggleButton>
+          <Section>
+            <SectionTitle>Advanced!</SectionTitle>
+            <SectionContent>
+              <ToggleButton
+                isActive={isFactoryResetting}
+                onTap={this.factoryReset}
+              >
+                Factory Reset?
+              </ToggleButton>
+            </SectionContent>
+          </Section>
         </Settings>
+        <HowToPlay
+          isVisible={this.activeRouteIs([
+            'how-to-play-via-settings',
+            'how-to-play-via-loading'
+          ])}
+        >
+          <Section>
+            <SectionTitle>How to Play</SectionTitle>
+            <SectionContent>
+              <p>
+                An even number of players (4 or more) stand in{' '}
+                <NoWrap>a circle.</NoWrap>
+              </p>
+
+              <p>
+                <ButtonMention bg={colors.teamA} fg={colors.foreground}>
+                  Team A
+                </ButtonMention>{' '}
+                starts with you, then&mdash;moving around the cirle&mdash;
+                <ButtonMention bg={colors.teamB} fg={colors.foreground}>
+                  Team B
+                </ButtonMention>
+                , and so on. Remember <NoWrap>your teams!</NoWrap>
+              </p>
+
+              <p>
+                Press{' '}
+                <ButtonMention fg={colors.background} bg={colors.foreground}>
+                  START
+                </ButtonMention>{' '}
+                to begin a round and get your first phrase. Get your team to say
+                it without saying any part of the words, nor rhyming. Once
+                they've repeated the phrase on screen, pass it to the{' '}
+                <NoWrap>next player.</NoWrap>
+              </p>
+
+              <p>
+                You'll have between {config.MIN_ROUND_TIME / 1000} and{' '}
+                {config.MAX_ROUND_TIME / 1000} seconds before the buzzer. You
+                can press{' '}
+                <ButtonMention fg={colors.background} bg={colors.foreground}>
+                  NEXT
+                </ButtonMention>{' '}
+                to receive another phrase, but it is generally frowned upon.
+              </p>
+
+              <p>
+                Whomever is holding the game when the buzzer goes off must log
+                the loss, then begin the next round. Repeat!
+              </p>
+            </SectionContent>
+          </Section>
+        </HowToPlay>
       </GameBoard>
     );
   }

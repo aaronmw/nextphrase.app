@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import * as config from '../config';
+import { colors } from '../config';
+import styled from 'styled-components';
+import GameSurface from './GameSurface';
 import { playSound } from '../utils/sounds';
-import StyledButton from './StyledButton';
+
+const StyledButton = styled(GameSurface)`
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:active {
+    color: ${colors.faded};
+  }
+`;
 
 class Button extends Component {
-  handleTouchStart = e => {
+  handleTouchStart = () => {
     this.startedTouchAt = Date.now();
     this.longPressTimer = setTimeout(() => {
       if (this.props.onLongPress) {
@@ -14,7 +26,7 @@ class Button extends Component {
     }, config.LONG_PRESS_DURATION);
   };
 
-  handleTouchEnd = e => {
+  handleTouchEnd = () => {
     const timePressed = Date.now() - this.startedTouchAt;
     if (timePressed < config.LONG_PRESS_DURATION) {
       this.longPressTimer = clearTimeout(this.longPressTimer);

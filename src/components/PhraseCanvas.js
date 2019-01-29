@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { dimensions, colors } from '../config';
 import GameSurface from './GameSurface';
+import { RushForeground } from './RushAnimation';
 
 const PhraseCanvas = styled(GameSurface)`
   display: flex;
@@ -17,9 +18,9 @@ const PhraseCanvas = styled(GameSurface)`
   text-align: center;
   background: transparent;
   color: ${colors.background};
-
   ${props =>
     !props.isVisible && `transform: translateX(0) translateY(0) scale(0);`}
+  ${props => props.isRushing && RushForeground}
 `;
 
 export default PhraseCanvas;

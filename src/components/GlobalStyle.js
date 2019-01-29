@@ -14,6 +14,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: inherit;
     font-style: inherit;
     text-decoration: inherit;
+    text-indent: 0;
     box-sizing: border-box;
     user-select: none;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -51,6 +52,18 @@ const GlobalStyle = createGlobalStyle`
       height: calc(env(safe-area-inset-bottom));
       bottom: 0;
     }
+  }
+
+  p {
+    text-indent: 0.5rem;
+  }
+
+  p:first-child {
+    text-indent: 0;
+  }
+
+  p + p {
+    margin-top: 0.25rem;
   }
 `;
 
