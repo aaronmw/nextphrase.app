@@ -1,6 +1,6 @@
 import { shade } from 'polished';
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 const DEBUG_ROUND_TIME = 3;
 const DEBUG_RUSH_DURATION = DEBUG_ROUND_TIME - 1;
 const DEBUG_NEXT_BUTTON_FREEZE_TIME = 1;
