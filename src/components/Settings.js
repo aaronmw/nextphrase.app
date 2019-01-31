@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { dimensions } from '../config';
 import GameSurface from './GameSurface';
+import withScrollShadow from './withScrollShadow';
 
 const Settings = styled(GameSurface)`
   display: flex;
@@ -11,8 +12,12 @@ const Settings = styled(GameSurface)`
   bottom: calc(${dimensions.borderWidth} + env(safe-area-inset-bottom));
   left: ${dimensions.borderWidth};
   right: ${dimensions.borderWidth};
-  top: calc(${dimensions.headerHeight} + (${dimensions.borderWidth} * 2) + env(safe-area-inset-top));
+  top: calc(
+    ${dimensions.headerHeight} + (${dimensions.borderWidth} * 2) +
+      env(safe-area-inset-top)
+  );
+  overflow: scroll;
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 
-export default Settings;
+export default withScrollShadow(Settings);

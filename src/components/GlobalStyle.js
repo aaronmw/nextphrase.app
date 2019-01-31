@@ -26,6 +26,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Boogaloo', sans-serif;
     text-transform: uppercase;
     background-color: ${colors.background};
+    overflow: hidden;
   }
 
   body {

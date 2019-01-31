@@ -493,6 +493,16 @@ class App extends Component {
                 Whomever is holding the game when the buzzer goes off must log
                 the loss, then begin the next round. Repeat!
               </p>
+
+              <p>
+                Whomever is holding the game when the buzzer goes off must log
+                the loss, then begin the next round. Repeat!
+              </p>
+
+              <p>
+                Whomever is holding the game when the buzzer goes off must log
+                the loss, then begin the next round. Repeat!
+              </p>
             </SectionContent>
           </Section>
         </HowToPlay>
