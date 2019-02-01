@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { colors } from '../config';
 
-const SCROLL_SHADOW_SIZE = 40;
+const SCROLL_SHADOW_SIZE = 5;
 
 function withScrollShadow(WrappedComponent) {
   return class extends Component {

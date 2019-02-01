@@ -36,6 +36,7 @@ import ToggleButton from './ToggleButton';
 class App extends Component {
   initialState = {
     phrase: '...loading...',
+    orientation: 'normal',
     phrasesSeen: [],
     previousRouteName: '',
     activeRouteName: 'loading',
@@ -69,9 +70,33 @@ class App extends Component {
     this.loadPhrases();
   }
 
+  componentDidMount = () => {
+    window.addEventListener(
+      'orientationchange',
+      () => {
+        let orientation;
+        if (window.orientation === -90) {
+          orientation = 'right';
+        }
+        if (window.orientation === 90) {
+          orientation = 'left';
+        }
+        if (window.orientation === 0) {
+          orientation = 'normal';
+        }
+
+        this.setState({ orientation: orientation });
+      },
+      true
+    );
+  };
+
   componentDidUpdate = (prevProps, prevState) => {
     if (this.state !== prevState) {
-      const persistedState = omit(this.state, ['isTransitioning']);
+      const persistedState = omit(this.state, [
+        'isTransitioning',
+        'orientation'
+      ]);
       window.localStorage.setItem(
         'gameState',
         JSON.stringify(persistedState, null, '\t')
@@ -268,8 +293,11 @@ class App extends Component {
   activeRouteIs = routeName => {
     routeName = Array.isArray(routeName) ? routeName : [routeName];
     const routeIsActive = routeName.indexOf(this.state.activeRouteName) !== -1;
-    const skipTransition = routeIsActive && routeName.indexOf(this.state.previousRouteName) !== -1;
-    return skipTransition ? routeIsActive : routeIsActive && !this.state.isTransitioning;
+    const skipTransition =
+      routeIsActive && routeName.indexOf(this.state.previousRouteName) !== -1;
+    return skipTransition
+      ? routeIsActive
+      : routeIsActive && !this.state.isTransitioning;
   };
 
   render() {
@@ -281,11 +309,12 @@ class App extends Component {
       isRotated,
       isRushing,
       isNextButtonFrozen,
-      isFactoryResetting
+      isFactoryResetting,
+      orientation
     } = this.state;
 
     return (
-      <GameBoard isRotated={isRotated}>
+      <GameBoard orientation={orientation} isRotated={isRotated}>
         <GlobalStyle />
         <Header
           isRushing={isRushing}
@@ -393,17 +422,17 @@ class App extends Component {
         </PhraseCanvas>
         <Settings isVisible={this.activeRouteIs('settings')}>
           <Section>
-            <SectionTitle>Need help?</SectionTitle>
+            <SectionTitle>Help, I'm a newbie!</SectionTitle>
             <SectionContent>
               <SettingsButton
                 onTap={() => this.transitionToRoute('how-to-play-via-settings')}
               >
-                Learn how to play
+                Instructions
               </SettingsButton>
             </SectionContent>
           </Section>
           <Section>
-            <SectionTitle>Show Phrases From...</SectionTitle>
+            <SectionTitle>Phrase Lists</SectionTitle>
             <SectionContent>
               {Object.keys(lists)
                 .sort()
@@ -418,30 +447,31 @@ class App extends Component {
                 ))}
             </SectionContent>
           </Section>
-
           <Section>
-            <SectionTitle>Speakers on bottom?</SectionTitle>
+            <SectionTitle>Not loud enough?</SectionTitle>
             <SectionContent>
               <ToggleButton
                 isActive={isRotated}
                 onTap={this.toggleScreenRotation}
               >
-                Rotate Screen
+                Rotate Speakers to Top
               </ToggleButton>
             </SectionContent>
           </Section>
 
-          <Section>
-            <SectionTitle>Advanced!</SectionTitle>
-            <SectionContent>
-              <ToggleButton
-                isActive={isFactoryResetting}
-                onTap={this.factoryReset}
-              >
-                Factory Reset?
-              </ToggleButton>
-            </SectionContent>
-          </Section>
+          {config.DEBUG_MODE && (
+            <Section>
+              <SectionTitle>Advanced!</SectionTitle>
+              <SectionContent>
+                <ToggleButton
+                  isActive={isFactoryResetting}
+                  onTap={this.factoryReset}
+                >
+                  Factory Reset?
+                </ToggleButton>
+              </SectionContent>
+            </Section>
+          )}
         </Settings>
         <HowToPlay
           isVisible={this.activeRouteIs([
@@ -487,21 +517,6 @@ class App extends Component {
                   NEXT
                 </ButtonMention>{' '}
                 to receive another phrase, but it is generally frowned upon.
-              </p>
-
-              <p>
-                Whomever is holding the game when the buzzer goes off must log
-                the loss, then begin the next round. Repeat!
-              </p>
-
-              <p>
-                Whomever is holding the game when the buzzer goes off must log
-                the loss, then begin the next round. Repeat!
-              </p>
-
-              <p>
-                Whomever is holding the game when the buzzer goes off must log
-                the loss, then begin the next round. Repeat!
               </p>
             </SectionContent>
           </Section>

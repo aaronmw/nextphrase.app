@@ -64,7 +64,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   p + p {
-    margin-top: 0.25rem;
+    /* margin-top: 0.25rem; */
   }
 `;
 

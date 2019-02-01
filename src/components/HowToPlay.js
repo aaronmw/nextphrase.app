@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { dimensions } from '../config';
 import GameSurface from './GameSurface';
-import withScrollShadow from './withScrollShadow';
 
 const HowToPlay = styled(GameSurface)`
   display: flex;
@@ -17,4 +16,4 @@ const HowToPlay = styled(GameSurface)`
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 
-export default withScrollShadow(HowToPlay);
+export default HowToPlay;
