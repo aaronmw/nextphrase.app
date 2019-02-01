@@ -23,6 +23,7 @@ import PhraseCanvas from './PhraseCanvas';
 import PointButtonForA from './PointButtonForA';
 import PointButtonForB from './PointButtonForB';
 import Pulse from './Pulse';
+import RotationWarning from './RotationWarning';
 import ScoreDotsForA from './ScoreDotsForA';
 import ScoreDotsForB from './ScoreDotsForB';
 import Section from './Section';
@@ -70,25 +71,29 @@ class App extends Component {
     this.loadPhrases();
   }
 
+  updateWindowOrientation = () => {
+    let orientation = 'normal';
+    if (window.orientation === -90) {
+      orientation = 'right';
+    }
+    if (window.orientation === 90) {
+      orientation = 'left';
+    }
+    if (window.orientation === 0) {
+      orientation = 'normal';
+    }
+
+    this.setState({ orientation: orientation });
+  };
+
   componentDidMount = () => {
     window.addEventListener(
       'orientationchange',
-      () => {
-        let orientation;
-        if (window.orientation === -90) {
-          orientation = 'right';
-        }
-        if (window.orientation === 90) {
-          orientation = 'left';
-        }
-        if (window.orientation === 0) {
-          orientation = 'normal';
-        }
-
-        this.setState({ orientation: orientation });
-      },
+      this.updateWindowOrientation,
       true
     );
+
+    this.updateWindowOrientation();
   };
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -314,8 +319,9 @@ class App extends Component {
     } = this.state;
 
     return (
-      <GameBoard orientation={orientation} isRotated={isRotated}>
+      <GameBoard isRotated={isRotated}>
         <GlobalStyle />
+        <RotationWarning orientation={orientation} />
         <Header
           isRushing={isRushing}
           isFrozen={this.activeRouteIs('post-round')}
@@ -422,17 +428,7 @@ class App extends Component {
         </PhraseCanvas>
         <Settings isVisible={this.activeRouteIs('settings')}>
           <Section>
-            <SectionTitle>Help, I'm a newbie!</SectionTitle>
-            <SectionContent>
-              <SettingsButton
-                onTap={() => this.transitionToRoute('how-to-play-via-settings')}
-              >
-                Instructions
-              </SettingsButton>
-            </SectionContent>
-          </Section>
-          <Section>
-            <SectionTitle>Phrase Lists</SectionTitle>
+            <SectionTitle>Phrase Collections</SectionTitle>
             <SectionContent>
               {Object.keys(lists)
                 .sort()
@@ -447,6 +443,7 @@ class App extends Component {
                 ))}
             </SectionContent>
           </Section>
+
           <Section>
             <SectionTitle>Not loud enough?</SectionTitle>
             <SectionContent>
@@ -456,6 +453,17 @@ class App extends Component {
               >
                 Rotate Speakers to Top
               </ToggleButton>
+            </SectionContent>
+          </Section>
+
+          <Section>
+            <SectionTitle>Help, I'm a newbie!</SectionTitle>
+            <SectionContent>
+              <SettingsButton
+                onTap={() => this.transitionToRoute('how-to-play-via-settings')}
+              >
+                Instructions
+              </SettingsButton>
             </SectionContent>
           </Section>
 
@@ -517,6 +525,11 @@ class App extends Component {
                   NEXT
                 </ButtonMention>{' '}
                 to receive another phrase, but it is generally frowned upon.
+              </p>
+
+              <p>
+                Whomever is holding the game when the buzzer goes off must log
+                the loss, then begin the next round.
               </p>
             </SectionContent>
           </Section>
