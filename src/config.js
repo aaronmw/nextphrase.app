@@ -18,12 +18,12 @@ export const FAST_TICK_RATE = 250;
 export const LONG_PRESS_DURATION = 0.375 * 1000;
 
 export const DEFAULT_LISTS = {
-  entertainment: true,
-  'Star Wars': false,
+  Entertainment: true,
   'Everyday Life': true,
   'Fun & Games': true,
-  'The World': true,
-  'NSFW': false
+  NSFW: false,
+  'Star Wars': false,
+  'The World': true
 };
 
 export const timings = {

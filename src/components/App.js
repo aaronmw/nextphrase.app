@@ -1,4 +1,11 @@
-import { filter, omit, random, shuffle, startCase, times } from 'lodash';
+import {
+  filter,
+  omit,
+  random,
+  shuffle,
+  startCase,
+  times
+} from 'lodash';
 import React, { Component } from 'react';
 import * as config from '../config';
 import { colors, timings } from '../config';
@@ -57,11 +64,15 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = Object.assign({}, this.initialState);
+    const savedState =
+      JSON.parse(window.localStorage.getItem('gameState')) || {};
 
-    Object.assign(
-      this.state,
-      JSON.parse(window.localStorage.getItem('gameState')) || {}
+    this.state = Object.assign({}, this.initialState, savedState);
+
+    this.state.lists = Object.assign(
+      {},
+      this.initialState.lists,
+      savedState.lists
     );
 
     if (this.state.points.A + this.state.points.B === 0) {
@@ -92,7 +103,6 @@ class App extends Component {
       this.updateWindowOrientation,
       true
     );
-
     this.updateWindowOrientation();
   };
 
@@ -102,6 +112,7 @@ class App extends Component {
         'isTransitioning',
         'orientation'
       ]);
+
       window.localStorage.setItem(
         'gameState',
         JSON.stringify(persistedState, null, '\t')
