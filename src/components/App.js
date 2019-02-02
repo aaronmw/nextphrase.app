@@ -439,6 +439,19 @@ class App extends Component {
           </Phrase>
         </PhraseCanvas>
         <Settings isVisible={this.activeRouteIs('settings')}>
+          {config.DEBUG_MODE && (
+            <Section>
+              <SectionTitle>Advanced!</SectionTitle>
+              <SectionContent>
+                <ToggleButton
+                  isActive={isFactoryResetting}
+                  onTap={this.factoryReset}
+                >
+                  Factory Reset?
+                </ToggleButton>
+              </SectionContent>
+            </Section>
+          )}
           <Section>
             <SectionTitle>Phrase Collections</SectionTitle>
             <SectionContent>
@@ -478,20 +491,6 @@ class App extends Component {
               </SettingsButton>
             </SectionContent>
           </Section>
-
-          {config.DEBUG_MODE && (
-            <Section>
-              <SectionTitle>Advanced!</SectionTitle>
-              <SectionContent>
-                <ToggleButton
-                  isActive={isFactoryResetting}
-                  onTap={this.factoryReset}
-                >
-                  Factory Reset?
-                </ToggleButton>
-              </SectionContent>
-            </Section>
-          )}
         </Settings>
         <HowToPlay
           isVisible={this.activeRouteIs([
