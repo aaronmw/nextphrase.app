@@ -12,7 +12,7 @@ const HowToPlay = styled(GameSurface)`
   left: ${dimensions.borderWidth};
   right: ${dimensions.borderWidth};
   top: calc(${dimensions.headerHeight} + (${dimensions.borderWidth} * 2) + env(safe-area-inset-top));
-  overflow: scroll;
+  overflow: auto;
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 

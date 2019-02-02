@@ -19,18 +19,19 @@ export const LONG_PRESS_DURATION = 0.375 * 1000;
 
 export const DEFAULT_LISTS = {
   entertainment: true,
-  'star wars': false,
-  'everyday life': true,
-  'fun & games': true,
-  'the world': true
+  'Star Wars': false,
+  'Everyday Life': true,
+  'Fun & Games': true,
+  'The World': true,
+  'NSFW': false
 };
 
 export const timings = {
-  duration: 250,
-  transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-  transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
-  // transitionOnEnter: 'ease-in-out',
-  // transitionOnExit: 'ease-in-out'
+  duration: 175,
+  // transitionOnEnter: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+  // transitionOnExit: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)'
+  transitionOnEnter: 'ease-in-out',
+  transitionOnExit: 'ease-in-out'
 };
 
 const backgroundColor = '#00b2a9';

@@ -1,4 +1,4 @@
-import { omit, random, shuffle, startCase, times } from 'lodash';
+import { filter, omit, random, shuffle, startCase, times } from 'lodash';
 import React, { Component } from 'react';
 import * as config from '../config';
 import { colors, timings } from '../config';
@@ -113,7 +113,7 @@ class App extends Component {
     this.phrases = [];
 
     Object.keys(this.state.lists).forEach(listName => {
-      if (this.state.lists[listName]) {
+      if (this.state.lists[listName] === true) {
         this.phrases = this.phrases.concat(phrases[listName]);
       }
     });
@@ -255,7 +255,7 @@ class App extends Component {
       state => ({
         points: {
           ...state.points,
-          [teamName]: state.points[teamName] + delta
+          [teamName]: Math.max(0, state.points[teamName] + delta)
         }
       }),
       this.checkScore
@@ -355,6 +355,7 @@ class App extends Component {
             </HeaderButton>
             <HeaderButton
               isVisible={this.activeRouteIs('settings')}
+              isFrozen={filter(lists, list => list).length === 0}
               onTap={() => this.transitionToRoute('home')}
             >
               <Icon>&#xf359;</Icon>

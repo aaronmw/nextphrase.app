@@ -16,6 +16,10 @@ const StyledButton = styled(GameSurface)`
 `;
 
 class Button extends Component {
+  static defaultProps = {
+    onTap: () => {}
+  };
+
   handleTouchStart = () => {
     this.startedTouchAt = Date.now();
     this.longPressTimer = setTimeout(() => {

@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import Button from './Button';
+import withFreezability from './withFreezability';
 
 const HeaderButton = styled(Button).attrs({
   tapSound: 'woosh'
@@ -13,4 +14,4 @@ const HeaderButton = styled(Button).attrs({
   ${props => !props.isVisible && `transform: translateY(-100%);`}
 `;
 
-export default HeaderButton;
+export default withFreezability(HeaderButton);

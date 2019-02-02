@@ -15,7 +15,7 @@ const Settings = styled(GameSurface)`
     ${dimensions.headerHeight} + (${dimensions.borderWidth} * 2) +
       env(safe-area-inset-top)
   );
-  overflow: scroll;
+  overflow: auto;
   ${props => !props.isVisible && `transform: translateY(110%);`}
 `;
 
