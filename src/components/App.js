@@ -1,16 +1,10 @@
-import {
-  filter,
-  omit,
-  random,
-  shuffle,
-  startCase,
-  times
-} from 'lodash';
+import { filter, omit, random, shuffle, startCase, times } from 'lodash';
 import React, { Component } from 'react';
 import * as config from '../config';
 import { colors, timings } from '../config';
 import phrases from '../data/phrases';
 import { playSound } from '../utils/sounds';
+import AddToHomeScreen from './AddToHomeScreen';
 import ButtonMention from './ButtonMention';
 import Dot from './Dot';
 import GameBoard from './GameBoard';
@@ -40,6 +34,7 @@ import Settings from './Settings';
 import SettingsButton from './SettingsButton';
 import StartButton from './StartButton';
 import ToggleButton from './ToggleButton';
+import GameSurface from './GameSurface';
 
 class App extends Component {
   initialState = {
@@ -75,7 +70,16 @@ class App extends Component {
       savedState.lists
     );
 
-    if (this.state.points.A + this.state.points.B === 0) {
+    const isOnHomeScreen = !(
+      'standalone' in navigator &&
+      !navigator.standalone &&
+      /iphone|ipod|ipad/gi.test(navigator.platform) &&
+      /Safari/i.test(navigator.appVersion)
+    );
+
+    if (!isOnHomeScreen) {
+      this.state.activeRouteName = 'add-to-home-screen';
+    } else if (this.state.points.A + this.state.points.B === 0) {
       this.state.activeRouteName = 'loading';
     }
 
@@ -435,7 +439,7 @@ class App extends Component {
           isRushing={isRushing}
         >
           <Phrase key={phrase}>
-            <Pulse key={lastTickTime}>{phrase}</Pulse>
+            <Pulse key={lastTickTime} tick={false}>{phrase}</Pulse>
           </Phrase>
         </PhraseCanvas>
         <Settings isVisible={this.activeRouteIs('settings')}>
@@ -545,6 +549,7 @@ class App extends Component {
             </SectionContent>
           </Section>
         </HowToPlay>
+        <AddToHomeScreen isVisible={this.activeRouteIs('add-to-home-screen')} />
       </GameBoard>
     );
   }

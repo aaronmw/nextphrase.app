@@ -34,14 +34,14 @@ export const timings = {
   transitionOnExit: 'ease-in-out'
 };
 
-const backgroundColor = '#00b2a9';
+const backgroundColor = '#00b2A9';
 
 export const colors = {
-  teamA: '#004ea9',
+  teamA: '#004EA9',
   teamB: 'tomato',
   background: backgroundColor,
   backgroundDark: shade(0.3, backgroundColor),
-  foreground: '#fff',
+  foreground: '#FFF',
   faded: '#8FFFF9'
 };
 
