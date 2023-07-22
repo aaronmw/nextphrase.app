@@ -8,6 +8,7 @@ export { AppContext, useAppContext };
 
 const AppContext = createContext<AppContextObject>({
   dispatch: () => null,
+  sounds: {},
   state: initialState,
 });
 

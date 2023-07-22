@@ -1,1 +1,0 @@
-export { ModalWindowForObligationEditor } from "./ModalWindowForObligationEditor";
