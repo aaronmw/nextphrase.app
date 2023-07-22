@@ -11,6 +11,7 @@ export default () => {
       {Object.entries(sounds).map(([soundName, controls]) => (
         <Button
           iconLeft={controls.isPlaying ? "pause" : "play"}
+          key={soundName}
           variant="primary"
           onClick={controls.play}
         >
