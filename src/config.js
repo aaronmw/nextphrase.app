@@ -22,7 +22,8 @@ export const DEFAULT_LISTS = {
   'star wars': false,
   'everyday life': true,
   'fun & games': true,
-  'the world': true
+  'the world': true,
+  'nsfw': false,
 };
 
 export const timings = {
