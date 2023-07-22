@@ -1,31 +1,40 @@
 {
-  "name": "catchphrase",
+  "name": "cofi-app-reborn",
   "version": "0.1.0",
-  "homepage": "https://aaronmw.github.io/whatthephrase/",
   "private": true,
-  "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "gh-pages": "^2.0.1",
-    "react-scripts": "^2.1.3"
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
-    "polished": "^2.3.3",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
-    "styled-components": "^4.1.1"
+    "@headlessui/react": "^1.7.15",
+    "@headlessui/tailwindcss": "^0.1.3",
+    "@tailwindcss/forms": "^0.5.4",
+    "@tailwindcss/typography": "^0.5.9",
+    "autoprefixer": "10.4.14",
+    "date-fns": "^2.30.0",
+    "eslint": "8.44.0",
+    "eslint-config-next": "13.4.9",
+    "lodash": "^4.17.21",
+    "mousetrap": "^1.6.5",
+    "next": "13.4.9",
+    "postcss": "8.4.25",
+    "prettier": "^2",
+    "prettier-plugin-tailwindcss": "^0.4.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-popper": "^2.3.0",
+    "tailwind-merge": "^1.13.2",
+    "tailwindcss": "3.3.2",
+    "typescript": "5.1.6"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "deploy": "npm run build&&gh-pages -d build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "devDependencies": {
+    "@types/lodash": "^4.14.195",
+    "@types/mousetrap": "^1.6.11",
+    "@types/node": "20.4.1",
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6"
+  }
 }
