@@ -66,8 +66,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <html className="text-[22px]" lang="en">
+    <html className="touch-manipulation text-[22px]" lang="en">
       <head>
+        <meta
+          name="viewport"
+          content="initial-scale=1.0,width=device-width,user-scalable=no"
+        />
         <Script
           src="https://kit.fontawesome.com/401fb1e734.js"
           crossOrigin="anonymous"

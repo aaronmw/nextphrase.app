@@ -13,7 +13,7 @@ export const AnchorButton = forwardRef(
     }: ComponentPropsWithRef<"a"> & Omit<ButtonContainerProps, "Component">,
     ref
   ) => (
-    <ButtonContainer Component={Link} ref={ref} {...otherProps}>
+    <ButtonContainer Component={Link} ref={ref} shallow={true} {...otherProps}>
       {children}
     </ButtonContainer>
   )

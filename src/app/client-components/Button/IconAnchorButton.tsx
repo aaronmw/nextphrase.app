@@ -24,7 +24,12 @@ export const IconAnchorButton = forwardRef(
     ref
   ) => (
     <Tooltip tip={label}>
-      <ButtonContainer Component={Link} ref={ref} {...otherProps}>
+      <ButtonContainer
+        Component={Link}
+        ref={ref}
+        shallow={true}
+        {...otherProps}
+      >
         <Icon name={icon} variant={iconVariant} />
         <span className="sr-only">{label}</span>
       </ButtonContainer>

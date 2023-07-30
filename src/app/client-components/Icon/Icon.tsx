@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 
 const Icon = forwardRef<HTMLSpanElement, IconProps>(
   (
-    { className, name, spin = false, variant = "regular", ...otherProps },
+    { className, name, spin = false, variant = "solid", ...otherProps },
     ref
   ) => (
     <span
