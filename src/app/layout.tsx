@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html className="text-[22px]" lang="en">
       <head>
         <Script
-          src="https://kit.fontawesome.com/439c3474e9.js"
+          src="https://kit.fontawesome.com/401fb1e734.js"
           crossOrigin="anonymous"
         />
       </head>
