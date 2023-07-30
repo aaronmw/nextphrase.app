@@ -1,7 +1,7 @@
-export { phrasesByCategory };
+export { phrasesByListName };
 
-const phrasesByCategory = {
-  "entertainment": [
+const phrasesByListName = {
+  "Entertainment": [
     "iPhone",
     "Time Magazine",
     "Cd Player",
@@ -812,7 +812,7 @@ const phrasesByCategory = {
     "Remote Control",
     "Stephen Colbert",
   ],
-  "everyday life": [
+  "Everyday Life": [
     "Eat Lunch",
     "Smart As A Whip",
     "Daydream",
@@ -1803,7 +1803,7 @@ const phrasesByCategory = {
     "Senior Prom",
     "Feed A Fever",
   ],
-  "fun & games": [
+  "Fun & Games": [
     "Mardi Gras",
     "Party Animal",
     "Cribbage Board",
@@ -2517,7 +2517,7 @@ const phrasesByCategory = {
     "Balance Beam",
     "Sharpshooter",
   ],
-  "nsfw": [
+  "NSFW": [
     "purple nurple",
     "nice kicks",
     "crash test dummy",
@@ -3062,7 +3062,7 @@ const phrasesByCategory = {
     "bug juice",
     "upper lip sweat",
   ],
-  "the world": [
+  "The World": [
     "South Africa",
     "Challenger",
     "Farmland",
@@ -3755,7 +3755,7 @@ const phrasesByCategory = {
     "Stonehenge",
     "Mt Kilimanjaro",
   ],
-  "star wars": [
+  "Star Wars": [
     "Ison Corridor",
     "Comlink",
     "Mon Mothma",

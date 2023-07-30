@@ -1,4 +1,4 @@
-import { Button } from "@/app/client-components/Button";
+import { Button, IconButton } from "@/app/client-components/Button";
 import { StickyContainer } from "@/app/client-components/StickyContainer";
 import { StyledText } from "@/app/client-components/StyledText";
 import { Dialog, Transition } from "@headlessui/react";
@@ -18,6 +18,7 @@ export interface ModalWindowProps
 const classNamesByVariant = {
   narrow: "w-[400px]",
   normal: "w-[600px]",
+  wide: "w-[960px]",
 };
 
 const ModalWindow = ({
@@ -84,15 +85,15 @@ const ModalWindow = ({
           >
             <Dialog.Panel
               className="
+                text-textColor
+                dark:text-textColorInDarkMode
                 relative
                 max-h-[calc(100vh-theme(spacing.8))]
                 w-full
                 overflow-auto
                 rounded
                 bg-appBackgroundColor
-                text-appForegroundColor
                 dark:bg-appBackgroundColorInDarkMode
-                dark:text-appForegroundColorInDarkMode
               "
             >
               <Dialog.Title
@@ -104,20 +105,21 @@ const ModalWindow = ({
                   items-center
                   justify-between
                   rounded-t
-                  bg-shadedColor
+                  bg-shadedColor/80
                   px-6
                   pl-6
                   pr-3
-                  dark:bg-shadedColorInDarkMode
+                  backdrop-blur
+                  dark:bg-shadedColorInDarkMode/80
                 "
               >
                 <StyledText variant="h4">{title ?? <>&nbsp;</>}</StyledText>
 
-                <Button
+                <IconButton
                   icon="xmark"
                   label="Close"
                   ref={closeButtonRef}
-                  variant="iconOnly"
+                  variant="toolbar"
                   onClick={onClose}
                 />
               </Dialog.Title>

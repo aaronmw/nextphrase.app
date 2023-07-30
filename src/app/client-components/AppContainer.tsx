@@ -1,6 +1,5 @@
 "use client";
 
-import { AppHeader } from "@/app/client-components/AppHeader";
 import { ComponentPropsWithoutRef } from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -16,27 +15,14 @@ export const AppContainer = ({
         h-screen
         w-screen
         flex-col
-        overflow-auto
+        justify-stretch
         bg-appBackgroundColor
         text-appForegroundColor
-        dark:bg-appBackgroundColorInDarkMode
-        dark:text-appForegroundColorInDarkMode
       `,
       className
     )}
     {...otherProps}
   >
-    <AppHeader />
-
-    <div
-      className="
-        relative
-        h-full
-        w-full
-        overflow-y-auto
-      "
-    >
-      {children}
-    </div>
+    {children}
   </div>
 );

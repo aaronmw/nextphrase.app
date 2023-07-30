@@ -7,18 +7,23 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
     { className, name, spin = false, variant = "regular", ...otherProps },
     ref
   ) => (
-    <i
-      className={twMerge(
-        "fa",
-        "fa-fw",
-        `fa-${variant}`,
-        `fa-${name}`,
-        spin && "fa-spin",
-        className
-      )}
+    <span
+      className={twMerge(`!no-underline`, className)}
       ref={ref}
       {...otherProps}
-    />
+    >
+      <i
+        className={twMerge(
+          `
+            fa
+            fa-fw
+            fa-${variant}
+            fa-${name}
+          `,
+          spin && "fa-spin"
+        )}
+      />
+    </span>
   )
 );
 

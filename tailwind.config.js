@@ -1,13 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 
 const colors = require("tailwindcss/colors");
+const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./src/app/**/*.{js,ts,jsx,tsx,mdx}"],
   darkMode: "class",
   theme: {
     extend: {
@@ -16,20 +13,18 @@ module.exports = {
           "radial-gradient(ellipse closest-side,var(--tw-gradient-stops))",
       },
       colors: {
-        accentColor: colors.emerald["600"],
-        appBackgroundColor: colors.stone["50"],
-        appBackgroundColorInDarkMode: colors.stone["900"],
-        appForegroundColor: colors.stone["800"],
-        appForegroundColorInDarkMode: colors.stone["50"],
-        borderColor: colors.stone["200"],
-        borderColorInDarkMode: colors.stone["600"],
-        brandColor: colors.emerald["600"],
-        fadedTextColor: colors.stone["500"],
-        fadedTextColorInDarkMode: colors.stone["400"],
+        accentColor: colors.orange["600"],
+        appBackgroundColor: colors.green["900"],
+        appForegroundColor: colors.stone["100"],
+        borderColor: colors.slate["200"],
+        brandColor: colors.green["600"],
+        fadedTextColor: colors.green["200"],
         highlightColor: colors.stone["200"],
         neutral: colors.stone,
-        shadedColor: colors.stone["200"],
-        shadedColorInDarkMode: colors.stone["800"],
+        shadedColor: colors.green["950"],
+      },
+      spacing: {
+        barHeight: "8vh",
       },
     },
   },

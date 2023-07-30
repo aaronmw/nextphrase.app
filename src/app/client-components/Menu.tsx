@@ -1,3 +1,5 @@
+"use client";
+
 import { AnchorButton } from "@/app/client-components/Button";
 import { Icon } from "@/app/client-components/Icon";
 import { IconName } from "@/app/client-components/Icon/types";
@@ -21,6 +23,8 @@ interface MenuProps extends ComponentProps<"div"> {
 
 export const menuCardClassNames = twMerge(`
   divide-border
+  text-textColor
+  dark:text-textColorInDarkMode
   relative
   z-50
   max-h-[60vh]
@@ -30,7 +34,6 @@ export const menuCardClassNames = twMerge(`
   overscroll-contain
   rounded-md
   bg-appBackgroundColor
-  text-appForegroundColor
   shadow-lg
   ring-1
   ring-black
@@ -40,11 +43,9 @@ export const menuCardClassNames = twMerge(`
   dark:border
   dark:border-borderColorInDarkMode
   dark:bg-appBackgroundColorInDarkMode
-  dark:text-appForegroundColorInDarkMode
 `);
 
 export const menuItemClassNames = twMerge(`
-  ui-active:bg-brandColor
   group
   !flex
   cursor-pointer
@@ -55,6 +56,7 @@ export const menuItemClassNames = twMerge(`
   px-3
   py-1.5
   transition-all
+  ui-active:bg-brandColor
   ui-active:text-white
   ui-disabled:cursor-not-allowed
 `);
