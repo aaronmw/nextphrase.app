@@ -1,0 +1,14 @@
+{
+  "name": "NextPhrase: The Phrase Game",
+  "short_name": "NextPhrase",
+  "description": "Requires an even-numbered group of players.",
+  "start_url": "/",
+  "theme_color": "#052E16",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "48x48"
+    }
+  ]
+}

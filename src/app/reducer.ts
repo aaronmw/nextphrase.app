@@ -1,47 +1,75 @@
-import { phrasesByListName } from "@/app/phrasesByListName";
-import { type AppAction, type AppState } from "@/app/types";
-import xor from "lodash/xor";
+import { phrasesByListName } from "@/app/phrasesByListName"
+import { ListName, type AppAction, type AppState } from "@/app/types"
+import xor from "lodash/xor"
 
-export { initialState, reducer };
+export { initialState, reducer }
 
 const initialState: AppState = {
-  activeListNames: Object.keys(phrasesByListName),
-  activePhrases: Object.entries(phrasesByListName).flatMap(
-    ([listName, phrases]) => phrases
-  ),
-  aliasForA: "A",
-  aliasForB: "B",
+  activeListNames: Object.keys(phrasesByListName) as ListName[],
+  activePhrases: Object.values(phrasesByListName).flatMap((phrases) => phrases),
+  dispatch: () => null,
+  isLoading: true,
   pointsForA: 0,
   pointsForB: 0,
-  rotateScreen: false,
+  pointsToWin: 7,
+  roundTimeMax: 120,
+  roundTimeMin: 90,
   seenPhrases: [],
-};
+  shouldRotateScreen: false,
+  soundEffectsQueue: [],
+}
 
-const reducer = (state: AppState, action: AppAction) => {
-  console.log(`${action.type}:`, action.payload);
+const reducer = (state: AppState, action: AppAction): AppState => {
+  console.log(
+    `${action.type}:`,
+    "payload" in action ? action.payload : "No payload",
+  )
 
   switch (action.type) {
+    case "addPoint": {
+      const key = `pointsFor${action.payload.team}` as const
+
+      return {
+        ...state,
+        [key]: state[key] + 1,
+        soundEffectsQueue: ["boom", ...state.soundEffectsQueue],
+      }
+    }
+
+    case "resetScores": {
+      return {
+        ...state,
+        pointsForA: 0,
+        pointsForB: 0,
+      }
+    }
+
     case "setState": {
       return {
         ...state,
         ...action.payload,
-      };
+      }
     }
 
     case "toggleActiveList": {
-      console.log({
-        activeListNames: state.activeListNames,
-        payload: action.payload,
-        result: xor(state.activeListNames, [action.payload.listName]),
-      });
+      const newActiveListNames = xor(state.activeListNames, [
+        action.payload.listName,
+      ])
+
+      const newActivePhrases = newActiveListNames.flatMap((activeListName) => {
+        const phrasesInList = phrasesByListName[activeListName]
+
+        return phrasesInList
+      })
 
       return {
         ...state,
-        activeListNames: xor(state.activeListNames, [action.payload.listName]),
-      };
+        activeListNames: newActiveListNames,
+        activePhrases: newActivePhrases,
+      }
     }
 
     default:
-      return { ...state };
+      return { ...state }
   }
-};
+}

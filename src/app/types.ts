@@ -1,36 +1,49 @@
-import { type Dispatch } from "react";
+import { sounds } from "@/app/layout"
+import { phrasesByListName } from "@/app/phrasesByListName"
+import { type Dispatch } from "react"
 
 export interface AppContextObject {
-  dispatch: Dispatch<AppAction>;
-  sounds: Record<
-    string,
-    {
-      isPlaying: boolean;
-      play: () => void;
-    }
-  >;
-  state: AppState;
+  dispatch: Dispatch<AppAction>
+  sounds: Record<SoundName, HTMLAudioElement>
+  state: AppState
 }
 
 export interface AppState {
-  activeListNames: string[];
-  activePhrases: string[];
-  aliasForA: null | string;
-  aliasForB: null | string;
-  pointsForA: number;
-  pointsForB: number;
-  rotateScreen: boolean;
-  seenPhrases: string[];
+  activeListNames: ListName[]
+  activePhrases: string[]
+  dispatch: Dispatch<AppAction>
+  isLoading: boolean
+  pointsForA: number
+  pointsForB: number
+  pointsToWin: number
+  roundTimeMax: number
+  roundTimeMin: number
+  seenPhrases: string[]
+  shouldRotateScreen: boolean
+  soundEffectsQueue: SoundName[]
 }
 
 export type AppAction =
   | {
-      type: "setState";
-      payload: Partial<AppState>;
+      type: "addPoint"
+      payload: { team: TeamName }
     }
   | {
-      type: "toggleActiveList";
+      type: "resetScores"
+    }
+  | {
+      type: "setState"
+      payload: Partial<AppState>
+    }
+  | {
+      type: "toggleActiveList"
       payload: {
-        listName: string;
-      };
-    };
+        listName: ListName
+      }
+    }
+
+export type ListName = keyof typeof phrasesByListName
+
+export type SoundName = keyof typeof sounds
+
+export type TeamName = "A" | "B"
