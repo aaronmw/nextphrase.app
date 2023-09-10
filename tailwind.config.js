@@ -1,11 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 
-const colors = require("tailwindcss/colors")
+import colors from "tailwindcss/colors"
+import plugin from "tailwindcss/plugin"
 
-const plugin = require("tailwindcss/plugin")
-
-module.exports = {
-  content: ["./src/app/**/*.{js,ts,jsx,tsx,mdx}"],
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   darkMode: "class",
   theme: {
     extend: {
@@ -27,7 +26,7 @@ module.exports = {
         textColor: colors.stone["100"],
       },
       fontFamily: {
-        brush: ["var(--font-nanum-brush-script)"],
+        boogaloo: ["Boogaloo"],
       },
       gridTemplateAreas: {
         howToPlay: ["header", "content"],
@@ -51,6 +50,7 @@ module.exports = {
     plugin(function ({ addBase, theme }) {
       addBase({
         "html": {
+          backgroundColor: `${theme("colors.appBackgroundColor")}`,
           fontSize: "24px",
         },
         "*": {
