@@ -1,7 +1,12 @@
 {
   "plugins": ["prettier-plugin-tailwindcss"],
   "quoteProps": "consistent",
+  "singleQuote": true,
   "semi": false,
   "singleAttributePerLine": true,
-  "tailwindFunctions": ["twMerge"]
+  "tailwindFunctions": ["tw", "twJoin", "twMerge"],
+  "tailwindPreserveWhitespace": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "arrowParens": "avoid"
 }
