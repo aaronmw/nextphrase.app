@@ -37,6 +37,7 @@ export default async function RootLayout({
           `
             overflow-x-hidden
             bg-bgColor
+            text-4xl
             text-textColor
           `,
         )}
@@ -49,7 +50,9 @@ export default async function RootLayout({
           />
         </head>
 
-        <body>{children}</body>
+        <body>
+          <AppContextProvider>{children}</AppContextProvider>
+        </body>
       </html>
     </AppContextProvider>
   )

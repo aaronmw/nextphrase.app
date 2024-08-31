@@ -1,11 +1,29 @@
 'use client'
 
-import { ReactNode, createContext } from 'react'
+import { AppAction, AppReducer, AppState, initialState } from '@/app/reducer'
+import { Dispatch, ReactNode, createContext, useReducer } from 'react'
 
-export interface SiteContextObject {}
+export interface SiteContextObject {
+  dispath: Dispatch<AppAction>
+  state: AppState
+}
 
-export const SiteContext = createContext<SiteContextObject>({})
+export const SiteContext = createContext<SiteContextObject>({
+  dispath: () => {},
+  state: initialState,
+})
 
 export function AppContextProvider({ children }: { children: ReactNode }) {
-  return <SiteContext.Provider value={{}}>{children}</SiteContext.Provider>
+  const [state, dispath] = useReducer(AppReducer, initialState)
+
+  return (
+    <SiteContext.Provider
+      value={{
+        dispath,
+        state,
+      }}
+    >
+      {children}
+    </SiteContext.Provider>
+  )
 }
