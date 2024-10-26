@@ -41,17 +41,17 @@ export function PhraseFlipper({
       }
 
       containerElement.style.opacity = '0'
+      dispatch({ type: 'NEXT_PHRASE' })
 
       setTimeout(() => {
-        dispatch({ type: 'NEXT_PHRASE' })
-
         setIsFrozen(true)
+
         setTimeout(() => {
           setIsFrozen(false)
         }, freezeDuration)
 
-        containerElement.scrollTo({ left: 0, behavior: 'instant' })
         containerElement.style.opacity = '1'
+        containerElement.scrollTo({ left: 0, behavior: 'instant' })
       }, duration)
     }
   }
@@ -71,9 +71,6 @@ export function PhraseFlipper({
         className,
       )}
       ref={containerElementRef}
-      style={{
-        transitionDuration: `${duration}ms`,
-      }}
       onScroll={handleScroll}
       {...otherProps}
     >
