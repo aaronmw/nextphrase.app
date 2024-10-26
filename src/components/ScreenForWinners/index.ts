@@ -1,0 +1,1 @@
+export { ScreenForWinners } from './ScreenForWinners';

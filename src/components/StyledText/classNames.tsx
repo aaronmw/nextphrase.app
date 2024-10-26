@@ -2,20 +2,28 @@ import { tw } from '@/lib/tw'
 import { twMerge } from 'tailwind-merge'
 
 const buttonClassNames = tw`
+  relative
   inline-flex
   cursor-pointer
+  select-none
   items-center
   justify-center
   gap-1.5
   transition-all
-  hover:scale-105
+  [-webkit-user-select:none]
+  [text-shadow:2px_2px_2px_rgba(0,0,0,0.25)]
+  before:pointer-events-none
+  before:absolute
+  before:inset-0
+  before:bg-gradient-to-t
+  before:from-bgColor/20
+  before:to-transparent
+  before:opacity-0
+  before:transition-opacity
+  active:scale-95
+  active:before:opacity-100
   disabled:pointer-events-none
   disabled:opacity-40
-`
-
-const headingClassNames = tw`
-  font-display
-  font-bold
 `
 
 export const classNames = {
@@ -26,18 +34,8 @@ export const classNames = {
       text-[var(--tw-prose-links)]
       underline
       underline-offset-4
-      hover:scale-100
       hover:underline-offset-8
-      dark:text-[var(--tw-prose-invert-links)]
-      [&_span]:ml-1
-    `,
-  ),
-
-  'link.subtle': twMerge(
-    buttonClassNames,
-    `
-      inline
-      hover:underline
+      hover:scale-100
       [&_span]:ml-1
     `,
   ),
@@ -46,23 +44,20 @@ export const classNames = {
     buttonClassNames,
     `
       js-button-primary
-      rounded-md
-      border-2
-      border-brandColor
-      bg-brandColor
-      px-6
-      py-3
+      w-full
+      whitespace-nowrap
+      rounded-sm
+      border-4
+      border-primaryColor-500
+      bg-primaryColor-500
+      px-3
+      py-1
       text-center
-      text-sm
-      font-semibold
+      text-xs
       uppercase
       leading-none
-      tracking-widest
+      tracking-tighter
       text-white
-      sm:whitespace-nowrap
-      dark:border-white
-      dark:bg-white
-      dark:text-brandColor
     `,
   ),
 
@@ -72,32 +67,31 @@ export const classNames = {
       js-button-secondary
       relative
       z-10
-      rounded-md
-      border-2
-      border-brandColor
-      px-6
-      py-3
+      w-full
+      whitespace-nowrap
+      rounded-sm
+      border-4
+      border-primaryColor-400/40
+      px-3
+      py-1
       text-center
-      text-sm
-      font-semibold
+      text-xs
       uppercase
       leading-none
-      tracking-widest
-      text-brandColor
+      tracking-tighter
+      text-primaryColor-400
       backdrop-blur-sm
-      sm:whitespace-nowrap
-      dark:border-white
-      dark:text-white
     `,
   ),
 
   'button.icon': twMerge(
     buttonClassNames,
     `
+      hover:bg-primaryColor
       size-10
-      rounded-full
+      rounded-none
       bg-shadedBgColor
-      hover:bg-brandColor
+      text-xs
       hover:text-white
     `,
   ),
@@ -111,102 +105,13 @@ export const classNames = {
     rounded-sm
     px-1
     py-0.5
-    text-sm
+    text-xs
     text-inherit
     hover:bg-textColor/15
-    dark:text-white
-  `,
-
-  'footnote': tw`
-    text-xs
-    leading-relaxed
-    text-fadedTextColor
-    dark:text-fadedTextColorInDarkMode
-  `,
-
-  'h1': twMerge(
-    headingClassNames,
-    `
-      text-5xl
-      [&>strong]:font-normal
-      [&>strong]:text-brandColor/60
-    `,
-  ),
-
-  'h2': twMerge(
-    headingClassNames,
-    `
-      text-4xl
-      [&>strong]:font-normal
-      [&>strong]:text-brandColor/60
-    `,
-  ),
-
-  'h3': twMerge(
-    headingClassNames,
-    `
-      text-3xl
-      [&>strong]:font-normal
-      [&>strong]:text-brandColor/60
-    `,
-  ),
-
-  'h4': twMerge(
-    headingClassNames,
-    `
-      font-body
-      text-lg
-    `,
-  ),
-
-  'superHeading': tw`
-    text-xs
-    font-bold
-    uppercase
-    tracking-[0.2em]
-    text-teal-400
-  `,
-
-  'headingDecoratorCentered': tw`
-    relative
-    pb-6
-    text-center
-    after:absolute
-    after:left-1/2
-    after:top-full
-    after:h-[4px]
-    after:w-16
-    after:-translate-x-1/2
-    after:bg-accent-fuchsia
-  `,
-
-  'headingDecoratorLeft': tw`
-    relative
-    pb-6
-    after:absolute
-    after:left-0
-    after:top-full
-    after:h-[4px]
-    after:w-16
-    after:bg-accent-fuchsia
-  `,
-
-  'importantValue': tw`
-    font-display
-    text-5xl
-    font-bold
-    dark:text-white
-  `,
-
-  'importantValueLabel': tw`
-    border-b-2
-    pb-2
-    text-xs
-    uppercase
   `,
 
   'label': tw`
-    text-sm
+    text-xs
     text-fadedTextColor
   `,
 }

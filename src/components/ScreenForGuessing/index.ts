@@ -1,0 +1,1 @@
+export { ScreenForGuessing } from './ScreenForGuessing';

@@ -1,0 +1,1 @@
+export { ScreenForMainMenu } from './ScreenForMainMenu';

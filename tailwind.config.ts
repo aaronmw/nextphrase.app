@@ -3,10 +3,11 @@ import colors from 'tailwindcss/colors'
 import plugin from 'tailwindcss/plugin'
 
 const neutral = colors.slate
-
-const borderColor = neutral['200']
-
-const brandColor = colors.fuchsia
+const primaryColor = colors.rose
+const secondaryColor = colors.sky
+export const teamAColor = colors.amber
+export const teamBColor = colors.sky
+const borderColor = `rgb(from ${neutral['500']} r g b / 0.1)`
 
 const config: Config = {
   content: [
@@ -15,12 +16,6 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      animation: {
-        animateInX: 'animateInX 0.5s ease-in-out both',
-        animateInY: 'animateInY 0.5s ease-in-out both',
-        animateOutX: 'animateOutX 0.5s ease-in-out both',
-        animateOutY: 'animateOutY 0.5s ease-in-out both',
-      },
       backgroundImage: {
         'gradient-radial':
           'radial-gradient(closest-side, var(--tw-gradient-stops))',
@@ -33,65 +28,18 @@ const config: Config = {
       colors: {
         bgColor: neutral['950'],
         borderColor,
-        brandColor,
+        primaryColor,
+        secondaryColor,
         dangerColor: colors.red,
-        fadedTextColor: brandColor['200'],
+        fadedTextColor: primaryColor['500'],
         infoColor: colors.blue,
         neutral,
-        shadedBgColor: neutral['200'],
+        shadedBgColor: borderColor,
         successColor: colors.emerald,
-        textColor: brandColor['50'],
+        teamAColor,
+        teamBColor,
+        textColor: primaryColor['50'],
         warningColor: colors.amber,
-      },
-      keyframes: {
-        animateInX: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateX(100%)',
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateX(0)',
-          },
-        },
-        animateOutX: {
-          '0%': {
-            maxHeight: '200px',
-            opacity: '1',
-            transform: 'translateX(0%)',
-          },
-          '70%': {
-            maxHeight: '200px',
-            opacity: '0',
-            transform: 'translateX(100%)',
-          },
-          '100%': {
-            maxHeight: '0',
-            opacity: '0',
-            transform: 'translateX(100%)',
-          },
-        },
-
-        animateInY: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(100%)',
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)',
-          },
-        },
-        animateOutY: {
-          '0%': {
-            opacity: '1',
-            transform: 'translateY(0%)',
-          },
-          '100%': {
-            opacity: '0',
-            transform: 'translateY(-100%)',
-          },
-        },
       },
     },
     fontFamily: {
@@ -106,9 +54,13 @@ const config: Config = {
         'html': {
           scrollPaddingTop: theme('spacing.12'),
           scrollBehavior: 'smooth',
+          overflowX: 'hidden',
+          backgroundColor: theme('colors.bgColor'),
+          color: theme('colors.textColor'),
+          fontSize: '32px',
         },
         '*': {
-          scrollbarColor: `${theme('colors.brandColor')} transparent`,
+          scrollbarColor: `${theme('colors.primaryColor[500]')} transparent`,
         },
         '*::-webkit-scrollbar': {
           height: theme('spacing.2'),
@@ -118,7 +70,7 @@ const config: Config = {
           background: 'transparent',
         },
         '*::-webkit-scrollbar-thumb': {
-          background: theme('colors.brandColor'),
+          background: theme('colors.primaryColor[500]'),
           borderRadius: theme('spacing.8'),
         },
         'a, button, input, textarea': {
@@ -126,6 +78,7 @@ const config: Config = {
         },
       })
     }),
+    require('tailwindcss-3d'),
     require('@tailwindcss/forms'),
   ],
 }

@@ -1,11 +1,16 @@
 import { ComponentProps } from 'react'
 
 export interface IconProps extends Omit<ComponentProps<'i'>, 'name'> {
-  name: IconName
+  name: IconString
   rotate?: IconRotationOption
   spin?: boolean
   variant?: IconVariant
 }
+
+export type IconString =
+  | RegularIconName
+  | `brands:${BrandIconName}`
+  | `${Exclude<IconVariant, 'brands'>}:${RegularIconName}`
 
 export type IconName = RegularIconName | BrandIconName
 

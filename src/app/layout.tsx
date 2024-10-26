@@ -1,7 +1,9 @@
-import { AppContextProvider } from '@/components'
+import { AppContext } from '@/components'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import type { Metadata, Viewport } from 'next'
-import { Boogaloo } from 'next/font/google'
+import { Lilita_One } from 'next/font/google'
 import Script from 'next/script'
+import { ReactNode } from 'react'
 import { twJoin } from 'tailwind-merge'
 import './global.css'
 
@@ -17,43 +19,33 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
-const bodyFont = Boogaloo({
+const bodyFont = Lilita_One({
   subsets: ['latin'],
-  variable: '--font-boogaloo',
+  variable: '--font-lilita-one',
   weight: '400',
 })
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: ReactNode
+}) {
   return (
-    <AppContextProvider>
-      <html
-        className={twJoin(
-          bodyFont.className,
-          bodyFont.variable,
-          `
-            overflow-x-hidden
-            bg-bgColor
-            text-4xl
-            text-textColor
-          `,
-        )}
-        lang="en"
-      >
-        <head>
-          <Script
-            crossOrigin="anonymous"
-            src="https://kit.fontawesome.com/401fb1e734.js"
-          />
-        </head>
+    <html
+      className={twJoin(bodyFont.className, bodyFont.variable)}
+      lang="en-US"
+    >
+      <head>
+        <Script
+          crossOrigin="anonymous"
+          src="https://kit.fontawesome.com/401fb1e734.js"
+        />
+      </head>
 
-        <body>
-          <AppContextProvider>{children}</AppContextProvider>
-        </body>
-      </html>
-    </AppContextProvider>
+      <body>
+        <AppContext>{children}</AppContext>
+        <InstallPrompt />
+      </body>
+    </html>
   )
 }
