@@ -78,13 +78,8 @@ export function ScreenContainer({
     () => {
       if (!(outerElementRef.current && isClient)) return
 
-      const upperMargin = rotateScreen
-        ? 'env(safe-area-inset-bottom)'
-        : 'env(safe-area-inset-top)'
-
-      const lowerMargin = rotateScreen
-        ? 'env(safe-area-inset-top)'
-        : 'env(safe-area-inset-bottom)'
+      const upperMargin = rotateScreen ? 'env(safe-area-inset-top)' : 0
+      const lowerMargin = rotateScreen ? 'env(safe-area-inset-bottom)' : 0
 
       const timeline = gsap.timeline({
         defaults: {

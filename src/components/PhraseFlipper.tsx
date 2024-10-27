@@ -129,6 +129,7 @@ const PhraseContainer = ({
         snap-center
         items-center
         justify-center
+        text-balance
         text-center
         text-2xl
         uppercase
