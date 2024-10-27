@@ -35,6 +35,7 @@ export interface AppState {
   roundDurationMax: number
   accelerationDurationMin: number
   accelerationDurationMax: number
+  rotateScreen: boolean
   viewedPhraseIds: Tables<'phrases'>['id'][]
 }
 
@@ -59,6 +60,7 @@ export const initialState: AppState = {
   roundDurationMax: process.env.NODE_ENV === 'development' ? 5 : 60,
   accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
   accelerationDurationMax: process.env.NODE_ENV === 'development' ? 3 : 15,
+  rotateScreen: false,
   viewedPhraseIds: [],
 }
 
@@ -74,6 +76,7 @@ export const persistedStateKeys: (keyof AppState)[] = [
   'pointsForTeamA',
   'pointsForTeamB',
   'pointsToWin',
+  'rotateScreen',
   'viewedPhraseIds',
 ] as (keyof AppState)[]
 
@@ -95,6 +98,7 @@ export type AppAction =
   | { type: 'END_GAME' }
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
+  | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
   | { type: 'FACTORY_RESET' }
 
 export function appStateReducer(state: AppState, action: AppAction): AppState {
@@ -265,6 +269,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
           ...state,
           disabledCategoryIds: updatedList,
         }
+      }
+      break
+    }
+
+    case 'SET_ROTATE_SCREEN': {
+      newState = {
+        ...state,
+        rotateScreen: action.rotateScreen,
       }
       break
     }

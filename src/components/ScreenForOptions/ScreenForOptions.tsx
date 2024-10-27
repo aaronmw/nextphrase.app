@@ -10,7 +10,7 @@ import { ChangeEvent } from 'react'
 
 export function ScreenForOptions() {
   const { state, dispatch } = useAppContext()
-  const { categoriesById, disabledCategoryIds } = state
+  const { categoriesById, disabledCategoryIds, rotateScreen } = state
 
   function handleClickCheckbox(
     categoryId: string,
@@ -22,6 +22,11 @@ export function ScreenForOptions() {
       type: checked ? 'ENABLE_CATEGORY_ID' : 'DISABLE_CATEGORY_ID',
       categoryId,
     })
+  }
+
+  function handleClickRotateScreen(event: ChangeEvent<HTMLInputElement>) {
+    const { checked } = event.target
+    dispatch({ type: 'SET_ROTATE_SCREEN', rotateScreen: checked })
   }
 
   return (
@@ -85,7 +90,7 @@ export function ScreenForOptions() {
           </div>
 
           <div>
-            <StyledText variant="label">Timer</StyledText>
+            <StyledText variant="label">Sound Boost</StyledText>
 
             <div
               className="
@@ -94,8 +99,23 @@ export function ScreenForOptions() {
                 justify-between
               "
             >
-              <div>Duration</div>
-              <div>60 seconds</div>
+              <div>Rotate Screen</div>
+              <div>
+                <input
+                  checked={rotateScreen}
+                  className="
+                    rounded-sm
+                    border-none
+                    bg-primaryColor-700
+                    text-primaryColor-500
+                    !outline-primaryColor-400
+                    transition-all
+                    checked:bg-primaryColor-500
+                  "
+                  type="checkbox"
+                  onChange={handleClickRotateScreen}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -23,36 +23,38 @@ export function ScreenContainer({
 }: ScreenContainerProps) {
   const isClient = useIsClient()
   const { state } = useAppContext()
-  const { activeScreen } = state
-  const elementRef = useRef<HTMLElement>(null)
+  const { activeScreen, rotateScreen } = state
+  const outerElementRef = useRef<HTMLDivElement>(null)
   const isActiveScreen = activeScreen === screenName
 
   useGSAP(
     () => {
-      if (!(elementRef.current && isClient)) return
+      if (!(outerElementRef.current && isClient)) return
 
       const timeline = gsap.timeline({
         defaults: {
           duration: 0.5,
           ease: 'power1.inOut',
-          transformOrigin: '50% -200%',
         },
       })
 
       timeline
+        .to(outerElementRef.current, {
+          visibility: isActiveScreen ? 'visible' : undefined,
+          pointerEvents: isActiveScreen ? 'auto' : 'none',
+        })
         .fromTo(
-          elementRef.current,
+          '.js-inner-container',
           {
-            visibility: isActiveScreen ? 'visible' : undefined,
-            opacity: isActiveScreen ? 0 : 1,
-            pointerEvents: isActiveScreen ? 'none' : 'auto',
+            transformOrigin: '50% -200%',
             rotation: isActiveScreen ? -90 : 0,
+            opacity: isActiveScreen ? 0 : 1,
           },
           {
-            opacity: isActiveScreen ? 1 : 0,
-            pointerEvents: isActiveScreen ? 'auto' : 'none',
             rotation: isActiveScreen ? 0 : 90,
+            opacity: isActiveScreen ? 1 : 0,
           },
+          '<',
         )
         .fromTo(
           '.js-header-container',
@@ -68,54 +70,95 @@ export function ScreenContainer({
     },
     {
       dependencies: [screenName, isActiveScreen, isClient],
-      scope: elementRef,
+      scope: outerElementRef,
+    },
+  )
+
+  useGSAP(
+    () => {
+      if (!(outerElementRef.current && isClient)) return
+
+      const upperMargin = rotateScreen
+        ? 'env(safe-area-inset-bottom)'
+        : 'env(safe-area-inset-top)'
+
+      const lowerMargin = rotateScreen
+        ? 'env(safe-area-inset-top)'
+        : 'env(safe-area-inset-bottom)'
+
+      const timeline = gsap.timeline({
+        defaults: {
+          duration: 0.5,
+          ease: 'power1.inOut',
+          transformOrigin: 'center',
+          top: upperMargin,
+          bottom: lowerMargin,
+        },
+      })
+
+      timeline.fromTo(
+        outerElementRef.current,
+        { rotate: rotateScreen ? 0 : 180 },
+        { rotate: rotateScreen ? 180 : 0 },
+      )
+    },
+    {
+      dependencies: [rotateScreen, isClient],
+      scope: outerElementRef,
     },
   )
 
   return (
     <section
+      ref={outerElementRef}
       className={twMerge(
         `
           invisible
-          fixed
-          inset-0
-          grid
-          touch-none
+          absolute
+          w-full
+          origin-center
+          touch-pan-x
           select-none
-          grid-cols-1
-          grid-rows-[1.5rem,auto]
-          translate-z-0
         `,
         className,
       )}
-      ref={elementRef}
       {...otherProps}
     >
       <div
         className="
-          js-header-container
-          relative
-          z-10
-          col-start-1
-          col-end-2
-          row-start-1
-          row-end-2
+          js-inner-container
+          absolute
+          inset-0
+          grid
+          grid-cols-1
+          grid-rows-[1.5rem,auto]
         "
       >
-        {slotForHeader}
-      </div>
-
-      <div
-        className="
-          js-content-container
-          relative
-          col-start-1
-          col-end-2
-          row-start-2
-          row-end-3
-        "
-      >
-        {slotForMain}
+        <div
+          className="
+            js-header-container
+            relative
+            z-10
+            col-start-1
+            col-end-2
+            row-start-1
+            row-end-2
+          "
+        >
+          {slotForHeader}
+        </div>
+        <div
+          className="
+            js-content-container
+            relative
+            col-start-1
+            col-end-2
+            row-start-2
+            row-end-3
+          "
+        >
+          {slotForMain}
+        </div>
       </div>
     </section>
   )

@@ -7,6 +7,7 @@ import {
   ScreenForScoring,
   ScreenForWinners,
 } from '@/components'
+import { useAppContext } from '@/components/AppContext'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { useEffect } from 'react'
@@ -16,6 +17,8 @@ gsap.registerPlugin(useGSAP)
 
 export default function Page() {
   const isClient = useIsClient()
+  const { state } = useAppContext()
+  const { rotateScreen } = state
 
   useEffect(() => {
     const preventDefault = (event: Event) => event.preventDefault()
