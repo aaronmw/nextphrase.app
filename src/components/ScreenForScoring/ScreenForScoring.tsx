@@ -49,7 +49,10 @@ export function ScreenForScoring() {
               as="button"
               variant="button.tool"
               onClick={() =>
-                dispatch({ type: 'SET_ACTIVE_SCREEN', screen: AppScreen.Intro })
+                dispatch({
+                  type: 'SET_ACTIVE_SCREEN',
+                  screen: AppScreen.MainMenu,
+                })
               }
             >
               <Icon name="arrow-left-long" />

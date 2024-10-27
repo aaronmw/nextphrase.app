@@ -17,7 +17,7 @@ export function ScreenForMainMenu() {
 
   return (
     <ScreenContainer
-      screenName={AppScreen.Intro}
+      screenName={AppScreen.MainMenu}
       slotForHeader={<AppHeader />}
       slotForMain={
         <>
@@ -62,6 +62,12 @@ export function ScreenForMainMenu() {
             <StyledText
               as="button"
               variant="button.secondary"
+              onClick={() =>
+                dispatch({
+                  type: 'SET_ACTIVE_SCREEN',
+                  screen: AppScreen.Instructions,
+                })
+              }
             >
               How to Play
             </StyledText>

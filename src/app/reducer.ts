@@ -3,7 +3,8 @@ import { clamp, last, random, sample, without } from 'lodash'
 
 export enum AppScreen {
   Options = 'options',
-  Intro = 'intro',
+  MainMenu = 'mainMenu',
+  Instructions = 'instructions',
   Scoring = 'scoring',
   Guessing = 'guessing',
   Winners = 'winners',
@@ -40,7 +41,7 @@ export interface AppState {
 }
 
 export const initialState: AppState = {
-  activeScreen: AppScreen.Intro,
+  activeScreen: AppScreen.MainMenu,
   categoriesById: {},
   currentPhraseId: null,
   currentRoundStartTime: null,
@@ -289,7 +290,7 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
     newState.activeScreen &&
     !Object.values(AppScreen).includes(newState.activeScreen)
   ) {
-    newState.activeScreen = AppScreen.Intro
+    newState.activeScreen = AppScreen.MainMenu
   }
 
   // console.log('Action:', action)

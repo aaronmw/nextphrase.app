@@ -52,14 +52,13 @@ const config: Config = {
     plugin(function ({ addBase, theme }) {
       addBase({
         'html': {
-          scrollPaddingTop: theme('spacing.12'),
-          scrollBehavior: 'smooth',
-          overflowX: 'hidden',
           backgroundColor: theme('colors.bgColor'),
           color: theme('colors.textColor'),
           fontSize: '32px',
-          overscrollBehavior: 'none',
           overflow: 'hidden',
+          overscrollBehavior: 'none',
+          scrollBehavior: 'smooth',
+          scrollPaddingTop: theme('spacing.12'),
         },
         '*': {
           scrollbarColor: `${theme('colors.primaryColor[500]')} transparent`,

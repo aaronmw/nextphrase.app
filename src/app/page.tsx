@@ -2,12 +2,12 @@
 
 import {
   ScreenForGuessing,
+  ScreenForInstructions,
   ScreenForMainMenu,
   ScreenForOptions,
   ScreenForScoring,
   ScreenForWinners,
 } from '@/components'
-import { useAppContext } from '@/components/AppContext'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { useEffect } from 'react'
@@ -17,7 +17,6 @@ gsap.registerPlugin(useGSAP)
 
 export default function Page() {
   const isClient = useIsClient()
-  const { state } = useAppContext()
 
   useEffect(() => {
     const preventDefault = (event: Event) => event.preventDefault()
@@ -34,6 +33,7 @@ export default function Page() {
   return (
     <>
       <ScreenForOptions />
+      <ScreenForInstructions />
       <ScreenForMainMenu />
       <ScreenForScoring />
       <ScreenForGuessing />
