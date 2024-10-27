@@ -13,7 +13,7 @@ import { classNames } from './classNames'
 
 export function ScreenForScoring() {
   const { dispatch, state } = useAppContext()
-  const { isRoundOver } = state
+  const { isNewGame, isRoundOver } = state
   const timerRef = useRef<NodeJS.Timeout>(null)
   const touchStartedAtRef = useRef<number | null>(null)
 
@@ -29,7 +29,6 @@ export function ScreenForScoring() {
     const touchDuration = Date.now() - touchStartedAt
 
     touchStartedAtRef.current = null
-
     if (timerRef.current) {
       clearTimeout(timerRef.current)
     }
@@ -81,7 +80,7 @@ export function ScreenForScoring() {
 
           <StyledText
             as="button"
-            className={classNames.startButton({ isRoundOver })}
+            className={classNames.startButton({ isNewGame, isRoundOver })}
             variant="button.primary"
             onClick={() => dispatch({ type: 'START_ROUND' })}
           >

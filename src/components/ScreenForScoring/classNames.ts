@@ -33,7 +33,7 @@ export const classNames = {
     border-teamBColor-500
     bg-teamBColor-500
   `,
-  startButton: ({ isRoundOver = false }) =>
+  startButton: ({ isNewGame = false, isRoundOver = false }) =>
     twMerge(
       `
         js-start-button
@@ -44,13 +44,16 @@ export const classNames = {
         rounded-b-xl
         text-4xl
         transition-all
-        delay-1000
       `,
       isRoundOver &&
         `
           pointer-events-none
           opacity-50
           delay-0
+        `,
+      !isNewGame &&
+        `
+          delay-1000
         `,
     ),
 }

@@ -18,7 +18,6 @@ gsap.registerPlugin(useGSAP)
 export default function Page() {
   const isClient = useIsClient()
   const { state } = useAppContext()
-  const { rotateScreen } = state
 
   useEffect(() => {
     const preventDefault = (event: Event) => event.preventDefault()

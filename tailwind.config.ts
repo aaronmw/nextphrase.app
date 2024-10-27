@@ -58,6 +58,8 @@ const config: Config = {
           backgroundColor: theme('colors.bgColor'),
           color: theme('colors.textColor'),
           fontSize: '32px',
+          overscrollBehavior: 'none',
+          overflow: 'hidden',
         },
         '*': {
           scrollbarColor: `${theme('colors.primaryColor[500]')} transparent`,
