@@ -129,6 +129,10 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       newState = {
         ...state,
         activeScreen: AppScreen.Scoring,
+        currentPhraseId: null,
+        currentRoundAccelerationStartTime: null,
+        currentRoundEndTime: null,
+        currentRoundStartTime: null,
         isNewGame: true,
         isRoundOver: false,
         pointsForTeamA: 0,

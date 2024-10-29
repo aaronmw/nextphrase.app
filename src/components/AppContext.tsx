@@ -7,9 +7,10 @@ import {
   initialState,
   persistedStateKeys,
 } from '@/app/reducer'
+import { soundFiles } from '@/app/sounds'
 import { supabase } from '@/app/supabase'
 import { usePersistedReducer } from '@/lib/usePersistedReducer'
-import { SoundProperties, useSoundPreloader } from '@/lib/useSoundPreloader'
+import { useSoundPreloader } from '@/lib/useSoundPreloader'
 import { keyBy } from 'lodash'
 import {
   createContext,
@@ -34,15 +35,6 @@ const PrivateAppContext = createContext<AppContextObject>({
     stopSound: () => {},
   },
 })
-
-const soundFiles = {
-  'bonk': { src: '/sounds/bonk.mp3' },
-  'cheering': { src: '/sounds/cheering.mp3', trimStart: 0.4 },
-  'sad-trombone': { src: '/sounds/sad-trombone.mp3' },
-  'pop': { src: '/sounds/pop.mp3' },
-  'spacebar-click': { src: '/sounds/spacebar-click.mp3' },
-  'glass-explosion': { src: '/sounds/glass-explosion.mp3' },
-} satisfies Record<string, SoundProperties>
 
 export function AppContext({ children }: { children: ReactNode }) {
   const [state, dispatch] = usePersistedReducer({

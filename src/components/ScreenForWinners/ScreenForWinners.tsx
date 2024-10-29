@@ -19,7 +19,6 @@ export function ScreenForWinners() {
 
   return (
     <ScreenContainer
-      className={winner === 'A' ? 'bg-teamAColor-950' : 'bg-teamBColor-950'}
       screenName={AppScreen.Winners}
       slotForHeader={<AppHeader centerSlot="Game Over" />}
       slotForMain={

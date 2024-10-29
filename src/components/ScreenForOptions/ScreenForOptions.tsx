@@ -23,15 +23,15 @@ const Checkbox = ({ checked, onChange }: CheckboxProps) => {
   return (
     <input
       checked={checked}
-      className={`
-      rounded-sm
-      border-none
-      bg-primaryColor-700
-      text-primaryColor-500
-      !outline-primaryColor-400
-      transition-all
-      checked:bg-primaryColor-500
-    `}
+      className="
+        rounded-sm
+        border-none
+        bg-primaryColor-700
+        text-primaryColor-500
+        !outline-primaryColor-400
+        transition-all
+        checked:bg-primaryColor-500
+      "
       type="checkbox"
       onChange={onChange}
     />
