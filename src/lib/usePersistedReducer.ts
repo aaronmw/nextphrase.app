@@ -11,7 +11,6 @@ export function usePersistedReducer({
   key: string
   persistedKeys: string[]
 }) {
-  // Initialize state from localStorage, or fall back to initialState
   const [state, dispatch] = useReducer(
     reducer,
     initialState,
@@ -22,7 +21,6 @@ export function usePersistedReducer({
     },
   )
 
-  // Update localStorage whenever state changes
   useEffect(() => {
     const getFilteredState = (state: any = {}) => {
       if (!persistedKeys.length) return state
