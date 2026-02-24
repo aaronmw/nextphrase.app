@@ -21,9 +21,11 @@ export function PhraseFlipper({
   } = useAppContext()
   const containerElementRef = useRef<HTMLDivElement>(null)
   const [isFrozen, setIsFrozen] = useState(false)
-  const currentPhrase = currentPhraseId
-    ? String(phrasesById.get(currentPhraseId))
-    : '...'
+  const rawPhrase = currentPhraseId
+    ? phrasesById.get(currentPhraseId)
+    : null
+  const currentPhrase =
+    rawPhrase != null && rawPhrase !== '' ? String(rawPhrase) : '…'
 
   function handleScroll() {
     const containerElement = containerElementRef.current
@@ -151,7 +153,9 @@ const PhraseContainer = ({
         >
           {renderedContent}
         </div>
-        <div className="relative z-10 p-3">{renderedContent}</div>
+        <div className="relative z-10 p-3 text-textColor">
+          {renderedContent}
+        </div>
       </div>
     </div>
   )

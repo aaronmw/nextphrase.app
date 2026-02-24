@@ -119,16 +119,17 @@ export function ScreenContainer({
       )}
       {...otherProps}
     >
-      <div
-        className="
-          js-inner-container
-          absolute
-          inset-0
-          grid
-          grid-cols-1
-          grid-rows-[1.5rem,auto]
-        "
-      >
+        <div
+          className="
+            js-inner-container
+            absolute
+            inset-0
+            grid
+            min-h-0
+            grid-cols-1
+            grid-rows-[1.5rem,1fr]
+          "
+        >
         <div
           className="
             js-header-container
@@ -150,6 +151,7 @@ export function ScreenContainer({
             col-end-2
             row-start-2
             row-end-3
+            min-h-0
           "
         >
           {slotForMain}

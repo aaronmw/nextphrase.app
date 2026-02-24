@@ -30,6 +30,8 @@ export interface AppState {
   pointsForTeamA: number
   pointsForTeamB: number
   pointsToWin: number
+  teamHoldingPhone: 'A' | 'B'
+  lastRoundLostHearts: { A: number | null; B: number | null }
   tickRate: number
   acceleratedTickRate: number
   roundDurationMin: number
@@ -55,12 +57,14 @@ export const initialState: AppState = {
   pointsForTeamA: 0,
   pointsForTeamB: 0,
   pointsToWin: 7,
+  teamHoldingPhone: 'A',
+  lastRoundLostHearts: { A: null, B: null },
   tickRate: 1,
   acceleratedTickRate: 0.5,
-  roundDurationMin: process.env.NODE_ENV === 'development' ? 3 : 45,
+  roundDurationMin: process.env.NODE_ENV === 'development' ? 5 : 45,
   roundDurationMax: process.env.NODE_ENV === 'development' ? 5 : 60,
-  accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
-  accelerationDurationMax: process.env.NODE_ENV === 'development' ? 3 : 15,
+  accelerationDurationMin: process.env.NODE_ENV === 'development' ? 0 : 10,
+  accelerationDurationMax: process.env.NODE_ENV === 'development' ? 0 : 15,
   rotateScreen: false,
   viewedPhraseIds: [],
 }
@@ -96,6 +100,8 @@ export type AppAction =
   | { type: 'ABORT_ROUND' }
   | { type: 'ADD_POINT'; team: 'A' | 'B' }
   | { type: 'SUBTRACT_POINT'; team: 'A' | 'B' }
+  | { type: 'SET_TEAM_HOLDING_PHONE'; team: 'A' | 'B' }
+  | { type: 'CLEAR_LAST_ROUND_LOST_HEARTS'; team: 'A' | 'B' }
   | { type: 'END_GAME' }
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
@@ -135,12 +141,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         currentRoundStartTime: null,
         isNewGame: true,
         isRoundOver: false,
+        lastRoundLostHearts: { A: null, B: null },
         pointsForTeamA: 0,
         pointsForTeamB: 0,
+        teamHoldingPhone: 'A',
       }
       break
 
-    case 'START_ROUND':
+    case 'START_ROUND': {
       const now = Date.now()
       const {
         roundDurationMin,
@@ -160,10 +168,12 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
           currentRoundAccelerationStartTime: now + roundDuration,
           currentRoundEndTime: now + roundDuration + accelerationDuration,
           isRoundOver: false,
+          lastRoundLostHearts: { A: null, B: null },
         },
         { type: 'NEXT_PHRASE' },
       )
       break
+    }
 
     case 'ABORT_ROUND':
       newState = {
@@ -173,10 +183,15 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
         isRoundOver: false,
+        lastRoundLostHearts: { A: null, B: null },
       }
       break
 
-    case 'END_ROUND':
+    case 'END_ROUND': {
+      const holder = state.teamHoldingPhone
+      const holderProp = `pointsForTeam${holder}` as const
+      const holderPoints = state[holderProp]
+      const heartsBefore = state.pointsToWin - holderPoints
       newState = {
         ...state,
         activeScreen: AppScreen.Scoring,
@@ -184,8 +199,15 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
         isRoundOver: true,
+        isNewGame: false,
+        lastRoundLostHearts: {
+          ...state.lastRoundLostHearts,
+          [holder]: heartsBefore,
+        },
+        [holderProp]: clamp(holderPoints + 1, 0, state.pointsToWin),
       }
       break
+    }
 
     case 'NEXT_PHRASE': {
       const allPhrases = Object.values(state.categoriesById).flatMap(
@@ -199,7 +221,12 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       )
       const eligiblePhrases =
         unviewedPhrases.length > 0 ? unviewedPhrases : enabledPhrases
-      const currentPhrase = sample(eligiblePhrases)!
+      const currentPhrase = sample(eligiblePhrases)
+
+      if (!currentPhrase) {
+        newState = { ...state, currentPhraseId: null }
+        break
+      }
 
       newState = {
         ...state,
@@ -232,6 +259,25 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         isNewGame: false,
         isRoundOver: false,
         [propName]: clamp(newPoints, 0, state.pointsToWin),
+      }
+      break
+    }
+
+    case 'SET_TEAM_HOLDING_PHONE': {
+      newState = {
+        ...state,
+        teamHoldingPhone: action.team,
+      }
+      break
+    }
+
+    case 'CLEAR_LAST_ROUND_LOST_HEARTS': {
+      newState = {
+        ...state,
+        lastRoundLostHearts: {
+          ...state.lastRoundLostHearts,
+          [action.team]: null,
+        },
       }
       break
     }

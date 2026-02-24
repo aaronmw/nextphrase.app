@@ -6,11 +6,12 @@ import { AppHeader } from '@/components/AppHeader'
 import { Icon } from '@/components/Icon'
 import { PhraseFlipper } from '@/components/PhraseFlipper'
 import { ScreenContainer } from '@/components/ScreenContainer'
+import { TeamDragSwitch } from '@/components/TeamDragSwitch'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import colors from 'tailwindcss/colors'
+import { teamAColor, teamBColor } from '../../../tailwind.config'
 import { classNames } from './classNames'
 
 export function ScreenForGuessing() {
@@ -23,6 +24,7 @@ export function ScreenForGuessing() {
     currentRoundStartTime,
     tickRate,
     acceleratedTickRate,
+    teamHoldingPhone,
   } = state
 
   useGSAP(
@@ -150,13 +152,21 @@ export function ScreenForGuessing() {
     <ScreenContainer
       className="touch-auto"
       screenName={AppScreen.Guessing}
-      slotForMain={<PhraseFlipper />}
+      slotForMain={
+        <div className="absolute inset-0">
+          <PhraseFlipper />
+          <div className="absolute bottom-0 left-0 right-0 z-10 px-3 pb-3">
+            <TeamDragSwitch />
+          </div>
+        </div>
+      }
       slotForHeader={
         <AppHeader
+          className="pointer-events-none"
           centerSlot={
             <button
               ref={lightsContainerRef}
-              className={classNames.button}
+              className={twMerge(classNames.button, 'pointer-events-auto')}
               onClick={() => dispatch({ type: 'ABORT_ROUND' })}
             >
               <span className={classNames.lightsContainer}>
@@ -164,16 +174,43 @@ export function ScreenForGuessing() {
                   className={twMerge(
                     `js-rotating-light`,
                     classNames.rotatingLight,
+                    teamHoldingPhone === 'A'
+                      ? 'opacity-100'
+                      : 'opacity-0',
+                    'transition-opacity duration-300',
                   )}
                   style={{
                     backgroundImage: `
                       conic-gradient(
                         from 0deg at 50% 50%,
                         transparent 15%,
-                        ${colors.red['500']} 25%,
+                        ${teamAColor['500']} 25%,
                         transparent 35%,
                         transparent 65%,
-                        ${colors.red['500']} 75%,
+                        ${teamAColor['500']} 75%,
+                        transparent 85%
+                      )
+                    `,
+                  }}
+                />
+                <span
+                  className={twMerge(
+                    `js-rotating-light`,
+                    classNames.rotatingLight,
+                    teamHoldingPhone === 'B'
+                      ? 'opacity-100'
+                      : 'opacity-0',
+                    'transition-opacity duration-300',
+                  )}
+                  style={{
+                    backgroundImage: `
+                      conic-gradient(
+                        from 0deg at 50% 50%,
+                        transparent 15%,
+                        ${teamBColor['500']} 25%,
+                        transparent 35%,
+                        transparent 65%,
+                        ${teamBColor['500']} 75%,
                         transparent 85%
                       )
                     `,
@@ -190,7 +227,14 @@ export function ScreenForGuessing() {
               </span>
 
               <span
-                className={twMerge(`js-spinning-icon`, classNames.spinningIcon)}
+                className={twMerge(
+                  `js-spinning-icon`,
+                  classNames.spinningIcon,
+                  teamHoldingPhone === 'A'
+                    ? 'bg-teamAColor-500'
+                    : 'bg-teamBColor-500',
+                  'pointer-events-none transition-colors duration-300',
+                )}
               >
                 <Icon name="circle-quarters" />
               </span>

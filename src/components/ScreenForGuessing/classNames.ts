@@ -40,7 +40,6 @@ export const classNames = {
     text-white
     rounded-full
     size-4
-    bg-red-500
     relative
     z-10
   `,
