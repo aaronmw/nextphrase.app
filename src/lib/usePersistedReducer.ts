@@ -16,7 +16,11 @@ export function usePersistedReducer({
     reducer,
     initialState,
     (initial = {}) => {
-      if (typeof localStorage === 'undefined') return initial
+      if (
+        typeof localStorage === 'undefined' ||
+        typeof localStorage.getItem !== 'function'
+      )
+        return initial
       const persisted = localStorage.getItem(key)
       return persisted ? { ...initial, ...JSON.parse(persisted) } : initial
     },
@@ -33,7 +37,9 @@ export function usePersistedReducer({
 
     const filteredState = getFilteredState(state)
 
-    localStorage.setItem(key, JSON.stringify(filteredState))
+    if (typeof localStorage?.setItem === 'function') {
+      localStorage.setItem(key, JSON.stringify(filteredState))
+    }
   }, [key, state, persistedKeys])
 
   return [state, dispatch]
