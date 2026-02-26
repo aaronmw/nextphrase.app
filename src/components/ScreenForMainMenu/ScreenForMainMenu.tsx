@@ -1,6 +1,6 @@
 'use client'
 
-import { AppScreen } from '@/app/reducer'
+import { AppScreen, HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
 import { Logo } from '@/components/Logo'
@@ -11,9 +11,11 @@ import { classNames } from './classNames'
 export function ScreenForMainMenu() {
   const { state, dispatch } = useAppContext()
 
-  const { pointsForTeamA, pointsForTeamB } = state
+  const { heartsRemainingForTeamA, heartsRemainingForTeamB } = state
 
-  const gameInProgress = pointsForTeamA + pointsForTeamB >= 1
+  const gameInProgress =
+    heartsRemainingForTeamA < HEARTS_PER_TEAM ||
+    heartsRemainingForTeamB < HEARTS_PER_TEAM
 
   return (
     <ScreenContainer
@@ -41,8 +43,12 @@ export function ScreenForMainMenu() {
                 <div>Continue Game</div>
 
                 <div className={classNames.scoreContainer}>
-                  <div className={classNames.teamAScore}>{pointsForTeamA}</div>
-                  <div className={classNames.teamBScore}>{pointsForTeamB}</div>
+                  <div className={classNames.teamAScore}>
+                    {heartsRemainingForTeamA}
+                  </div>
+                  <div className={classNames.teamBScore}>
+                    {heartsRemainingForTeamB}
+                  </div>
                 </div>
               </StyledText>
             )}

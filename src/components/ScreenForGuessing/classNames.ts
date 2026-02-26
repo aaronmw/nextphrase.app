@@ -40,9 +40,23 @@ export const classNames = {
     text-white
     rounded-full
     size-4
-    bg-red-500
     relative
     z-10
+  `,
+  gotItButton: `
+    w-fit
+    text-2xl
+    px-8
+    py-3
+    rounded-xl
+  `,
+  gotItButtonTeamA: `
+    border-teamAColor-500
+    bg-teamAColor-500
+  `,
+  gotItButtonTeamB: `
+    border-teamBColor-500
+    bg-teamBColor-500
   `,
   nextPhraseButton: `
     h-full

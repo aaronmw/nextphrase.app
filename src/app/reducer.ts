@@ -10,8 +10,11 @@ export enum AppScreen {
   Winners = 'winners',
 }
 
+export const HEARTS_PER_TEAM = 7
+
 export interface AppState {
   activeScreen: AppScreen
+  activeTeamInRound: 'A' | 'B'
   categoriesById: Record<
     Tables<'categories'>['id'],
     Tables<'categories'> & {
@@ -24,12 +27,10 @@ export interface AppState {
   currentRoundEndTime: number | null
   disabledCategoryIds: string[]
   freezeDuration: number
+  heartsRemainingForTeamA: number
+  heartsRemainingForTeamB: number
   isNewGame: boolean
-  isRoundOver: boolean
   phrasesById: Map<string, string>
-  pointsForTeamA: number
-  pointsForTeamB: number
-  pointsToWin: number
   tickRate: number
   acceleratedTickRate: number
   roundDurationMin: number
@@ -42,6 +43,7 @@ export interface AppState {
 
 export const initialState: AppState = {
   activeScreen: AppScreen.MainMenu,
+  activeTeamInRound: 'A',
   categoriesById: {},
   currentPhraseId: null,
   currentRoundStartTime: null,
@@ -49,12 +51,10 @@ export const initialState: AppState = {
   currentRoundEndTime: null,
   disabledCategoryIds: [],
   freezeDuration: 3000,
+  heartsRemainingForTeamA: HEARTS_PER_TEAM,
+  heartsRemainingForTeamB: HEARTS_PER_TEAM,
   isNewGame: true,
-  isRoundOver: false,
   phrasesById: new Map(),
-  pointsForTeamA: 0,
-  pointsForTeamB: 0,
-  pointsToWin: 7,
   tickRate: 1,
   acceleratedTickRate: 0.5,
   roundDurationMin: process.env.NODE_ENV === 'development' ? 3 : 45,
@@ -67,16 +67,15 @@ export const initialState: AppState = {
 
 export const persistedStateKeys: (keyof AppState)[] = [
   'activeScreen',
+  'activeTeamInRound',
   'currentPhraseId',
   'currentRoundStartTime',
   'currentRoundAccelerationStartTime',
   'currentRoundEndTime',
   'disabledCategoryIds',
+  'heartsRemainingForTeamA',
+  'heartsRemainingForTeamB',
   'isNewGame',
-  'isRoundOver',
-  'pointsForTeamA',
-  'pointsForTeamB',
-  'pointsToWin',
   'rotateScreen',
   'viewedPhraseIds',
 ] as (keyof AppState)[]
@@ -94,8 +93,10 @@ export type AppAction =
   | { type: 'ACCELERATE_ROUND' }
   | { type: 'END_ROUND' }
   | { type: 'ABORT_ROUND' }
-  | { type: 'ADD_POINT'; team: 'A' | 'B' }
-  | { type: 'SUBTRACT_POINT'; team: 'A' | 'B' }
+  | { type: 'TOGGLE_ACTIVE_TEAM' }
+  | { type: 'SET_ACTIVE_TEAM'; team: 'A' | 'B' }
+  | { type: 'ADD_HEART'; team: 'A' | 'B' }
+  | { type: 'SUBTRACT_HEART'; team: 'A' | 'B' }
   | { type: 'END_GAME' }
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
@@ -129,14 +130,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       newState = {
         ...state,
         activeScreen: AppScreen.Scoring,
+        activeTeamInRound: 'A',
         currentPhraseId: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
         currentRoundStartTime: null,
+        heartsRemainingForTeamA: HEARTS_PER_TEAM,
+        heartsRemainingForTeamB: HEARTS_PER_TEAM,
         isNewGame: true,
-        isRoundOver: false,
-        pointsForTeamA: 0,
-        pointsForTeamB: 0,
       }
       break
 
@@ -159,7 +160,6 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
           currentRoundStartTime: now,
           currentRoundAccelerationStartTime: now + roundDuration,
           currentRoundEndTime: now + roundDuration + accelerationDuration,
-          isRoundOver: false,
         },
         { type: 'NEXT_PHRASE' },
       )
@@ -172,18 +172,39 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
-        isRoundOver: false,
       }
       break
 
-    case 'END_ROUND':
+    case 'END_ROUND': {
+      const propName =
+        state.activeTeamInRound === 'A'
+          ? 'heartsRemainingForTeamA'
+          : 'heartsRemainingForTeamB'
+      const currentHearts = state[propName]
+      const newHearts = Math.max(0, currentHearts - 1)
+      const isGameOver = newHearts === 0
       newState = {
         ...state,
-        activeScreen: AppScreen.Scoring,
+        activeScreen: isGameOver ? AppScreen.Winners : AppScreen.Scoring,
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
-        isRoundOver: true,
+        [propName]: newHearts,
+      }
+      break
+    }
+
+    case 'TOGGLE_ACTIVE_TEAM':
+      newState = {
+        ...state,
+        activeTeamInRound: state.activeTeamInRound === 'A' ? 'B' : 'A',
+      }
+      break
+
+    case 'SET_ACTIVE_TEAM':
+      newState = {
+        ...state,
+        activeTeamInRound: action.team,
       }
       break
 
@@ -220,18 +241,21 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
     }
 
-    case 'SUBTRACT_POINT':
-    case 'ADD_POINT': {
-      const propName = `pointsForTeam${action.team}` as const
-      const currentPoints = state[propName]
-      const newPoints =
-        action.type === 'ADD_POINT' ? currentPoints + 1 : currentPoints - 1
+    case 'SUBTRACT_HEART':
+    case 'ADD_HEART': {
+      const propName = `heartsRemainingForTeam${action.team}` as const
+      const currentHearts = state[propName]
+      const newHearts =
+        action.type === 'ADD_HEART' ? currentHearts + 1 : currentHearts - 1
+      const clampedHearts = clamp(newHearts, 0, HEARTS_PER_TEAM)
+      const isGameOver =
+        action.type === 'SUBTRACT_HEART' && clampedHearts === 0
 
       newState = {
         ...state,
         isNewGame: false,
-        isRoundOver: false,
-        [propName]: clamp(newPoints, 0, state.pointsToWin),
+        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
+        [propName]: clampedHearts,
       }
       break
     }

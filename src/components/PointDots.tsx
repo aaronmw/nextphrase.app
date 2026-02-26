@@ -1,5 +1,6 @@
 'use client'
 
+import { HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
 import { usePrevious } from '@/lib/usePrevious'
@@ -13,26 +14,33 @@ interface PointDotsProps extends Omit<ComponentProps<'div'>, 'children'> {
 }
 
 export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
-  const { dispatch, state, sounds } = useAppContext()
-  const { pointsToWin, pointsForTeamA, pointsForTeamB, isNewGame } = state
+  const { state, sounds } = useAppContext()
+  const {
+    heartsRemainingForTeamA,
+    heartsRemainingForTeamB,
+    isNewGame,
+  } = state
   const isClient = useIsClient()
-  const pointsForTeam = team === 'A' ? pointsForTeamA : pointsForTeamB
-  const previousPointsForTeam = usePrevious(pointsForTeam) ?? 0
+  const heartsRemaining =
+    team === 'A' ? heartsRemainingForTeamA : heartsRemainingForTeamB
+  const previousHeartsRemaining = usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
   const pointBgColor =
     team === 'A' ? 'text-teamAColor-500' : 'text-teamBColor-500'
   const didIncrease =
-    isClient && !isNewGame && pointsForTeam > previousPointsForTeam
+    isClient && !isNewGame && heartsRemaining > previousHeartsRemaining
   const didDecrease =
-    isClient && !isNewGame && pointsForTeam < previousPointsForTeam
+    isClient && !isNewGame && heartsRemaining < previousHeartsRemaining
   const [pointToAnimate, setPointToAnimate] = useState<number | null>(null)
   const isGameOver =
-    pointsForTeamA === pointsToWin || pointsForTeamB === pointsToWin
+    heartsRemainingForTeamA === 0 || heartsRemainingForTeamB === 0
 
   useEffect(() => {
     if (didIncrease || didDecrease) {
-      setPointToAnimate(didIncrease ? pointsForTeam : previousPointsForTeam)
+      setPointToAnimate(
+        didDecrease ? previousHeartsRemaining : heartsRemaining,
+      )
     }
-  }, [pointsForTeam, previousPointsForTeam, didIncrease, didDecrease])
+  }, [heartsRemaining, previousHeartsRemaining, didIncrease, didDecrease])
 
   useEffect(() => {
     if (pointToAnimate) {
@@ -40,10 +48,7 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
         setPointToAnimate(null)
         sounds.playSound('pop')
         if (isGameOver) {
-          setTimeout(() => {
-            sounds.playSound('cheering')
-            dispatch({ type: 'END_GAME' })
-          }, 500)
+          setTimeout(() => sounds.playSound('cheering'), 500)
         }
       }, 1000)
     }
@@ -64,9 +69,9 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
           className,
         )}
       >
-        {range(1, pointsToWin + 1).map(currentPointNumber => {
-          const isAnimating = currentPointNumber === pointToAnimate
-          const isHeart = isAnimating || currentPointNumber > pointsForTeam
+        {range(1, HEARTS_PER_TEAM + 1).map(slotNumber => {
+          const isAnimating = slotNumber === pointToAnimate
+          const isHeart = isAnimating || slotNumber <= heartsRemaining
 
           return (
             <div
@@ -106,7 +111,7 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
                       scale-75
                     `,
               )}
-              key={currentPointNumber}
+              key={slotNumber}
             >
               <Icon name={isHeart ? 'solid:heart' : 'solid:xmark'} />
             </div>

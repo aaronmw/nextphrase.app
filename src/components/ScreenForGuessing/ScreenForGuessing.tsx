@@ -1,16 +1,17 @@
 'use client'
 
+import { teamAColor, teamBColor } from '@/app/theme'
 import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
 import { Icon } from '@/components/Icon'
 import { PhraseFlipper } from '@/components/PhraseFlipper'
 import { ScreenContainer } from '@/components/ScreenContainer'
+import { StyledText } from '@/components/StyledText'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import colors from 'tailwindcss/colors'
 import { classNames } from './classNames'
 
 export function ScreenForGuessing() {
@@ -18,12 +19,15 @@ export function ScreenForGuessing() {
   const flashingLightElementRef = useRef<HTMLDivElement>(null)
   const { state, dispatch, sounds } = useAppContext()
   const {
+    activeTeamInRound,
     currentRoundAccelerationStartTime,
     currentRoundEndTime,
     currentRoundStartTime,
     tickRate,
     acceleratedTickRate,
   } = state
+  const activeTeamColor =
+    activeTeamInRound === 'A' ? teamAColor[500] : teamBColor[500]
 
   useGSAP(
     () => {
@@ -150,7 +154,28 @@ export function ScreenForGuessing() {
     <ScreenContainer
       className="touch-auto"
       screenName={AppScreen.Guessing}
-      slotForMain={<PhraseFlipper />}
+      slotForMain={
+        <div className="flex h-full flex-col">
+          <div className="min-h-0 flex-1">
+            <PhraseFlipper />
+          </div>
+          <div className="flex justify-center p-3">
+            <StyledText
+              as="button"
+              className={twMerge(
+                classNames.gotItButton,
+                activeTeamInRound === 'A'
+                  ? classNames.gotItButtonTeamA
+                  : classNames.gotItButtonTeamB,
+              )}
+              variant="button.primary"
+              onClick={() => dispatch({ type: 'TOGGLE_ACTIVE_TEAM' })}
+            >
+              GOT IT
+            </StyledText>
+          </div>
+        </div>
+      }
       slotForHeader={
         <AppHeader
           centerSlot={
@@ -170,10 +195,10 @@ export function ScreenForGuessing() {
                       conic-gradient(
                         from 0deg at 50% 50%,
                         transparent 15%,
-                        ${colors.red['500']} 25%,
+                        ${activeTeamColor} 25%,
                         transparent 35%,
                         transparent 65%,
-                        ${colors.red['500']} 75%,
+                        ${activeTeamColor} 75%,
                         transparent 85%
                       )
                     `,
@@ -191,6 +216,7 @@ export function ScreenForGuessing() {
 
               <span
                 className={twMerge(`js-spinning-icon`, classNames.spinningIcon)}
+                style={{ backgroundColor: activeTeamColor }}
               >
                 <Icon name="circle-quarters" />
               </span>

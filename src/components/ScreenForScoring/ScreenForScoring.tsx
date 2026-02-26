@@ -13,14 +13,14 @@ import { classNames } from './classNames'
 
 export function ScreenForScoring() {
   const { dispatch, state } = useAppContext()
-  const { isNewGame, isRoundOver } = state
+  const { activeTeamInRound } = state
   const timerRef = useRef<NodeJS.Timeout>(null)
   const touchStartedAtRef = useRef<number | null>(null)
 
   function handleTouchStart(team: 'A' | 'B') {
     touchStartedAtRef.current = Date.now()
     timerRef.current = setTimeout(() => {
-      dispatch({ type: 'SUBTRACT_POINT', team })
+      dispatch({ type: 'ADD_HEART', team })
     }, 1000)
   }
 
@@ -34,7 +34,7 @@ export function ScreenForScoring() {
     }
 
     if (touchDuration < 500) {
-      dispatch({ type: 'ADD_POINT', team })
+      dispatch({ type: 'SET_ACTIVE_TEAM', team })
     }
   }
 
@@ -71,6 +71,7 @@ export function ScreenForScoring() {
                 team === 'A'
                   ? classNames.pointButtonTeamA
                   : classNames.pointButtonTeamB,
+                team !== activeTeamInRound && 'opacity-50',
               )}
               key={team}
               variant="button.primary"
@@ -83,7 +84,7 @@ export function ScreenForScoring() {
 
           <StyledText
             as="button"
-            className={classNames.startButton({ isNewGame, isRoundOver })}
+            className={classNames.startButton({ activeTeam: activeTeamInRound })}
             variant="button.primary"
             onClick={() => dispatch({ type: 'START_ROUND' })}
           >

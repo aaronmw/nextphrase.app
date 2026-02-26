@@ -33,7 +33,7 @@ export const classNames = {
     border-teamBColor-500
     bg-teamBColor-500
   `,
-  startButton: ({ isNewGame = false, isRoundOver = false }) =>
+  startButton: ({ activeTeam }: { activeTeam: 'A' | 'B' }) =>
     twMerge(
       `
         js-start-button
@@ -45,15 +45,14 @@ export const classNames = {
         text-4xl
         transition-all
       `,
-      isRoundOver &&
+      activeTeam === 'A'
+        ? `
+          border-teamAColor-500
+          bg-teamAColor-500
         `
-          pointer-events-none
-          opacity-50
-          delay-0
-        `,
-      !isNewGame &&
-        `
-          delay-1000
+        : `
+          border-teamBColor-500
+          bg-teamBColor-500
         `,
     ),
 }
