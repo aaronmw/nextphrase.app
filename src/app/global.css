@@ -1,3 +1,75 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --color-bgColor: var(--color-slate-950);
+  --color-textColor: var(--color-rose-50);
+  --color-borderColor: rgb(148 163 184 / 0.1);
+  --color-shadedBgColor: var(--color-borderColor);
+  --color-fadedTextColor: var(--color-rose-500);
+  --color-primaryColor-50: var(--color-rose-50);
+  --color-primaryColor-100: var(--color-rose-100);
+  --color-primaryColor-200: var(--color-rose-200);
+  --color-primaryColor-300: var(--color-rose-300);
+  --color-primaryColor-400: var(--color-rose-400);
+  --color-primaryColor-500: var(--color-rose-500);
+  --color-primaryColor-600: var(--color-rose-600);
+  --color-primaryColor-700: var(--color-rose-700);
+  --color-primaryColor-800: var(--color-rose-800);
+  --color-primaryColor-900: var(--color-rose-900);
+  --color-primaryColor-950: var(--color-rose-950);
+  --color-teamAColor-50: var(--color-amber-50);
+  --color-teamAColor-100: var(--color-amber-100);
+  --color-teamAColor-200: var(--color-amber-200);
+  --color-teamAColor-300: var(--color-amber-300);
+  --color-teamAColor-400: var(--color-amber-400);
+  --color-teamAColor-500: var(--color-amber-500);
+  --color-teamAColor-600: var(--color-amber-600);
+  --color-teamAColor-700: var(--color-amber-700);
+  --color-teamAColor-800: var(--color-amber-800);
+  --color-teamAColor-900: var(--color-amber-900);
+  --color-teamAColor-950: var(--color-amber-950);
+  --color-teamBColor-50: var(--color-sky-50);
+  --color-teamBColor-100: var(--color-sky-100);
+  --color-teamBColor-200: var(--color-sky-200);
+  --color-teamBColor-300: var(--color-sky-300);
+  --color-teamBColor-400: var(--color-sky-400);
+  --color-teamBColor-500: var(--color-sky-500);
+  --color-teamBColor-600: var(--color-sky-600);
+  --color-teamBColor-700: var(--color-sky-700);
+  --color-teamBColor-800: var(--color-sky-800);
+  --color-teamBColor-900: var(--color-sky-900);
+  --color-teamBColor-950: var(--color-sky-950);
+  --font-family-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-family-icon: "Font Awesome 6 Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-bgColor);
+    color: var(--color-textColor);
+    font-size: 32px;
+    overflow: hidden;
+    overscroll-behavior: none;
+    scroll-behavior: smooth;
+    scroll-padding-top: 3rem;
+  }
+  * {
+    scrollbar-color: var(--color-primaryColor-500) transparent;
+  }
+  *::-webkit-scrollbar {
+    height: 0.5rem;
+    width: 0.5rem;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-primaryColor-500);
+    border-radius: 2rem;
+  }
+  a, button, input, textarea {
+    touch-action: manipulation;
+  }
+}
