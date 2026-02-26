@@ -21,7 +21,7 @@ export function AppHeader({
           absolute
           inset-0
           grid
-          grid-cols-[1fr,auto,1fr]
+          grid-cols-[1fr_auto_1fr]
           content-center
           items-center
           px-3

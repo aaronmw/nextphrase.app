@@ -126,7 +126,7 @@ export function ScreenContainer({
           inset-0
           grid
           grid-cols-1
-          grid-rows-[1.5rem,auto]
+          grid-rows-[1.5rem_auto]
         "
       >
         <div

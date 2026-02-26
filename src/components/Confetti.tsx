@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import ReactConfetti from 'react-confetti'
-import ConfettiType from 'react-confetti/dist/types/Confetti'
 
 interface ConfettiProps {
   trigger: boolean
-  onComplete?: (confetti?: ConfettiType) => void
+  onComplete?: (confetti?: { reset: () => void }) => void
   colors: string[]
 }
 

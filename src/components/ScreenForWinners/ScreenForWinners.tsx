@@ -6,7 +6,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { Confetti } from '@/components/Confetti'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
-import { teamAColor, teamBColor } from '../../../tailwind.config'
+import { teamAColor, teamBColor } from '@/app/theme'
 
 export function ScreenForWinners() {
   const { state, dispatch } = useAppContext()
