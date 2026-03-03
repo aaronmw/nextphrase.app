@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/forms";
 
+@property --alert-light-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
 @theme {
   --color-bgColor: var(--color-slate-950);
   --color-textColor: var(--color-rose-50);
