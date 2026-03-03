@@ -12,6 +12,11 @@ export enum AppScreen {
 
 export const HEARTS_PER_TEAM = 7
 
+export const DEFAULT_ROUND_DURATION_MIN =
+  process.env.NODE_ENV === 'development' ? 3 : 45
+export const DEFAULT_ROUND_DURATION_MAX =
+  process.env.NODE_ENV === 'development' ? 5 : 60
+
 export interface AppState {
   activeScreen: AppScreen
   activeTeamInRound: 'A' | 'B'
@@ -57,8 +62,8 @@ export const initialState: AppState = {
   phrasesById: new Map(),
   tickRate: 1,
   acceleratedTickRate: 0.5,
-  roundDurationMin: process.env.NODE_ENV === 'development' ? 3 : 45,
-  roundDurationMax: process.env.NODE_ENV === 'development' ? 5 : 60,
+  roundDurationMin: DEFAULT_ROUND_DURATION_MIN,
+  roundDurationMax: DEFAULT_ROUND_DURATION_MAX,
   accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
   accelerationDurationMax: process.env.NODE_ENV === 'development' ? 3 : 15,
   rotateScreen: false,
@@ -77,6 +82,8 @@ export const persistedStateKeys: (keyof AppState)[] = [
   'heartsRemainingForTeamB',
   'isNewGame',
   'rotateScreen',
+  'roundDurationMin',
+  'roundDurationMax',
   'viewedPhraseIds',
 ] as (keyof AppState)[]
 
@@ -101,6 +108,8 @@ export type AppAction =
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
+  | { type: 'SET_HEARTS'; heartsA: number; heartsB: number }
+  | { type: 'SET_ROUND_DURATION'; roundDurationMin: number; roundDurationMax: number }
   | { type: 'FACTORY_RESET' }
 
 export function appStateReducer(state: AppState, action: AppAction): AppState {
@@ -306,6 +315,38 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       newState = {
         ...state,
         rotateScreen: action.rotateScreen,
+      }
+      break
+    }
+
+    case 'SET_HEARTS': {
+      const heartsA = clamp(action.heartsA, 0, HEARTS_PER_TEAM)
+      const heartsB = clamp(action.heartsB, 0, HEARTS_PER_TEAM)
+      const isGameOver = heartsA === 0 || heartsB === 0
+      newState = {
+        ...state,
+        isNewGame: false,
+        heartsRemainingForTeamA: heartsA,
+        heartsRemainingForTeamB: heartsB,
+        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
+        currentRoundStartTime: null,
+        currentRoundAccelerationStartTime: null,
+        currentRoundEndTime: null,
+      }
+      break
+    }
+
+    case 'SET_ROUND_DURATION': {
+      const roundDurationMin = clamp(action.roundDurationMin, 1, 300)
+      const roundDurationMax = clamp(
+        Math.max(action.roundDurationMax, roundDurationMin),
+        1,
+        300,
+      )
+      newState = {
+        ...state,
+        roundDurationMin,
+        roundDurationMax,
       }
       break
     }
