@@ -5,6 +5,7 @@ import { Lilita_One } from 'next/font/google'
 import Script from 'next/script'
 import { ReactNode } from 'react'
 import { twJoin } from 'tailwind-merge'
+import 'animate.css'
 import './global.css'
 
 export const metadata: Metadata = {
