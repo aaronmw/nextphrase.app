@@ -3,29 +3,85 @@
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
 import { hyphenateSync } from 'hyphen/en'
-import { ComponentProps, ReactNode, useRef, useState } from 'react'
+import gsap from 'gsap'
+import {
+  ComponentProps,
+  forwardRef,
+  ReactNode,
+  RefObject,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react'
 import { twMerge } from 'tailwind-merge'
+
+const PHRASE_OUT_DURATION = 0.2
+const PHRASE_IN_DURATION = 0.25
+const PHRASE_Y_OFFSET = 16
+
+export interface PhraseFlipperHandle {
+  triggerPhraseTransition: (onComplete: () => void) => void
+}
 
 interface PhraseFlipperProps extends Omit<ComponentProps<'div'>, 'children'> {
   duration?: number
 }
 
-export function PhraseFlipper({
-  className,
-  duration = 250,
-  ...otherProps
-}: PhraseFlipperProps) {
-  const {
-    state: { currentPhraseId, freezeDuration, phrasesById },
-    dispatch,
-  } = useAppContext()
-  const containerElementRef = useRef<HTMLDivElement>(null)
-  const [isFrozen, setIsFrozen] = useState(false)
-  const currentPhrase = currentPhraseId
-    ? String(phrasesById.get(currentPhraseId))
-    : '...'
+export const PhraseFlipper = forwardRef<PhraseFlipperHandle, PhraseFlipperProps>(
+  function PhraseFlipper(
+    { className, duration = 250, ...otherProps },
+    ref,
+  ) {
+    const {
+      state: { currentPhraseId, freezeDuration, phrasesById },
+      dispatch,
+    } = useAppContext()
+    const containerElementRef = useRef<HTMLDivElement>(null)
+    const phraseContentRef = useRef<HTMLDivElement>(null)
+    const transitionPendingRef = useRef(false)
+    const [isFrozen, setIsFrozen] = useState(false)
+    const currentPhrase = currentPhraseId
+      ? String(phrasesById.get(currentPhraseId))
+      : '...'
 
-  function handleScroll() {
+    useImperativeHandle(ref, () => ({
+      triggerPhraseTransition(onComplete: () => void) {
+        const el = phraseContentRef.current
+        if (!el || transitionPendingRef.current) {
+          onComplete()
+          return
+        }
+        transitionPendingRef.current = true
+        gsap.to(el, {
+          opacity: 0,
+          y: -PHRASE_Y_OFFSET,
+          duration: PHRASE_OUT_DURATION,
+          ease: 'power2.in',
+          onComplete: onComplete,
+        })
+      },
+    }))
+
+    useEffect(() => {
+      if (!transitionPendingRef.current || !phraseContentRef.current) return
+      const el = phraseContentRef.current
+      gsap.fromTo(
+        el,
+        { opacity: 0, y: PHRASE_Y_OFFSET },
+        {
+          opacity: 1,
+          y: 0,
+          duration: PHRASE_IN_DURATION,
+          ease: 'power2.out',
+          onComplete: () => {
+            transitionPendingRef.current = false
+          },
+        },
+      )
+    }, [currentPhraseId])
+
+    function handleScroll() {
     const containerElement = containerElementRef.current
 
     if (!containerElement) return
@@ -74,7 +130,7 @@ export function PhraseFlipper({
       onScroll={handleScroll}
       {...otherProps}
     >
-      <PhraseContainer slotForText={currentPhrase} />
+      <PhraseContainer contentRef={phraseContentRef} slotForText={currentPhrase} />
       <PhraseContainer
         slotForText={
           <div className={isFrozen ? undefined : 'animate-spin'}>
@@ -104,12 +160,14 @@ export function PhraseFlipper({
       />
     </div>
   )
-}
+})
 
 const PhraseContainer = ({
+  contentRef,
   slotForText,
   slotForNodes,
 }: {
+  contentRef?: RefObject<HTMLDivElement | null>
   slotForText: ReactNode
   slotForNodes?: ReactNode
 }) => {
@@ -138,7 +196,7 @@ const PhraseContainer = ({
     >
       {slotForNodes}
 
-      <div className="relative">
+      <div ref={contentRef} className="relative">
         <div
           className="
             absolute
