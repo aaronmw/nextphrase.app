@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  DevPanel,
   ScreenForGuessing,
   ScreenForInstructions,
   ScreenForMainMenu,
@@ -38,6 +39,7 @@ export default function Page() {
       <ScreenForScoring />
       <ScreenForGuessing />
       <ScreenForWinners />
+      {process.env.NODE_ENV === 'development' && <DevPanel />}
     </>
   )
 }
