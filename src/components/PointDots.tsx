@@ -18,12 +18,14 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
   const {
     heartsRemainingForTeamA,
     heartsRemainingForTeamB,
+    gameOverWinnerTeam,
     isNewGame,
   } = state
   const isClient = useIsClient()
   const heartsRemaining =
     team === 'A' ? heartsRemainingForTeamA : heartsRemainingForTeamB
-  const previousHeartsRemaining = usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
+  const previousHeartsRemaining =
+    usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
   const pointBgColor =
     team === 'A' ? 'text-teamAColor-500' : 'text-teamBColor-500'
   const didIncrease =
@@ -32,13 +34,18 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
     isClient && !isNewGame && heartsRemaining < previousHeartsRemaining
   const [pointToAnimate, setPointToAnimate] = useState<number | null>(null)
   const isGameOver =
-    heartsRemainingForTeamA === 0 || heartsRemainingForTeamB === 0
+    heartsRemainingForTeamA === 0 ||
+    heartsRemainingForTeamB === 0 ||
+    gameOverWinnerTeam != null
 
   useEffect(() => {
     if (didIncrease || didDecrease) {
-      setPointToAnimate(
-        didDecrease ? previousHeartsRemaining : heartsRemaining,
-      )
+      const animationId = setTimeout(() => {
+        setPointToAnimate(
+          didDecrease ? previousHeartsRemaining : heartsRemaining,
+        )
+      }, 0)
+      return () => clearTimeout(animationId)
     }
   }, [heartsRemaining, previousHeartsRemaining, didIncrease, didDecrease])
 
@@ -91,24 +98,24 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
                     scale-100
                   `
                   : `
-                    opacity-50
                     scale-75
+                    opacity-50
                   `,
                 isAnimating
                   ? `
+                    translate-y-full
+                    scale-[5]
+                    rotate-6
                     text-red-500
                     duration-1000
-                    translate-y-full
-                    rotate-6
-                    scale-[5]
                   `
                   : isHeart
                     ? `
                       scale-100
                     `
                     : `
-                      rotate-[360deg]
                       scale-75
+                      rotate-[360deg]
                     `,
               )}
               key={slotNumber}

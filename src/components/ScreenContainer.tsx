@@ -7,8 +7,10 @@ import { ComponentProps, ReactNode, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useIsClient } from 'usehooks-ts'
 
-interface ScreenContainerProps
-  extends Omit<ComponentProps<'section'>, 'children'> {
+interface ScreenContainerProps extends Omit<
+  ComponentProps<'section'>,
+  'children'
+> {
   screenName: string
   slotForHeader?: ReactNode
   slotForMain?: ReactNode
@@ -19,6 +21,7 @@ export function ScreenContainer({
   screenName,
   slotForHeader,
   slotForMain,
+  style,
   ...otherProps
 }: ScreenContainerProps) {
   const isClient = useIsClient()
@@ -39,10 +42,6 @@ export function ScreenContainer({
       })
 
       timeline
-        .to(outerElementRef.current, {
-          visibility: isActiveScreen ? 'visible' : undefined,
-          pointerEvents: isActiveScreen ? 'auto' : 'none',
-        })
         .fromTo(
           '.js-inner-container',
           {
@@ -117,6 +116,12 @@ export function ScreenContainer({
         `,
         className,
       )}
+      style={{
+        visibility: isActiveScreen ? 'visible' : 'hidden',
+        pointerEvents: isActiveScreen ? 'auto' : 'none',
+        zIndex: isActiveScreen ? 1 : 0,
+        ...style,
+      }}
       {...otherProps}
     >
       <div

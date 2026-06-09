@@ -10,12 +10,13 @@ import {
   SPRITE_SCALE_FACTOR,
 } from './cardSprites'
 
-const TRANSITION_MS = 2000
+const DEFAULT_TRANSITION_MS = 2000
 
 interface DistressMarksProps {
   heartsLeft: number
   flip?: boolean
   flipX?: boolean
+  transitionMs?: number
 }
 
 function MarksLayer({
@@ -59,6 +60,7 @@ export function DistressMarks({
   heartsLeft,
   flip = false,
   flipX = false,
+  transitionMs = DEFAULT_TRANSITION_MS,
 }: DistressMarksProps) {
   const prevHearts = usePrevious(heartsLeft) ?? heartsLeft
   const [transitionFrom, setTransitionFrom] = useState<number | null>(null)
@@ -74,27 +76,24 @@ export function DistressMarks({
   useEffect(() => {
     if (transitionFrom === null) return
     const startId = setTimeout(() => setFromVisible(false), 50)
-    const doneId = setTimeout(() => setTransitionFrom(null), 50 + TRANSITION_MS)
+    const doneId = setTimeout(() => setTransitionFrom(null), 50 + transitionMs)
     return () => {
       clearTimeout(startId)
       clearTimeout(doneId)
     }
-  }, [transitionFrom])
+  }, [transitionFrom, transitionMs])
 
   const containerTransform = [flipX && 'scaleX(-1)', flip && 'scale(-1, -1)']
     .filter(Boolean)
     .join(' ')
 
-  const containerStyle =
-    containerTransform ?
-      { transform: containerTransform, transformOrigin: 'center' as const }
+  const containerStyle = containerTransform
+    ? { transform: containerTransform, transformOrigin: 'center' as const }
     : undefined
 
-  const isTransitioning =
-    transitionFrom !== null || heartsLeft !== prevHearts
+  const isTransitioning = transitionFrom !== null || heartsLeft !== prevHearts
   const fromValue = transitionFrom ?? prevHearts
-  const showFrom =
-    transitionFrom === null || fromVisible
+  const showFrom = transitionFrom === null || fromVisible
 
   if (isTransitioning) {
     return (
@@ -106,12 +105,12 @@ export function DistressMarks({
         <MarksLayer
           heartsLeft={fromValue}
           opacity={showFrom ? 1 : 0}
-          transitionMs={TRANSITION_MS}
+          transitionMs={transitionMs}
         />
         <MarksLayer
           heartsLeft={heartsLeft}
           opacity={showFrom ? 0 : 1}
-          transitionMs={TRANSITION_MS}
+          transitionMs={transitionMs}
         />
       </div>
     )

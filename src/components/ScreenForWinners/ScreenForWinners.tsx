@@ -10,10 +10,12 @@ import { teamAColor, teamBColor } from '@/app/theme'
 
 export function ScreenForWinners() {
   const { state, dispatch } = useAppContext()
-  const { activeScreen, heartsRemainingForTeamA } = state
+  const { activeScreen, gameOverWinnerTeam, heartsRemainingForTeamA } = state
   const isActiveScreen = activeScreen === AppScreen.Winners
 
-  const winner = heartsRemainingForTeamA === 0 ? 'B' : 'A'
+  const winner =
+    gameOverWinnerTeam ??
+    (heartsRemainingForTeamA === 0 ? ('B' as const) : ('A' as const))
   const colors =
     winner === 'A' ? Object.values(teamAColor) : Object.values(teamBColor)
 

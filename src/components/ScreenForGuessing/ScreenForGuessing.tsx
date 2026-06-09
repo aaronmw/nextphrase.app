@@ -10,15 +10,25 @@ import {
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { SpinningAlertLight } from '@/components/SpinningAlertLight'
 import { TeamSelector } from '@/components/TeamSelector'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 export function ScreenForGuessing() {
   const { state, dispatch } = useAppContext()
-  const { activeTeamInRound } = state
-  const spinningLightRef = useRef<React.ComponentRef<typeof SpinningAlertLight> | null>(
-    null,
-  )
+  const { activeTeamInRound, currentPhraseId } = state
+  const spinningLightRef = useRef<React.ComponentRef<
+    typeof SpinningAlertLight
+  > | null>(null)
   const phraseFlipperRef = useRef<PhraseFlipperHandle | null>(null)
+  const prevPhraseIdRef = useRef(currentPhraseId)
+
+  useEffect(() => {
+    const next = currentPhraseId
+    const prev = prevPhraseIdRef.current
+    prevPhraseIdRef.current = next
+    if (next != null && next !== prev) {
+      spinningLightRef.current?.triggerQuickSpin()
+    }
+  }, [currentPhraseId])
 
   return (
     <ScreenContainer
@@ -36,7 +46,6 @@ export function ScreenForGuessing() {
                 dispatch({ type: 'SET_ACTIVE_TEAM', team })
                 phraseFlipperRef.current?.triggerPhraseTransition(() => {
                   dispatch({ type: 'NEXT_PHRASE' })
-                  spinningLightRef.current?.triggerQuickSpin()
                 })
               }}
             />

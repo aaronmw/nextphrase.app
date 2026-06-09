@@ -51,6 +51,20 @@
   --font-family-mono: ui-monospace, monospace;
 }
 
+@keyframes game-over-card-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 25px var(--game-over-card-glow-color);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--game-over-card-glow-color);
+  }
+}
+
+.game-over-hero-glow {
+  animation: game-over-card-glow 1.8s ease-in-out infinite;
+}
+
 @layer base {
   html {
     background-color: var(--color-bgColor);

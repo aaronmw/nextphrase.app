@@ -17,9 +17,13 @@ export const DEFAULT_ROUND_DURATION_MIN =
 export const DEFAULT_ROUND_DURATION_MAX =
   process.env.NODE_ENV === 'development' ? 5 : 60
 
+export type GameOverSequence = 'idle' | 'playing' | 'complete'
+
 export interface AppState {
   activeScreen: AppScreen
   activeTeamInRound: 'A' | 'B'
+  gameOverSequence: GameOverSequence
+  gameOverWinnerTeam: 'A' | 'B' | null
   categoriesById: Record<
     Tables<'categories'>['id'],
     Tables<'categories'> & {
@@ -49,6 +53,8 @@ export interface AppState {
 export const initialState: AppState = {
   activeScreen: AppScreen.MainMenu,
   activeTeamInRound: 'A',
+  gameOverSequence: 'idle',
+  gameOverWinnerTeam: null,
   categoriesById: {},
   currentPhraseId: null,
   currentRoundStartTime: null,
@@ -95,7 +101,7 @@ export type AppAction =
   | { type: 'SET_ACTIVE_SCREEN'; screen: AppState['activeScreen'] }
   | { type: 'NEW_GAME' }
   | { type: 'START_ROUND' }
-  | { type: 'NEXT_PHRASE' }
+  | { type: 'NEXT_PHRASE'; phraseId?: Tables<'phrases'>['id'] }
   | { type: 'PREVIOUS_PHRASE' }
   | { type: 'ACCELERATE_ROUND' }
   | { type: 'END_ROUND' }
@@ -109,8 +115,43 @@ export type AppAction =
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
   | { type: 'SET_HEARTS'; heartsA: number; heartsB: number }
-  | { type: 'SET_ROUND_DURATION'; roundDurationMin: number; roundDurationMax: number }
+  | {
+      type: 'SET_ROUND_DURATION'
+      roundDurationMin: number
+      roundDurationMax: number
+    }
   | { type: 'FACTORY_RESET' }
+  | { type: 'GAME_OVER_SEQUENCE_COMPLETE' }
+
+function getEligiblePhrases(state: AppState) {
+  const allPhrases = Object.values(state.categoriesById).flatMap(
+    category => category.phrases,
+  )
+  const enabledPhrases = allPhrases.filter(
+    phrase => !state.disabledCategoryIds.includes(phrase.category_id),
+  )
+  const unviewedPhrases = enabledPhrases.filter(
+    phrase => !state.viewedPhraseIds.includes(phrase.id),
+  )
+  const eligiblePhrases =
+    unviewedPhrases.length > 0 ? unviewedPhrases : enabledPhrases
+
+  return {
+    eligiblePhrases,
+    unviewedPhrases,
+  }
+}
+
+export function getNextPhraseCandidate(state: AppState) {
+  const { eligiblePhrases } = getEligiblePhrases(state)
+  return sample(eligiblePhrases) ?? null
+}
+
+function getPhraseById(state: AppState, phraseId: Tables<'phrases'>['id']) {
+  return Object.values(state.categoriesById)
+    .flatMap(category => category.phrases)
+    .find(phrase => phrase.id === phraseId)
+}
 
 export function appStateReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState
@@ -132,6 +173,7 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       newState = {
         ...state,
         activeScreen: AppScreen.Winners,
+        gameOverSequence: 'idle',
       }
       break
 
@@ -147,6 +189,8 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         heartsRemainingForTeamA: HEARTS_PER_TEAM,
         heartsRemainingForTeamB: HEARTS_PER_TEAM,
         isNewGame: true,
+        gameOverSequence: 'idle',
+        gameOverWinnerTeam: null,
       }
       break
 
@@ -192,14 +236,29 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const currentHearts = state[propName]
       const newHearts = Math.max(0, currentHearts - 1)
       const isGameOver = newHearts === 0
-      newState = {
-        ...state,
-        activeScreen: isGameOver ? AppScreen.Winners : AppScreen.Scoring,
-        currentRoundStartTime: null,
-        currentRoundAccelerationStartTime: null,
-        currentRoundEndTime: null,
-        [propName]: newHearts,
-      }
+      const loser = state.activeTeamInRound
+      const winner = loser === 'A' ? ('B' as const) : ('A' as const)
+      newState = isGameOver
+        ? {
+            ...state,
+            activeScreen: AppScreen.Scoring,
+            gameOverSequence: 'playing',
+            gameOverWinnerTeam: winner,
+            heartsRemainingForTeamA: HEARTS_PER_TEAM,
+            heartsRemainingForTeamB: HEARTS_PER_TEAM,
+            currentRoundStartTime: null,
+            currentRoundAccelerationStartTime: null,
+            currentRoundEndTime: null,
+          }
+        : {
+            ...state,
+            activeScreen: AppScreen.Scoring,
+            gameOverSequence: 'idle',
+            currentRoundStartTime: null,
+            currentRoundAccelerationStartTime: null,
+            currentRoundEndTime: null,
+            [propName]: newHearts,
+          }
       break
     }
 
@@ -218,18 +277,10 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
 
     case 'NEXT_PHRASE': {
-      const allPhrases = Object.values(state.categoriesById).flatMap(
-        category => category.phrases,
-      )
-      const enabledPhrases = allPhrases.filter(
-        phrase => !state.disabledCategoryIds.includes(phrase.category_id),
-      )
-      const unviewedPhrases = enabledPhrases.filter(
-        phrase => !state.viewedPhraseIds.includes(phrase.id),
-      )
-      const eligiblePhrases =
-        unviewedPhrases.length > 0 ? unviewedPhrases : enabledPhrases
-      const currentPhrase = sample(eligiblePhrases)!
+      const { unviewedPhrases } = getEligiblePhrases(state)
+      const currentPhrase =
+        (action.phraseId && getPhraseById(state, action.phraseId)) ||
+        getNextPhraseCandidate(state)!
 
       newState = {
         ...state,
@@ -257,15 +308,25 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const newHearts =
         action.type === 'ADD_HEART' ? currentHearts + 1 : currentHearts - 1
       const clampedHearts = clamp(newHearts, 0, HEARTS_PER_TEAM)
-      const isGameOver =
-        action.type === 'SUBTRACT_HEART' && clampedHearts === 0
+      const isGameOver = action.type === 'SUBTRACT_HEART' && clampedHearts === 0
+      const loser = action.team
+      const winner = loser === 'A' ? ('B' as const) : ('A' as const)
 
-      newState = {
-        ...state,
-        isNewGame: false,
-        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
-        [propName]: clampedHearts,
-      }
+      newState = isGameOver
+        ? {
+            ...state,
+            isNewGame: false,
+            activeScreen: AppScreen.Scoring,
+            gameOverSequence: 'playing',
+            gameOverWinnerTeam: winner,
+            heartsRemainingForTeamA: HEARTS_PER_TEAM,
+            heartsRemainingForTeamB: HEARTS_PER_TEAM,
+          }
+        : {
+            ...state,
+            isNewGame: false,
+            [propName]: clampedHearts,
+          }
       break
     }
 
@@ -322,19 +383,38 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
     case 'SET_HEARTS': {
       const heartsA = clamp(action.heartsA, 0, HEARTS_PER_TEAM)
       const heartsB = clamp(action.heartsB, 0, HEARTS_PER_TEAM)
-      const isGameOver = heartsA === 0 || heartsB === 0
+      const deadA = heartsA === 0
+      const deadB = heartsB === 0
+      const isGameOver = deadA || deadB
+      const winner =
+        deadA && !deadB
+          ? ('B' as const)
+          : deadB && !deadA
+            ? ('A' as const)
+            : null
+      const shouldCelebrate = isGameOver && winner != null
+
       newState = {
         ...state,
         isNewGame: false,
-        heartsRemainingForTeamA: heartsA,
-        heartsRemainingForTeamB: heartsB,
-        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
+        heartsRemainingForTeamA: isGameOver ? HEARTS_PER_TEAM : heartsA,
+        heartsRemainingForTeamB: isGameOver ? HEARTS_PER_TEAM : heartsB,
+        activeScreen: shouldCelebrate ? AppScreen.Scoring : state.activeScreen,
+        gameOverSequence: shouldCelebrate ? 'playing' : 'idle',
+        gameOverWinnerTeam: shouldCelebrate ? winner : null,
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
       }
       break
     }
+
+    case 'GAME_OVER_SEQUENCE_COMPLETE':
+      newState = {
+        ...state,
+        gameOverSequence: 'complete',
+      }
+      break
 
     case 'SET_ROUND_DURATION': {
       const roundDurationMin = clamp(action.roundDurationMin, 1, 300)

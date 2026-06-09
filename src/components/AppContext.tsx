@@ -44,8 +44,6 @@ export function AppContext({ children }: { children: ReactNode }) {
     reducer: appStateReducer,
   })
 
-  console.log('Re-rendering AppContext')
-
   const sounds = useSoundPreloader(soundFiles)
 
   useEffect(() => {
