@@ -1,5 +1,6 @@
 import { AppContext } from '@/components'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { isScreenshotMode } from './screenshotMode'
 import type { Metadata, Viewport } from 'next'
 import { Lilita_One } from 'next/font/google'
 import Script from 'next/script'
@@ -35,6 +36,7 @@ export default async function RootLayout({
   return (
     <html
       className={twJoin(bodyFont.className, bodyFont.variable)}
+      data-screenshot-mode={isScreenshotMode ? 'true' : undefined}
       lang="en-US"
     >
       <head>
@@ -46,7 +48,7 @@ export default async function RootLayout({
 
       <body>
         <AppContext>{children}</AppContext>
-        <InstallPrompt />
+        {!isScreenshotMode && <InstallPrompt />}
       </body>
     </html>
   )

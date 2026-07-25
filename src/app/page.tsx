@@ -1,5 +1,6 @@
 'use client'
 
+import { isScreenshotMode } from '@/app/screenshotMode'
 import {
   DevPanel,
   ScreenForGuessing,
@@ -39,7 +40,9 @@ export default function Page() {
       <ScreenForScoring />
       <ScreenForGuessing />
       <ScreenForWinners />
-      {process.env.NODE_ENV === 'development' && <DevPanel />}
+      {process.env.NODE_ENV === 'development' && !isScreenshotMode && (
+        <DevPanel />
+      )}
     </>
   )
 }

@@ -198,7 +198,7 @@ export function TeamSelector({
   }, [activeTeam, maxPosition])
 
   const handleColor = t < 0.5 ? teamAColor[500] : teamBColor[500]
-  const passToLetter = t < 0.5 ? 'A' : 'B'
+  const passToLetter = activeTeam === 'A' ? 'B' : 'A'
 
   return (
     <div className="fixed inset-x-3 bottom-3 rounded-full">

@@ -78,4 +78,10 @@
   a, button, input, textarea {
     touch-action: manipulation;
   }
+
+  html[data-screenshot-mode='true'] nextjs-portal,
+  html[data-screenshot-mode='true'] [data-nextjs-dev-overlay],
+  html[data-screenshot-mode='true'] [data-nextjs-toast] {
+    display: none !important;
+  }
 }
