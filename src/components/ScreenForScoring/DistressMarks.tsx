@@ -16,6 +16,7 @@ interface DistressMarksProps {
   heartsLeft: number
   flip?: boolean
   flipX?: boolean
+  instant?: boolean
 }
 
 function MarksLayer({
@@ -59,27 +60,34 @@ export function DistressMarks({
   heartsLeft,
   flip = false,
   flipX = false,
+  instant = false,
 }: DistressMarksProps) {
   const prevHearts = usePrevious(heartsLeft) ?? heartsLeft
   const [transitionFrom, setTransitionFrom] = useState<number | null>(null)
   const [fromVisible, setFromVisible] = useState(true)
 
   useEffect(() => {
+    if (instant) {
+      setFromVisible(true)
+      setTransitionFrom(null)
+      return
+    }
+
     if (heartsLeft !== prevHearts) {
       setFromVisible(true)
       setTransitionFrom(prevHearts)
     }
-  }, [heartsLeft, prevHearts])
+  }, [heartsLeft, instant, prevHearts])
 
   useEffect(() => {
-    if (transitionFrom === null) return
+    if (instant || transitionFrom === null) return
     const startId = setTimeout(() => setFromVisible(false), 50)
     const doneId = setTimeout(() => setTransitionFrom(null), 50 + TRANSITION_MS)
     return () => {
       clearTimeout(startId)
       clearTimeout(doneId)
     }
-  }, [transitionFrom])
+  }, [instant, transitionFrom])
 
   const containerTransform = [flipX && 'scaleX(-1)', flip && 'scale(-1, -1)']
     .filter(Boolean)
@@ -91,7 +99,7 @@ export function DistressMarks({
     : undefined
 
   const isTransitioning =
-    transitionFrom !== null || heartsLeft !== prevHearts
+    !instant && (transitionFrom !== null || heartsLeft !== prevHearts)
   const fromValue = transitionFrom ?? prevHearts
   const showFrom =
     transitionFrom === null || fromVisible

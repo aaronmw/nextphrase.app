@@ -123,6 +123,9 @@ export const PhraseFlipper = forwardRef<PhraseFlipperHandle, PhraseFlipperProps>
           snap-mandatory
           overflow-x-auto
           scroll-smooth
+          [scrollbar-width:none]
+          [-ms-overflow-style:none]
+          [&::-webkit-scrollbar]:hidden
         `,
         className,
       )}

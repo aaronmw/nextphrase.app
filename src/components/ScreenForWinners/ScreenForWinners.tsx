@@ -2,34 +2,22 @@
 
 import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
-import { AppHeader } from '@/components/AppHeader'
-import { Confetti } from '@/components/Confetti'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
-import { teamAColor, teamBColor } from '@/app/theme'
 
 export function ScreenForWinners() {
   const { state, dispatch } = useAppContext()
-  const { activeScreen, heartsRemainingForTeamA } = state
-  const isActiveScreen = activeScreen === AppScreen.Winners
+  const { heartsRemainingForTeamA } = state
 
   const winner = heartsRemainingForTeamA === 0 ? 'B' : 'A'
-  const colors =
-    winner === 'A' ? Object.values(teamAColor) : Object.values(teamBColor)
 
   return (
     <ScreenContainer
       screenName={AppScreen.Winners}
-      slotForHeader={<AppHeader centerSlot="Game Over" />}
       slotForMain={
         <div className="flex h-full flex-col items-center justify-center gap-12 px-3">
-          <Confetti
-            colors={colors}
-            trigger={isActiveScreen}
-          />
-
           <div className="flex flex-col items-center">
-            <StyledText variant="label">Winner</StyledText>
+            <div className="text-2xl text-white uppercase">Winner:</div>
             <div className="text-8xl">{winner}</div>
           </div>
           <StyledText

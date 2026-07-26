@@ -114,6 +114,7 @@ export function ScreenForInstructions() {
             gap-y-2
             overflow-y-auto
             px-3
+            scrollbar-styled
             text-white
           "
           ref={scrollingElementRef}

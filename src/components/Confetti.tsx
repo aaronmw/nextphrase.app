@@ -1,29 +1,37 @@
-import { useEffect, useState } from 'react'
+'use client'
+
+import { createPortal } from 'react-dom'
 import ReactConfetti from 'react-confetti'
 
 interface ConfettiProps {
   trigger: boolean
+  recycle?: boolean
   onComplete?: (confetti?: { reset: () => void }) => void
   colors: string[]
 }
 
-export function Confetti({ trigger, onComplete, colors }: ConfettiProps) {
-  const [isCelebrating, setIsCelebrating] = useState(false)
+export function Confetti({
+  trigger,
+  recycle = true,
+  onComplete,
+  colors,
+}: ConfettiProps) {
+  if (typeof document === 'undefined') return null
 
-  useEffect(() => {
-    if (trigger) {
-      setIsCelebrating(true)
-    }
-  }, [trigger])
-
-  return (
+  return createPortal(
     <ReactConfetti
       className={`
         pointer-events-none
         fixed
-        inset-3
+        inset-0
         z-[100]
       `}
+      style={{
+        inset: 0,
+        pointerEvents: 'none',
+        position: 'fixed',
+        zIndex: 100,
+      }}
       colors={colors}
       initialVelocityY={{
         min: -10,
@@ -31,14 +39,14 @@ export function Confetti({ trigger, onComplete, colors }: ConfettiProps) {
       }}
       initialVelocityX={10}
       gravity={0.05}
-      recycle={true}
-      run={isCelebrating}
-      numberOfPieces={500}
+      recycle={trigger && recycle}
+      run={true}
+      numberOfPieces={trigger ? 500 : 0}
       onConfettiComplete={confetti => {
-        setIsCelebrating(false)
         confetti?.reset()
         onComplete?.(confetti)
       }}
-    />
+    />,
+    document.body,
   )
 }

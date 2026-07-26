@@ -1,8 +1,8 @@
 'use client'
 
-import { isScreenshotMode } from '@/app/screenshotMode'
 import {
   DevPanel,
+  RoundTransitionProvider,
   ScreenForGuessing,
   ScreenForInstructions,
   ScreenForMainMenu,
@@ -33,16 +33,14 @@ export default function Page() {
   if (!isClient) return null
 
   return (
-    <>
+    <RoundTransitionProvider>
       <ScreenForOptions />
       <ScreenForInstructions />
       <ScreenForMainMenu />
       <ScreenForScoring />
       <ScreenForGuessing />
       <ScreenForWinners />
-      {process.env.NODE_ENV === 'development' && !isScreenshotMode && (
-        <DevPanel />
-      )}
-    </>
+      {process.env.NODE_ENV === 'development' && <DevPanel />}
+    </RoundTransitionProvider>
   )
 }

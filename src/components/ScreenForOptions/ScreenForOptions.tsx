@@ -61,6 +61,7 @@ export function ScreenForOptions() {
 
   return (
     <ScreenContainer
+      className="touch-auto"
       screenName={AppScreen.Options}
       slotForHeader={
         <AppHeader
@@ -84,10 +85,15 @@ export function ScreenForOptions() {
       slotForMain={
         <div
           className={`
+            absolute
+            inset-0
             flex
             flex-col
             gap-y-2
+            overflow-y-auto
+            pb-3
             px-3
+            scrollbar-styled
           `}
         >
           <div>

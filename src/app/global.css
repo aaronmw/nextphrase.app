@@ -8,7 +8,7 @@
 }
 
 @theme {
-  --color-bgColor: var(--color-slate-950);
+  --color-bgColor: #000000;
   --color-textColor: var(--color-rose-50);
   --color-borderColor: rgb(148 163 184 / 0.1);
   --color-shadedBgColor: var(--color-borderColor);
@@ -61,17 +61,30 @@
     scroll-behavior: smooth;
     scroll-padding-top: 3rem;
   }
+  body {
+    overflow: hidden;
+  }
   * {
-    scrollbar-color: var(--color-primaryColor-500) transparent;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   *::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-styled {
+    -ms-overflow-style: auto;
+    scrollbar-color: var(--color-primaryColor-500) transparent;
+    scrollbar-width: auto;
+  }
+  .scrollbar-styled::-webkit-scrollbar {
+    display: block;
     height: 0.5rem;
     width: 0.5rem;
   }
-  *::-webkit-scrollbar-track {
+  .scrollbar-styled::-webkit-scrollbar-track {
     background: transparent;
   }
-  *::-webkit-scrollbar-thumb {
+  .scrollbar-styled::-webkit-scrollbar-thumb {
     background: var(--color-primaryColor-500);
     border-radius: 2rem;
   }

@@ -3,6 +3,7 @@
 import { teamAColor, teamBColor } from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
+import { useRoundTransition } from '@/components/RoundTransitionContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { forwardRef, useImperativeHandle, useRef } from 'react'
@@ -26,7 +27,7 @@ const classNames = {
     absolute
     left-1/2
     top-1/2
-    size-[200vmax]
+    size-[240vmax]
     -translate-x-1/2
     -translate-y-1/2
     rounded-full
@@ -71,6 +72,7 @@ export const SpinningAlertLight = forwardRef<
   { activeTeam: 'A' | 'B'; onClick: () => void }
 >(function SpinningAlertLight({ activeTeam, onClick }, ref) {
   const containerRef = useRef<HTMLButtonElement>(null)
+  const lightsContainerRef = useRef<HTMLSpanElement>(null)
   const timelinesRef = useRef<{
     rotating: gsap.core.Timeline
     spinning: gsap.core.Timeline
@@ -80,7 +82,8 @@ export const SpinningAlertLight = forwardRef<
   > | null>(null)
   const baseTimeScaleRef = useRef(1)
   const isAcceleratedRef = useRef(false)
-  const { state, dispatch, sounds } = useAppContext()
+  const { requestEndRound } = useRoundTransition()
+  const { state, sounds } = useAppContext()
   const {
     currentRoundAccelerationStartTime,
     currentRoundEndTime,
@@ -89,6 +92,11 @@ export const SpinningAlertLight = forwardRef<
     acceleratedTickRate,
   } = state
   const activeTeamColor = activeTeam === 'A' ? teamAColor[500] : teamBColor[500]
+
+  function handleClick() {
+    sounds.stopSound('bonk')
+    onClick()
+  }
 
   useImperativeHandle(
     ref,
@@ -136,15 +144,21 @@ export const SpinningAlertLight = forwardRef<
   useGSAP(
     () => {
       const lightsContainer = containerRef.current
+      const lightsWash = lightsContainerRef.current
 
       if (
         !(
           lightsContainer &&
+          lightsWash &&
           currentRoundAccelerationStartTime &&
           currentRoundEndTime &&
           currentRoundStartTime
         )
       ) {
+        if (lightsWash) {
+          gsap.killTweensOf(lightsWash)
+          gsap.set(lightsWash, { autoAlpha: 0 })
+        }
         return
       }
 
@@ -161,6 +175,11 @@ export const SpinningAlertLight = forwardRef<
       const acceleratedTimeScale = tickRate / acceleratedTickRate
       const timeToEnd = currentRoundEndTime - Date.now()
 
+      gsap.fromTo(
+        lightsWash,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.3, ease: 'power2.out' },
+      )
       sounds.playSound('bonk', tickRate)
 
       rotatingLightTimeline.fromTo(
@@ -229,7 +248,7 @@ export const SpinningAlertLight = forwardRef<
         spinningIconTimeline.kill()
         flashingLightTimeline.kill()
 
-        dispatch({ type: 'END_ROUND' })
+        requestEndRound()
       }
 
       return () => {
@@ -237,6 +256,7 @@ export const SpinningAlertLight = forwardRef<
         const t = quickSpinReturnTimeoutRef.current
         if (t !== null) clearTimeout(t)
         quickSpinReturnTimeoutRef.current = null
+        gsap.killTweensOf(lightsWash)
         sounds.stopSound('bonk')
         clearTimeout(accelerationTimeout)
         clearTimeout(endTimeout)
@@ -248,6 +268,7 @@ export const SpinningAlertLight = forwardRef<
         currentRoundAccelerationStartTime,
         currentRoundEndTime,
         currentRoundStartTime,
+        requestEndRound,
       ],
     },
   )
@@ -255,9 +276,10 @@ export const SpinningAlertLight = forwardRef<
   return (
     <button
       ref={containerRef}
+      aria-label="Abort round"
       type="button"
       className={classNames.button}
-      onClick={onClick}
+      onClick={handleClick}
       style={
         {
           '--alert-light-color': activeTeamColor,
@@ -265,7 +287,10 @@ export const SpinningAlertLight = forwardRef<
         } as React.CSSProperties
       }
     >
-      <span className={classNames.lightsContainer}>
+      <span
+        ref={lightsContainerRef}
+        className={classNames.lightsContainer}
+      >
         <span
           className={twMerge(`js-rotating-light`, classNames.rotatingLight)}
           style={{

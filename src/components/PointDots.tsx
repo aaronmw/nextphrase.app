@@ -4,16 +4,21 @@ import { HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
 import { usePrevious } from '@/lib/usePrevious'
-import { range } from 'lodash'
-import { ComponentProps, useEffect, useState } from 'react'
+import { ComponentProps, useEffect, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useIsClient } from 'usehooks-ts'
 
 interface PointDotsProps extends Omit<ComponentProps<'div'>, 'children'> {
+  playChangeAnimation?: boolean
   team: 'A' | 'B'
 }
 
-export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
+export function PointDots({
+  className,
+  playChangeAnimation = true,
+  team,
+  ...otherProps
+}: PointDotsProps) {
   const { state, sounds } = useAppContext()
   const {
     heartsRemainingForTeamA,
@@ -21,6 +26,7 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
     isNewGame,
   } = state
   const isClient = useIsClient()
+  const playSoundRef = useRef(sounds.playSound)
   const heartsRemaining =
     team === 'A' ? heartsRemainingForTeamA : heartsRemainingForTeamB
   const previousHeartsRemaining = usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
@@ -30,27 +36,76 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
     isClient && !isNewGame && heartsRemaining > previousHeartsRemaining
   const didDecrease =
     isClient && !isNewGame && heartsRemaining < previousHeartsRemaining
+  const [heldHeartsRemaining, setHeldHeartsRemaining] = useState<number | null>(
+    null,
+  )
   const [pointToAnimate, setPointToAnimate] = useState<number | null>(null)
+  const pendingPointToAnimateRef = useRef<number | null>(null)
+  const visibleHeartsRemaining = heldHeartsRemaining ?? heartsRemaining
   const isGameOver =
     heartsRemainingForTeamA === 0 || heartsRemainingForTeamB === 0
+  const pointSlots = Array.from(
+    { length: HEARTS_PER_TEAM },
+    (_, index) => index + 1,
+  )
 
   useEffect(() => {
-    if (didIncrease || didDecrease) {
-      setPointToAnimate(
-        didDecrease ? previousHeartsRemaining : heartsRemaining,
-      )
+    playSoundRef.current = sounds.playSound
+  }, [sounds.playSound])
+
+  useEffect(() => {
+    if (!(didIncrease || didDecrease)) return
+
+    const nextPointToAnimate = didDecrease
+      ? previousHeartsRemaining
+      : heartsRemaining
+
+    if (!playChangeAnimation) {
+      setHeldHeartsRemaining(previousHeartsRemaining)
+      pendingPointToAnimateRef.current = nextPointToAnimate
+      setPointToAnimate(null)
+      return
     }
-  }, [heartsRemaining, previousHeartsRemaining, didIncrease, didDecrease])
+
+    setHeldHeartsRemaining(null)
+    pendingPointToAnimateRef.current = null
+    setPointToAnimate(nextPointToAnimate)
+  }, [
+    didDecrease,
+    didIncrease,
+    heartsRemaining,
+    playChangeAnimation,
+    previousHeartsRemaining,
+  ])
 
   useEffect(() => {
-    if (pointToAnimate) {
-      setTimeout(() => {
-        setPointToAnimate(null)
-        sounds.playSound('pop')
-        if (isGameOver) {
-          setTimeout(() => sounds.playSound('cheering'), 500)
-        }
-      }, 1000)
+    if (!playChangeAnimation || pendingPointToAnimateRef.current === null) return
+
+    const pendingPointToAnimate = pendingPointToAnimateRef.current
+    pendingPointToAnimateRef.current = null
+    setHeldHeartsRemaining(null)
+    setPointToAnimate(pendingPointToAnimate)
+  }, [playChangeAnimation])
+
+  useEffect(() => {
+    if (!pointToAnimate) return
+
+    let cheeringId: ReturnType<typeof setTimeout> | null = null
+    const animationDoneId = setTimeout(() => {
+      setPointToAnimate(null)
+      playSoundRef.current('pop')
+
+      if (isGameOver) {
+        cheeringId = setTimeout(() => playSoundRef.current('cheering'), 500)
+      }
+    }, 1000)
+
+    return () => {
+      clearTimeout(animationDoneId)
+
+      if (cheeringId) {
+        clearTimeout(cheeringId)
+      }
     }
   }, [pointToAnimate, isGameOver])
 
@@ -69,9 +124,9 @@ export function PointDots({ className, team, ...otherProps }: PointDotsProps) {
           className,
         )}
       >
-        {range(1, HEARTS_PER_TEAM + 1).map(slotNumber => {
+        {pointSlots.map(slotNumber => {
           const isAnimating = slotNumber === pointToAnimate
-          const isHeart = isAnimating || slotNumber <= heartsRemaining
+          const isHeart = isAnimating || slotNumber <= visibleHeartsRemaining
 
           return (
             <div

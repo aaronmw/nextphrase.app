@@ -1,5 +1,9 @@
 import { Tables } from '@/app/database.types'
-import { clamp, last, random, sample, without } from 'lodash'
+import clamp from 'lodash/clamp'
+import last from 'lodash/last'
+import random from 'lodash/random'
+import sample from 'lodash/sample'
+import without from 'lodash/without'
 
 export enum AppScreen {
   Options = 'options',
@@ -109,7 +113,11 @@ export type AppAction =
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
   | { type: 'SET_HEARTS'; heartsA: number; heartsB: number }
-  | { type: 'SET_ROUND_DURATION'; roundDurationMin: number; roundDurationMax: number }
+  | {
+      type: 'SET_ROUND_DURATION'
+      roundDurationMin: number
+      roundDurationMax: number
+    }
   | { type: 'FACTORY_RESET' }
 
 export function appStateReducer(state: AppState, action: AppAction): AppState {
@@ -185,8 +193,10 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
 
     case 'END_ROUND': {
+      const losingTeam = state.activeTeamInRound
+      const winningTeam = losingTeam === 'A' ? 'B' : 'A'
       const propName =
-        state.activeTeamInRound === 'A'
+        losingTeam === 'A'
           ? 'heartsRemainingForTeamA'
           : 'heartsRemainingForTeamB'
       const currentHearts = state[propName]
@@ -194,7 +204,8 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const isGameOver = newHearts === 0
       newState = {
         ...state,
-        activeScreen: isGameOver ? AppScreen.Winners : AppScreen.Scoring,
+        activeScreen: AppScreen.Scoring,
+        activeTeamInRound: isGameOver ? winningTeam : state.activeTeamInRound,
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
@@ -221,11 +232,13 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const allPhrases = Object.values(state.categoriesById).flatMap(
         category => category.phrases,
       )
+      const disabledCategoryIds = new Set(state.disabledCategoryIds)
+      const viewedPhraseIds = new Set(state.viewedPhraseIds)
       const enabledPhrases = allPhrases.filter(
-        phrase => !state.disabledCategoryIds.includes(phrase.category_id),
+        phrase => !disabledCategoryIds.has(phrase.category_id),
       )
       const unviewedPhrases = enabledPhrases.filter(
-        phrase => !state.viewedPhraseIds.includes(phrase.id),
+        phrase => !viewedPhraseIds.has(phrase.id),
       )
       const eligiblePhrases =
         unviewedPhrases.length > 0 ? unviewedPhrases : enabledPhrases
@@ -257,13 +270,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const newHearts =
         action.type === 'ADD_HEART' ? currentHearts + 1 : currentHearts - 1
       const clampedHearts = clamp(newHearts, 0, HEARTS_PER_TEAM)
-      const isGameOver =
-        action.type === 'SUBTRACT_HEART' && clampedHearts === 0
+      const isGameOver = action.type === 'SUBTRACT_HEART' && clampedHearts === 0
+      const winningTeam = action.team === 'A' ? 'B' : 'A'
 
       newState = {
         ...state,
         isNewGame: false,
-        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
+        activeScreen: isGameOver ? AppScreen.Scoring : state.activeScreen,
+        activeTeamInRound: isGameOver ? winningTeam : state.activeTeamInRound,
         [propName]: clampedHearts,
       }
       break
@@ -323,12 +337,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const heartsA = clamp(action.heartsA, 0, HEARTS_PER_TEAM)
       const heartsB = clamp(action.heartsB, 0, HEARTS_PER_TEAM)
       const isGameOver = heartsA === 0 || heartsB === 0
+      const winningTeam = heartsA === 0 ? 'B' : 'A'
       newState = {
         ...state,
         isNewGame: false,
         heartsRemainingForTeamA: heartsA,
         heartsRemainingForTeamB: heartsB,
-        activeScreen: isGameOver ? AppScreen.Winners : state.activeScreen,
+        activeScreen: isGameOver ? AppScreen.Scoring : state.activeScreen,
+        activeTeamInRound: isGameOver ? winningTeam : state.activeTeamInRound,
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
