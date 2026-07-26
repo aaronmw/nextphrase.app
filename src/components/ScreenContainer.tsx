@@ -287,14 +287,16 @@ export function ScreenContainer({
       {...otherProps}
     >
       <div
-        className="
-          js-inner-container
-          absolute
-          inset-0
-          grid
-          grid-cols-1
-          grid-rows-[1.5rem_auto]
-        "
+        className={twMerge(
+          `
+            js-inner-container
+            absolute
+            inset-0
+            grid
+            grid-cols-1
+          `,
+          slotForHeader ? 'grid-rows-[3rem_auto]' : 'grid-rows-[0_auto]',
+        )}
       >
         <div
           className="

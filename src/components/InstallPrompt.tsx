@@ -27,31 +27,30 @@ export function InstallPrompt() {
   return (
     <div
       className="
+        bg-bgColor/80
         fixed
         inset-0
         flex
         flex-col
         items-center
         justify-center
-        bg-bgColor/80
         p-2
         backdrop-blur-md
       "
     >
       <div
         className="
+          bg-secondaryColor-950
           relative
           flex
           flex-col
           gap-1
-          text-balance
           rounded-md
           border-4
           border-white
-          bg-secondaryColor-950
           p-2
           text-xs
-          font-normal
+          text-balance
         "
       >
         <p>For the best time,</p>
@@ -80,20 +79,20 @@ export function InstallPrompt() {
 
         <button
           className="
+            bg-primaryColor-400
             absolute
-            right-0
             top-0
+            right-0
             z-10
             flex
             size-6
+            translate-x-1/3
+            -translate-y-1/3
             items-center
             justify-center
             rounded-full
             border-4
             border-white
-            bg-primaryColor-400
-            -translate-y-1/3
-            translate-x-1/3
           "
           onClick={handleClickDismiss}
         >

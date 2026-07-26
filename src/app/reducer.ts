@@ -209,6 +209,7 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         currentRoundStartTime: null,
         currentRoundAccelerationStartTime: null,
         currentRoundEndTime: null,
+        isNewGame: false,
         [propName]: newHearts,
       }
       break

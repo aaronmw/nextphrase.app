@@ -242,7 +242,6 @@ export const SpinningAlertLight = forwardRef<
 
       function endAnimation() {
         sounds.stopSound('bonk')
-        sounds.playSound('glass-explosion')
 
         rotatingLightTimeline.kill()
         spinningIconTimeline.kill()

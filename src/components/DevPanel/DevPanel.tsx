@@ -101,7 +101,7 @@ export function DevPanel() {
           aria-label="Dev panel"
         >
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs font-medium tracking-wide text-white/70 uppercase">
+            <span className="text-xs tracking-wide text-white/70 uppercase">
               Team A
             </span>
             <div className="flex items-center gap-1">
@@ -129,7 +129,7 @@ export function DevPanel() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs font-medium tracking-wide text-white/70 uppercase">
+            <span className="text-xs tracking-wide text-white/70 uppercase">
               Team B
             </span>
             <div className="flex items-center gap-1">
@@ -157,7 +157,7 @@ export function DevPanel() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium tracking-wide text-white/70 uppercase">
+            <span className="text-xs tracking-wide text-white/70 uppercase">
               Round
             </span>
             <div className="flex gap-1">
@@ -171,7 +171,7 @@ export function DevPanel() {
                     type="button"
                     onClick={() => setRoundDuration(preset.min, preset.max)}
                     className={twJoin(
-                      'flex-1 rounded border px-2 py-1.5 text-xs font-medium',
+                      'flex-1 rounded border px-2 py-1.5 text-xs',
                       active
                         ? 'border-white/50 bg-white/20 text-white'
                         : 'border-white/30 bg-white/10 text-white/70 hover:bg-white/15',

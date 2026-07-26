@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/forms";
 
 @property --alert-light-color {
@@ -46,8 +46,9 @@
   --color-teamBColor-800: var(--color-sky-800);
   --color-teamBColor-900: var(--color-sky-900);
   --color-teamBColor-950: var(--color-sky-950);
-  --font-family-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-family-icon: "Font Awesome 6 Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-family-body: var(--font-atma), ui-sans-serif, system-ui, sans-serif;
+  --font-family-icon:
+    'Font Awesome 6 Pro', ui-sans-serif, system-ui, sans-serif;
   --font-family-mono: ui-monospace, monospace;
 }
 
@@ -88,7 +89,10 @@
     background: var(--color-primaryColor-500);
     border-radius: 2rem;
   }
-  a, button, input, textarea {
+  a,
+  button,
+  input,
+  textarea {
     touch-action: manipulation;
   }
 

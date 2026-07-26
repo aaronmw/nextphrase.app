@@ -296,7 +296,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 backgroundColor: handleColor,
               }}
             >
-              <span className="inline-flex items-center text-sm font-medium whitespace-nowrap text-white">
+              <span className="inline-flex items-center text-sm whitespace-nowrap text-white">
                 <span>PASS TO</span>
                 <span className="ml-1 text-xl font-bold">{passToLetter}</span>
               </span>

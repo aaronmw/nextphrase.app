@@ -1,9 +1,10 @@
 'use client'
 
+import { useAppContext } from '@/components/AppContext'
 import { RoundTransitionPhase } from '@/components/RoundTransitionContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { RefObject, useRef } from 'react'
+import { RefObject, useEffect, useRef } from 'react'
 
 interface UseScoringRoundTransitionProps {
   applyPendingRoundEndDamage: () => void
@@ -149,6 +150,12 @@ export function useScoringRoundTransition({
   const impactTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const gameOverRevealTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const gameOverResetTimelineRef = useRef<gsap.core.Timeline | null>(null)
+  const { sounds } = useAppContext()
+  const playSoundRef = useRef(sounds.playSound)
+
+  useEffect(() => {
+    playSoundRef.current = sounds.playSound
+  }, [sounds.playSound])
 
   useGSAP(
     () => {
@@ -391,6 +398,8 @@ export function useScoringRoundTransition({
           })
           .set(losingTeamElement, { rotation: 0, scale: 1, x: 0, y: 0 })
           .call(() => {
+            playSoundRef.current('glass-explosion')
+
             const { diameter, x, y } = getCircleFlashGeometry(losingTeamElement)
 
             gsap.set(scoreFlash, {

@@ -2,7 +2,7 @@ import { AppContext } from '@/components'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { isScreenshotMode } from './screenshotMode'
 import type { Metadata, Viewport } from 'next'
-import { Lilita_One } from 'next/font/google'
+import { Atma } from 'next/font/google'
 import Script from 'next/script'
 import { ReactNode } from 'react'
 import { twJoin } from 'tailwind-merge'
@@ -21,10 +21,10 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-const bodyFont = Lilita_One({
+const bodyFont = Atma({
   subsets: ['latin'],
-  variable: '--font-lilita-one',
-  weight: '400',
+  variable: '--font-atma',
+  weight: ['300', '400', '500', '600', '700'],
 })
 
 export default async function RootLayout({
@@ -34,7 +34,7 @@ export default async function RootLayout({
 }) {
   return (
     <html
-      className={twJoin(bodyFont.className, bodyFont.variable)}
+      className={twJoin(bodyFont.className, bodyFont.variable, 'font-bold')}
       data-screenshot-mode={isScreenshotMode ? 'true' : undefined}
       lang="en-US"
     >

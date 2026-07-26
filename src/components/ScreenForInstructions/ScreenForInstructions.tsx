@@ -11,70 +11,21 @@ import { useRef } from 'react'
 
 const instructions = [
   <>
-    Gather an <span className="border-b-4 border-primaryColor-500">even</span>{' '}
-    number of people. Sit or stand in a circle.
+    Make two teams by alternating around a circle: every other person is your
+    teammate.
   </>,
   <>
-    You, the phone-holder, are on{' '}
-    <span className="text-teamAColor-500">Team A</span>. The person next to you
-    is on <span className="text-teamBColor-500">Team B</span>, then{' '}
-    <span className="text-teamAColor-500">Team A</span>, and so on.
-  </>,
-  <div
-    className="
-      relative
-      my-3
-      rounded-md
-      border-2
-      border-white/20
-      p-3
-      pt-4
-      text-center
-      text-white
-    "
-  >
-    <div
-      className="
-        absolute
-        left-1/2
-        top-0
-        rounded-full
-        border-4
-        border-white
-        bg-bgColor
-        px-1
-        text-white
-        -translate-x-1/2
-        -translate-y-1/2
-      "
-    >
-      Pro Tip
-    </div>
-    <span className="opacity-70">Just tell everyone:</span>{' '}
-    <span className="block -indent-2">
-      &ldquo;every other person is your teammate.&rdquo;
-    </span>
-  </div>,
-  <>
-    <span className="text-teamAColor-500">Team A</span> goes first. Hit{' '}
-    <span className="text-primaryColor-500">“Start.”</span>
+    <span className="text-teamAColor-500">Team A</span> starts. Give clues
+    without saying any words in the phrase or rhyming.
   </>,
   <>
-    A timer starts, and a phrase pops up.{' '}
-    <span className="text-teamAColor-500">Team A</span> needs to guess it while
-    the phone-holder gives clues without using any words in the phrase, rhyming,
-    or other shameless tricks.
+    When they guess it, slide the team selector and pass the phone left. Keep
+    going until time runs out.
   </>,
   <>
-    Once they guess it, pass the phone left to someone who will be on{' '}
-    <span className="text-teamBColor-500">Team B</span>. Now it&rsquo;s their
-    turn to guess.
+    The guessing team automatically loses a heart when time&rsquo;s up. The
+    first team to lose all 7 hearts loses.
   </>,
-  <>
-    When the timer&rsquo;s up, whichever team is guessing loses a heart: press
-    the team&rsquo;s button to mark a loss.
-  </>,
-  <>The first team to lose all 7 hearts loses. The other team wins.</>,
 ]
 
 export function ScreenForInstructions() {
@@ -107,6 +58,7 @@ export function ScreenForInstructions() {
       slotForMain={
         <div
           className="
+            scrollbar-styled
             absolute
             inset-0
             flex
@@ -114,7 +66,6 @@ export function ScreenForInstructions() {
             gap-y-2
             overflow-y-auto
             px-3
-            scrollbar-styled
             text-white
           "
           ref={scrollingElementRef}
@@ -125,8 +76,9 @@ export function ScreenForInstructions() {
             {instructions.map((instruction, index) => (
               <li
                 className="
-                  text-balance
+                  text-left
                   text-xs
+                  font-light
                 "
                 key={index}
               >
