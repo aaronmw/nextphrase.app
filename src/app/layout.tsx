@@ -11,6 +11,18 @@ import './global.css'
 export const metadata: Metadata = {
   title: 'NextPhrase App',
   description: 'A game!',
+  icons: {
+    icon: {
+      url: '/icon.png',
+      sizes: '500x500',
+      type: 'image/png',
+    },
+    apple: {
+      url: '/icon.png',
+      sizes: '500x500',
+      type: 'image/png',
+    },
+  },
 }
 
 export const viewport: Viewport = {
