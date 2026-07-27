@@ -53,8 +53,11 @@ const classNames = {
     to-bgColor
   `,
   spinningIcon: `
-    aspect-square
-    inline-block
+    inline-flex
+    items-center
+    justify-center
+    leading-none
+    origin-center
     text-white
     rounded-full
     size-4
@@ -146,15 +149,13 @@ export const SpinningAlertLight = forwardRef<
       const lightsContainer = containerRef.current
       const lightsWash = lightsContainerRef.current
 
-      if (
-        !(
-          lightsContainer &&
-          lightsWash &&
-          currentRoundAccelerationStartTime &&
-          currentRoundEndTime &&
-          currentRoundStartTime
-        )
-      ) {
+      if (!(
+        lightsContainer &&
+        lightsWash &&
+        currentRoundAccelerationStartTime &&
+        currentRoundEndTime &&
+        currentRoundStartTime
+      )) {
         if (lightsWash) {
           gsap.killTweensOf(lightsWash)
           gsap.set(lightsWash, { autoAlpha: 0 })
@@ -316,7 +317,10 @@ export const SpinningAlertLight = forwardRef<
         className={twMerge(`js-spinning-icon`, classNames.spinningIcon)}
         style={{ backgroundColor: 'var(--alert-light-color)' }}
       >
-        <Icon name="circle-quarters" />
+        <Icon
+          className="flex size-full items-center justify-center leading-none"
+          name="circle-quarters"
+        />
       </span>
     </button>
   )

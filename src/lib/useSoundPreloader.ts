@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export interface SoundProperties {
   trimStart?: number
@@ -16,149 +16,243 @@ interface LoadedSound extends SoundProperties {
   buffer: AudioBuffer
 }
 
-type LoadedSounds = Record<string, LoadedSound>
+type LoadedSounds<T extends string> = Partial<Record<T, LoadedSound>>
+
+type WindowWithWebkitAudioContext = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext
+  }
+
+function scheduleRepeating(
+  callback: () => void,
+  intervalInMilliseconds: number,
+) {
+  const interval = setInterval(callback, intervalInMilliseconds)
+
+  return () => clearInterval(interval)
+}
 
 export const useSoundPreloader = <T extends string>(
   sounds: Record<T, SoundProperties>,
 ) => {
-  const [loadedSounds, setLoadedSounds] = useState<LoadedSounds>({})
-  const repeatIntervals = useRef<Partial<Record<T, NodeJS.Timeout>>>({})
-  const audioContext =
-    typeof window !== 'undefined'
-      ? new (window.AudioContext || (window as any).webkitAudioContext)()
-      : null
+  const [isPreloading, setIsPreloading] = useState(true)
+  const [loadedSounds, setLoadedSounds] = useState<LoadedSounds<T>>({})
+  const loadedSoundsRef = useRef<LoadedSounds<T>>({})
+  const stopRepeatingSounds = useRef<Partial<Record<T, () => void>>>({})
+  const audioContextRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
-    const loadSounds = async () => {
-      if (!audioContext) return
+    setIsPreloading(true)
 
-      const preloadedSounds: Record<T, LoadedSound> = {} as Record<
-        T,
-        LoadedSound
-      >
+    const AudioContextConstructor =
+      window.AudioContext ||
+      (window as WindowWithWebkitAudioContext).webkitAudioContext
 
-      for (const name in sounds) {
-        const {
-          src,
-          trimStart,
-          trimEnd,
-          fadeInDuration,
-          fadeOutDuration,
-          delay,
-          volume,
-        } = sounds[name]
-        const response = await fetch(src)
-        const arrayBuffer = await response.arrayBuffer()
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-        preloadedSounds[name] = {
-          buffer: audioBuffer,
-          trimStart,
-          trimEnd,
-          fadeInDuration,
-          fadeOutDuration,
-          delay,
-          src,
-          volume,
-        }
-      }
-
-      setLoadedSounds(preloadedSounds)
+    if (!AudioContextConstructor) {
+      setIsPreloading(false)
+      return
     }
 
-    loadSounds()
+    const audioContext = new AudioContextConstructor()
+    const abortController = new AbortController()
+    let isCancelled = false
+
+    audioContextRef.current = audioContext
+
+    function unlockAudioContext() {
+      if (audioContext.state === 'suspended') {
+        void audioContext.resume()
+      }
+
+      window.removeEventListener('pointerdown', unlockAudioContext, true)
+      window.removeEventListener('keydown', unlockAudioContext, true)
+    }
+
+    window.addEventListener('pointerdown', unlockAudioContext, true)
+    window.addEventListener('keydown', unlockAudioContext, true)
+
+    async function loadSound(
+      name: T,
+      soundProperties: SoundProperties,
+    ): Promise<void> {
+      try {
+        const response = await fetch(soundProperties.src, {
+          signal: abortController.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error(
+            `Could not load ${soundProperties.src}: ${response.status}`,
+          )
+        }
+
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = await audioContext.decodeAudioData(arrayBuffer)
+
+        if (isCancelled) return
+
+        const nextLoadedSounds = {
+          ...loadedSoundsRef.current,
+          [name]: {
+            ...soundProperties,
+            buffer,
+          },
+        }
+
+        loadedSoundsRef.current = nextLoadedSounds
+        setLoadedSounds(nextLoadedSounds)
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return
+        }
+
+        console.error(`Failed to preload sound "${name}"`, error)
+      }
+    }
+
+    const soundEntries = Object.entries(sounds) as [T, SoundProperties][]
+
+    async function preloadSounds() {
+      await Promise.all(
+        soundEntries.map(([name, soundProperties]) =>
+          loadSound(name, soundProperties),
+        ),
+      )
+
+      if (!isCancelled) {
+        setIsPreloading(false)
+      }
+    }
+
+    void preloadSounds()
+
+    return () => {
+      isCancelled = true
+      abortController.abort()
+      window.removeEventListener('pointerdown', unlockAudioContext, true)
+      window.removeEventListener('keydown', unlockAudioContext, true)
+
+      for (const name of Object.keys(stopRepeatingSounds.current) as T[]) {
+        stopRepeatingSounds.current[name]?.()
+      }
+
+      stopRepeatingSounds.current = {}
+      loadedSoundsRef.current = {}
+      audioContextRef.current = null
+      void audioContext.close()
+    }
   }, [sounds])
 
-  function fadeAudio(
-    gainNode: GainNode,
-    targetVolume: number,
-    duration: number,
-    onComplete?: () => void,
-  ) {
-    if (!audioContext) return
+  const fadeAudio = useCallback(
+    (
+      gainNode: GainNode,
+      targetVolume: number,
+      duration: number,
+      onComplete?: () => void,
+    ) => {
+      const audioContext = audioContextRef.current
 
-    const currentTime = audioContext.currentTime
-    gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime)
-    gainNode.gain.linearRampToValueAtTime(targetVolume, currentTime + duration)
-    if (onComplete) {
-      setTimeout(onComplete, duration * 1000)
-    }
-  }
+      if (!audioContext) return
 
-  function playSound(name: T, repeatEvery?: number) {
-    const sound = loadedSounds[name]
+      const currentTime = audioContext.currentTime
+      gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime)
+      gainNode.gain.linearRampToValueAtTime(
+        targetVolume,
+        currentTime + duration,
+      )
 
-    if (!audioContext || !sound) return
-
-    const {
-      buffer,
-      trimStart,
-      trimEnd,
-      fadeInDuration,
-      fadeOutDuration,
-      delay,
-      volume,
-    } = sound
-    const source = audioContext.createBufferSource()
-    const gainNode = audioContext.createGain()
-
-    source.buffer = buffer
-    source.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-
-    const initialVolume = volume ?? 1
-    gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime)
-
-    const startAudio = () => {
-      const startTime = audioContext.currentTime + (delay ?? 0)
-      const offset = trimStart ?? 0
-      const end = trimEnd ?? buffer.duration
-      const duration = end - offset
-
-      if (fadeInDuration) {
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-        fadeAudio(gainNode, initialVolume, fadeInDuration)
+      if (onComplete) {
+        setTimeout(onComplete, duration * 1000)
       }
-      source.start(startTime, offset, duration)
-    }
+    },
+    [],
+  )
 
-    if (trimStart !== undefined && trimStart >= 0) {
-      setTimeout(startAudio, (delay ?? 0) * 1000)
-    } else {
-      startAudio()
-    }
+  const startSound = useCallback(
+    (name: T) => {
+      const audioContext = audioContextRef.current
+      const sound = loadedSoundsRef.current[name]
 
-    if (trimEnd !== undefined && fadeOutDuration) {
-      const duration = (trimEnd - (trimStart ?? 0)) * 1000
-      setTimeout(() => {
-        fadeAudio(gainNode, 0, fadeOutDuration, () => source.stop())
-      }, duration)
-    }
+      if (!audioContext) return
 
-    if (repeatEvery) {
-      const existingInterval = repeatIntervals.current[name]
-
-      if (existingInterval) {
-        clearInterval(existingInterval)
+      if (audioContext.state === 'suspended') {
+        void audioContext.resume()
       }
 
-      const interval = setInterval(() => {
-        playSound(name)
-      }, repeatEvery * 1000)
+      if (!sound) return
 
-      repeatIntervals.current[name] = interval
-    }
-  }
+      const {
+        buffer,
+        trimStart,
+        trimEnd,
+        fadeInDuration,
+        fadeOutDuration,
+        delay,
+        volume,
+      } = sound
+      const source = audioContext.createBufferSource()
+      const gainNode = audioContext.createGain()
 
-  function stopSound(name: T) {
-    const interval = repeatIntervals.current[name]
+      source.buffer = buffer
+      source.connect(gainNode)
+      gainNode.connect(audioContext.destination)
 
-    if (interval) {
-      clearInterval(interval)
-      delete repeatIntervals.current[name]
-    }
-  }
+      const initialVolume = volume ?? 1
+      gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime)
 
-  const memoizedLoadedSounds = useMemo(() => loadedSounds, [loadedSounds])
+      const startAudio = () => {
+        const startTime = audioContext.currentTime + (delay ?? 0)
+        const offset = trimStart ?? 0
+        const end = trimEnd ?? buffer.duration
+        const duration = end - offset
 
-  return { loadedSounds: memoizedLoadedSounds, playSound, stopSound }
+        if (fadeInDuration) {
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+          fadeAudio(gainNode, initialVolume, fadeInDuration)
+        }
+
+        source.start(startTime, offset, duration)
+      }
+
+      if (trimStart !== undefined && trimStart >= 0) {
+        setTimeout(startAudio, (delay ?? 0) * 1000)
+      } else {
+        startAudio()
+      }
+
+      if (trimEnd !== undefined && fadeOutDuration) {
+        const duration = (trimEnd - (trimStart ?? 0)) * 1000
+
+        setTimeout(() => {
+          fadeAudio(gainNode, 0, fadeOutDuration, () => source.stop())
+        }, duration)
+      }
+    },
+    [fadeAudio],
+  )
+
+  const playSound = useCallback(
+    (name: T, repeatEvery?: number) => {
+      startSound(name)
+
+      if (!repeatEvery) return
+
+      stopRepeatingSounds.current[name]?.()
+      stopRepeatingSounds.current[name] = scheduleRepeating(
+        () => startSound(name),
+        repeatEvery * 1000,
+      )
+    },
+    [startSound],
+  )
+
+  const stopSound = useCallback((name: T) => {
+    stopRepeatingSounds.current[name]?.()
+    delete stopRepeatingSounds.current[name]
+  }, [])
+
+  return useMemo(
+    () => ({ isPreloading, loadedSounds, playSound, stopSound }),
+    [isPreloading, loadedSounds, playSound, stopSound],
+  )
 }

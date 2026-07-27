@@ -20,6 +20,10 @@ export const DEFAULT_ROUND_DURATION_MIN =
   process.env.NODE_ENV === 'development' ? 3 : 45
 export const DEFAULT_ROUND_DURATION_MAX =
   process.env.NODE_ENV === 'development' ? 5 : 60
+export const ROUND_DURATION_MULTIPLIERS = [0.5, 1, 2] as const
+
+export type RoundDurationMultiplier =
+  (typeof ROUND_DURATION_MULTIPLIERS)[number]
 
 export interface AppState {
   activeScreen: AppScreen
@@ -30,6 +34,7 @@ export interface AppState {
       phrases: Tables<'phrases'>[]
     }
   >
+  countdownEnabled: boolean
   currentPhraseId: Tables<'phrases'>['id'] | null
   currentRoundStartTime: number | null
   currentRoundAccelerationStartTime: number | null
@@ -42,6 +47,7 @@ export interface AppState {
   phrasesById: Map<string, string>
   tickRate: number
   acceleratedTickRate: number
+  roundDurationMultiplier: RoundDurationMultiplier
   roundDurationMin: number
   roundDurationMax: number
   accelerationDurationMin: number
@@ -54,6 +60,7 @@ export const initialState: AppState = {
   activeScreen: AppScreen.MainMenu,
   activeTeamInRound: 'A',
   categoriesById: {},
+  countdownEnabled: true,
   currentPhraseId: null,
   currentRoundStartTime: null,
   currentRoundAccelerationStartTime: null,
@@ -66,6 +73,7 @@ export const initialState: AppState = {
   phrasesById: new Map(),
   tickRate: 1,
   acceleratedTickRate: 0.5,
+  roundDurationMultiplier: 1,
   roundDurationMin: DEFAULT_ROUND_DURATION_MIN,
   roundDurationMax: DEFAULT_ROUND_DURATION_MAX,
   accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
@@ -77,6 +85,7 @@ export const initialState: AppState = {
 export const persistedStateKeys: (keyof AppState)[] = [
   'activeScreen',
   'activeTeamInRound',
+  'countdownEnabled',
   'currentPhraseId',
   'currentRoundStartTime',
   'currentRoundAccelerationStartTime',
@@ -86,6 +95,7 @@ export const persistedStateKeys: (keyof AppState)[] = [
   'heartsRemainingForTeamB',
   'isNewGame',
   'rotateScreen',
+  'roundDurationMultiplier',
   'roundDurationMin',
   'roundDurationMax',
   'viewedPhraseIds',
@@ -111,7 +121,12 @@ export type AppAction =
   | { type: 'END_GAME' }
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
+  | { type: 'SET_COUNTDOWN_ENABLED'; countdownEnabled: boolean }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
+  | {
+      type: 'SET_ROUND_DURATION_MULTIPLIER'
+      roundDurationMultiplier: RoundDurationMultiplier
+    }
   | { type: 'SET_HEARTS'; heartsA: number; heartsB: number }
   | {
       type: 'SET_ROUND_DURATION'
@@ -163,12 +178,18 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const {
         roundDurationMin,
         roundDurationMax,
+        roundDurationMultiplier,
         accelerationDurationMin,
         accelerationDurationMax,
       } = state
-      const roundDuration = random(roundDurationMin, roundDurationMax) * 1000
+      const roundDuration =
+        random(roundDurationMin, roundDurationMax) *
+        roundDurationMultiplier *
+        1000
       const accelerationDuration =
-        random(accelerationDurationMin, accelerationDurationMax) * 1000
+        random(accelerationDurationMin, accelerationDurationMax) *
+        roundDurationMultiplier *
+        1000
 
       newState = appStateReducer(
         {
@@ -334,6 +355,22 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
     }
 
+    case 'SET_COUNTDOWN_ENABLED': {
+      newState = {
+        ...state,
+        countdownEnabled: action.countdownEnabled,
+      }
+      break
+    }
+
+    case 'SET_ROUND_DURATION_MULTIPLIER': {
+      newState = {
+        ...state,
+        roundDurationMultiplier: action.roundDurationMultiplier,
+      }
+      break
+    }
+
     case 'SET_HEARTS': {
       const heartsA = clamp(action.heartsA, 0, HEARTS_PER_TEAM)
       const heartsB = clamp(action.heartsB, 0, HEARTS_PER_TEAM)
@@ -362,6 +399,7 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       )
       newState = {
         ...state,
+        roundDurationMultiplier: 1,
         roundDurationMin,
         roundDurationMax,
       }

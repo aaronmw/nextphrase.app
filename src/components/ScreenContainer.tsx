@@ -229,8 +229,8 @@ export function ScreenContainer({
 
       if (!(outerElement && isClient)) return
 
-      const upperMargin = rotateScreen ? 'env(safe-area-inset-top)' : 0
-      const lowerMargin = rotateScreen ? 'env(safe-area-inset-bottom)' : 0
+      const upperMargin = 'env(safe-area-inset-top)'
+      const lowerMargin = 'env(safe-area-inset-bottom)'
       const nextRotation = rotateScreen ? 180 : 0
 
       if (!didSetInitialRotationRef.current) {
@@ -295,7 +295,7 @@ export function ScreenContainer({
             grid
             grid-cols-1
           `,
-          slotForHeader ? 'grid-rows-[3rem_auto]' : 'grid-rows-[0_auto]',
+          slotForHeader ? 'grid-rows-[2rem_auto]' : 'grid-rows-[0_auto]',
         )}
       >
         <div

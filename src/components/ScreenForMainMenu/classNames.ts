@@ -2,9 +2,10 @@ import { tw } from '@/lib/tw'
 
 export const classNames = {
   logoContainer: tw`
+    js-intro-logo
     fixed
-    left-1/2
     top-1/3
+    left-1/2
     aspect-square
     size-[70vmin]
     -translate-x-1/2
@@ -16,8 +17,8 @@ export const classNames = {
   `,
   mainContainer: tw`
     fixed
-    left-1/2
     top-2/3
+    left-1/2
     flex
     -translate-x-1/2
     -translate-y-1/3
@@ -31,8 +32,8 @@ export const classNames = {
   `,
   scoreContainer: tw`
     absolute
-    left-1/2
     top-full
+    left-1/2
     flex
     -translate-x-1/2
     -translate-y-0.5

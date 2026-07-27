@@ -2,18 +2,13 @@ export const SPRITE_SCALE_FACTOR = 0.65
 
 export const CARD_SPRITES: Record<string, string[]> = {
   '6': ['6-top-right', '6-bottom-left'],
-  '5': [
-    '5-top-right',
-    '5-bottom-left',
-    '5-top-left',
-    '5-bottom-right',
-  ],
+  '5': ['5-top-right', '5-bottom-left', '5-top-left', '5-bottom-right'],
   '4': [
     '5-top-right',
     '5-bottom-left',
     '4-top-left',
     '4-top-right',
-    '4-left',
+    '3-left',
     '4-bottom-right',
   ],
   '3': [
@@ -21,7 +16,7 @@ export const CARD_SPRITES: Record<string, string[]> = {
     '5-bottom-left',
     '4-top-left',
     '4-top-right',
-    '4-bottom-left',
+    '3-bottom-left',
     '3-top-left',
     '3-top-right',
     '3-bottom-right',
@@ -37,13 +32,7 @@ export const CARD_SPRITES: Record<string, string[]> = {
     '2-left',
     '2-bottom-left',
   ],
-  '1': [
-    '1-left',
-    '1-top-left',
-    '1-top-right',
-    '1-bottom',
-    '5-bottom-left',
-  ],
+  '1': ['2-left', '1-top-left', '1-top-right', '1-bottom', '5-bottom-left'],
 }
 
 function positionFromSpriteKey(key: string): string {

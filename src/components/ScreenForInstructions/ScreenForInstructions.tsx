@@ -10,22 +10,55 @@ import { StyledText } from '@/components/StyledText'
 import { useRef } from 'react'
 
 const instructions = [
-  <>
-    Make two teams by alternating around a circle: every other person is your
-    teammate.
-  </>,
-  <>
-    <span className="text-teamAColor-500">Team A</span> starts. Give clues
-    without saying any words in the phrase or rhyming.
-  </>,
-  <>
-    When they guess it, slide the team selector and pass the phone left. Keep
-    going until time runs out.
-  </>,
-  <>
-    The guessing team automatically loses a heart when time&rsquo;s up. The
-    first team to lose all 7 hearts loses.
-  </>,
+  {
+    id: 'make-teams',
+    text: (
+      <>
+        Make <strong className="font-bold">two teams</strong> by alternating
+        around a circle:{' '}
+        <strong className="font-bold">every other person</strong> is
+        your&nbsp;teammate.
+      </>
+    ),
+  },
+  {
+    id: 'give-clues',
+    text: (
+      <>
+        <strong className="text-teamAColor-500 font-bold">
+          Team A starts.
+        </strong>{' '}
+        <strong className="font-bold">Give clues</strong> without saying{' '}
+        <strong className="font-bold">any words in the phrase</strong> or&nbsp;
+        <strong className="font-bold">rhyming</strong>.
+      </>
+    ),
+  },
+  {
+    id: 'pass-the-phone',
+    text: (
+      <>
+        When they guess it,{' '}
+        <strong className="font-bold">slide the team selector</strong> and{' '}
+        <strong className="font-bold">pass the phone left</strong>. Keep going
+        until <strong className="font-bold">time runs&nbsp;out.</strong>
+      </>
+    ),
+  },
+  {
+    id: 'lose-hearts',
+    text: (
+      <>
+        <strong className="font-bold">
+          The guessing team automatically loses a heart
+        </strong>{' '}
+        when time&rsquo;s up.{' '}
+        <strong className="font-bold">
+          The first team to lose all 7 hearts&nbsp;loses.
+        </strong>
+      </>
+    ),
+  },
 ]
 
 export function ScreenForInstructions() {
@@ -61,9 +94,6 @@ export function ScreenForInstructions() {
             scrollbar-styled
             absolute
             inset-0
-            flex
-            flex-col
-            gap-y-2
             overflow-y-auto
             px-3
             text-white
@@ -72,20 +102,40 @@ export function ScreenForInstructions() {
         >
           <ScrollIndicator scrollingElementRef={scrollingElementRef} />
 
-          <ul className="flex flex-col gap-3 pb-12">
-            {instructions.map((instruction, index) => (
-              <li
-                className="
-                  text-left
-                  text-xs
-                  font-light
-                "
-                key={index}
-              >
-                {instruction}
-              </li>
-            ))}
-          </ul>
+          <div
+            className="
+              flex
+              min-h-full
+              flex-col
+              justify-center
+              py-4
+            "
+          >
+            <ul className="w-full shrink-0">
+              {instructions.map((instruction, index) => (
+                <li key={instruction.id}>
+                  <p
+                    className="
+                      text-center
+                      text-xs
+                      font-normal
+                    "
+                  >
+                    {instruction.text}
+                  </p>
+
+                  {index < instructions.length - 1 && (
+                    <div
+                      aria-hidden="true"
+                      className="p-2"
+                    >
+                      <hr className="border-borderColor" />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       }
     />

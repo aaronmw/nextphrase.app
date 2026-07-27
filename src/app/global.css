@@ -57,12 +57,16 @@
     background-color: var(--color-bgColor);
     color: var(--color-textColor);
     font-size: 32px;
+    height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
     scroll-behavior: smooth;
     scroll-padding-top: 3rem;
   }
   body {
+    background-color: var(--color-bgColor);
+    min-height: 100%;
+    min-height: 100dvh;
     overflow: hidden;
   }
   * {

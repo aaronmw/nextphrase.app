@@ -1,9 +1,10 @@
 'use client'
 
-import { AppScreen, AppState } from '@/app/reducer'
+import { AppAction, AppScreen, AppState } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import {
   createContext,
+  Dispatch,
   ReactNode,
   useCallback,
   useContext,
@@ -111,40 +112,9 @@ function getInitialPhase(state: AppState): RoundTransitionPhase {
   return state.activeScreen === AppScreen.Scoring ? 'scoringEnter' : 'idle'
 }
 
-export function RoundTransitionProvider({ children }: { children: ReactNode }) {
-  const { dispatch, state } = useAppContext()
-  const [phase, setPhaseState] = useState<RoundTransitionPhase>(() =>
-    getInitialPhase(state),
-  )
-  const [countdownLabel, setCountdownLabel] = useState<CountdownLabel | null>(
-    null,
-  )
-  const [pendingRoundEndTeam, setPendingRoundEndTeam] = useState<Team | null>(
-    null,
-  )
-  const [pendingRoundEndIsFinalHit, setPendingRoundEndIsFinalHit] =
-    useState(false)
-  const [gameOverResetWinningTeam, setGameOverResetWinningTeam] =
-    useState<Team | null>(null)
+function useRoundTransitionTimeouts() {
   const blankBeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const heartLossTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const exitReasonRef = useRef<RoundExitReason | null>(null)
-  const pendingRoundEndRef = useRef<PendingRoundEnd | null>(null)
-  const phaseRef = useRef(phase)
-  const stateRef = useRef(state)
-
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
-
-  const setPhase = useCallback((nextPhase: RoundTransitionPhase) => {
-    phaseRef.current = nextPhase
-    setPhaseState(nextPhase)
-  }, [])
-
-  useEffect(() => {
-    phaseRef.current = phase
-  }, [phase])
 
   const clearBlankBeatTimeout = useCallback(() => {
     if (blankBeatTimeoutRef.current === null) return
@@ -160,6 +130,163 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => clearBlankBeatTimeout, [clearBlankBeatTimeout])
   useEffect(() => clearHeartLossTimeout, [clearHeartLossTimeout])
+
+  return {
+    blankBeatTimeoutRef,
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    heartLossTimeoutRef,
+  }
+}
+
+function useRoundCountdown({
+  dispatch,
+  phase,
+  setPhase,
+}: {
+  dispatch: Dispatch<AppAction>
+  phase: RoundTransitionPhase
+  setPhase: (nextPhase: RoundTransitionPhase) => void
+}) {
+  const [countdownLabel, setCountdownLabel] = useState<CountdownLabel | null>(
+    null,
+  )
+
+  useEffect(() => {
+    if (phase !== 'countdown') return
+
+    let labelIndex = 0
+    setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
+
+    const countdownInterval = setInterval(() => {
+      labelIndex += 1
+
+      if (labelIndex < COUNTDOWN_LABELS.length) {
+        setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
+        return
+      }
+
+      clearInterval(countdownInterval)
+      dispatch({ type: 'START_ROUND' })
+      setPhase('phraseEnter')
+    }, COUNTDOWN_STEP_MS)
+
+    return () => clearInterval(countdownInterval)
+  }, [dispatch, phase, setPhase])
+
+  return { countdownLabel, setCountdownLabel }
+}
+
+function useRoundTransitionContextValue({
+  applyPendingRoundEndDamage,
+  countdownLabel,
+  finishGuessingEnter,
+  finishGuessingExit,
+  finishPhraseEnter,
+  finishScoringGameOverExit,
+  finishScoringGameOverReset,
+  finishScoringGameOverResetEnter,
+  finishScoringGameOverReveal,
+  finishScoringImpact,
+  finishScoringEnter,
+  finishScoringExit,
+  gameOverResetWinningTeam,
+  pendingRoundEndIsFinalHit,
+  pendingRoundEndTeam,
+  phase,
+  requestAbortRound,
+  requestEndRound,
+  requestNewGame,
+  resetRoundTransition,
+  startRoundTransition,
+}: RoundTransitionContextObject) {
+  return useMemo(
+    () => ({
+      applyPendingRoundEndDamage,
+      countdownLabel,
+      finishGuessingEnter,
+      finishGuessingExit,
+      finishPhraseEnter,
+      finishScoringGameOverExit,
+      finishScoringGameOverReset,
+      finishScoringGameOverResetEnter,
+      finishScoringGameOverReveal,
+      finishScoringImpact,
+      finishScoringEnter,
+      finishScoringExit,
+      gameOverResetWinningTeam,
+      pendingRoundEndIsFinalHit,
+      pendingRoundEndTeam,
+      phase,
+      requestAbortRound,
+      requestEndRound,
+      requestNewGame,
+      resetRoundTransition,
+      startRoundTransition,
+    }),
+    [
+      applyPendingRoundEndDamage,
+      countdownLabel,
+      finishGuessingEnter,
+      finishGuessingExit,
+      finishPhraseEnter,
+      finishScoringGameOverExit,
+      finishScoringGameOverReset,
+      finishScoringGameOverResetEnter,
+      finishScoringGameOverReveal,
+      finishScoringImpact,
+      finishScoringEnter,
+      finishScoringExit,
+      gameOverResetWinningTeam,
+      pendingRoundEndIsFinalHit,
+      pendingRoundEndTeam,
+      phase,
+      requestAbortRound,
+      requestEndRound,
+      requestNewGame,
+      resetRoundTransition,
+      startRoundTransition,
+    ],
+  )
+}
+
+function useRoundTransitionController() {
+  const { dispatch, state } = useAppContext()
+  const [phase, setPhaseState] = useState<RoundTransitionPhase>(() =>
+    getInitialPhase(state),
+  )
+  const [pendingRoundEndTeam, setPendingRoundEndTeam] = useState<Team | null>(
+    null,
+  )
+  const [pendingRoundEndIsFinalHit, setPendingRoundEndIsFinalHit] =
+    useState(false)
+  const [gameOverResetWinningTeam, setGameOverResetWinningTeam] =
+    useState<Team | null>(null)
+  const exitReasonRef = useRef<RoundExitReason | null>(null)
+  const pendingRoundEndRef = useRef<PendingRoundEnd | null>(null)
+  const phaseRef = useRef(phase)
+  const stateRef = useRef(state)
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
+
+  const setPhase = useCallback((nextPhase: RoundTransitionPhase) => {
+    phaseRef.current = nextPhase
+    setPhaseState(nextPhase)
+  }, [])
+
+  const {
+    blankBeatTimeoutRef,
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    heartLossTimeoutRef,
+  } = useRoundTransitionTimeouts()
+  const { countdownLabel, setCountdownLabel } = useRoundCountdown({
+    dispatch,
+    phase,
+    setPhase,
+  })
 
   const startRoundTransition = useCallback(() => {
     if (
@@ -178,7 +305,12 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     setGameOverResetWinningTeam(null)
     setCountdownLabel(null)
     setPhase('scoringExit')
-  }, [clearBlankBeatTimeout, clearHeartLossTimeout, setPhase])
+  }, [
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    setCountdownLabel,
+    setPhase,
+  ])
 
   const resetRoundTransition = useCallback(() => {
     clearBlankBeatTimeout()
@@ -190,7 +322,12 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     setGameOverResetWinningTeam(null)
     setCountdownLabel(null)
     setPhase('scoringEnter')
-  }, [clearBlankBeatTimeout, clearHeartLossTimeout, setPhase])
+  }, [
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    setCountdownLabel,
+    setPhase,
+  ])
 
   const requestNewGame = useCallback(() => {
     if (
@@ -220,7 +357,12 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     setGameOverResetWinningTeam(winningTeam)
     setCountdownLabel(null)
     setPhase('scoringGameOverReset')
-  }, [clearBlankBeatTimeout, clearHeartLossTimeout, setPhase])
+  }, [
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    setCountdownLabel,
+    setPhase,
+  ])
 
   const finishScoringExit = useCallback(() => {
     if (phaseRef.current !== 'scoringExit') return
@@ -231,18 +373,26 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
       if (phaseRef.current !== 'scoringExit') return
       setPhase('guessingEnter')
     }, BLANK_BEAT_MS)
-  }, [clearBlankBeatTimeout, setPhase])
+  }, [blankBeatTimeoutRef, clearBlankBeatTimeout, setPhase])
 
   const finishGuessingEnter = useCallback(() => {
     if (phaseRef.current !== 'guessingEnter') return
-    setPhase('countdown')
-  }, [setPhase])
+
+    if (stateRef.current.countdownEnabled) {
+      setPhase('countdown')
+      return
+    }
+
+    setCountdownLabel(null)
+    dispatch({ type: 'START_ROUND' })
+    setPhase('phraseEnter')
+  }, [dispatch, setCountdownLabel, setPhase])
 
   const finishPhraseEnter = useCallback(() => {
     if (phaseRef.current !== 'phraseEnter') return
     setCountdownLabel(null)
     setPhase('idle')
-  }, [setPhase])
+  }, [setCountdownLabel, setPhase])
 
   const requestAbortRound = useCallback(() => {
     const currentPhase = phaseRef.current
@@ -262,7 +412,12 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     setPendingRoundEndTeam(null)
     setCountdownLabel(null)
     setPhase('guessingExit')
-  }, [clearBlankBeatTimeout, clearHeartLossTimeout, setPhase])
+  }, [
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    setCountdownLabel,
+    setPhase,
+  ])
 
   const requestEndRound = useCallback(() => {
     if (
@@ -275,7 +430,7 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     exitReasonRef.current = 'end'
     setCountdownLabel(null)
     setPhase('guessingExit')
-  }, [setPhase])
+  }, [setCountdownLabel, setPhase])
 
   const finishGuessingExit = useCallback(() => {
     if (phaseRef.current !== 'guessingExit') return
@@ -309,7 +464,7 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
 
     dispatch({ type: 'ABORT_ROUND' })
     setPhase('scoringEnter')
-  }, [dispatch, setPhase])
+  }, [dispatch, setCountdownLabel, setPhase])
 
   const finishScoringEnter = useCallback(() => {
     if (phaseRef.current !== 'scoringEnter') return
@@ -355,7 +510,7 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
       setPendingRoundEndTeam(null)
       setPhase('idle')
     }, HEART_LOSS_ANIMATION_MS)
-  }, [clearHeartLossTimeout, setPhase])
+  }, [clearHeartLossTimeout, heartLossTimeoutRef, setPhase])
 
   const finishScoringGameOverExit = useCallback(() => {
     if (phaseRef.current !== 'scoringGameOverExit') return
@@ -382,76 +537,35 @@ export function RoundTransitionProvider({ children }: { children: ReactNode }) {
     setPhase('idle')
   }, [setPhase])
 
-  useEffect(() => {
-    if (phase !== 'countdown') return
+  const value = useRoundTransitionContextValue({
+    applyPendingRoundEndDamage,
+    countdownLabel,
+    finishGuessingEnter,
+    finishGuessingExit,
+    finishPhraseEnter,
+    finishScoringGameOverExit,
+    finishScoringGameOverReset,
+    finishScoringGameOverResetEnter,
+    finishScoringGameOverReveal,
+    finishScoringImpact,
+    finishScoringEnter,
+    finishScoringExit,
+    gameOverResetWinningTeam,
+    pendingRoundEndIsFinalHit,
+    pendingRoundEndTeam,
+    phase,
+    requestAbortRound,
+    requestEndRound,
+    requestNewGame,
+    resetRoundTransition,
+    startRoundTransition,
+  })
 
-    let labelIndex = 0
-    setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
+  return value
+}
 
-    const countdownInterval = setInterval(() => {
-      labelIndex += 1
-
-      if (labelIndex < COUNTDOWN_LABELS.length) {
-        setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
-        return
-      }
-
-      clearInterval(countdownInterval)
-      dispatch({ type: 'START_ROUND' })
-      setPhase('phraseEnter')
-    }, COUNTDOWN_STEP_MS)
-
-    return () => clearInterval(countdownInterval)
-  }, [dispatch, phase, setPhase])
-
-  const value = useMemo(
-    () => ({
-      applyPendingRoundEndDamage,
-      countdownLabel,
-      finishGuessingEnter,
-      finishGuessingExit,
-      finishPhraseEnter,
-      finishScoringGameOverExit,
-      finishScoringGameOverReset,
-      finishScoringGameOverResetEnter,
-      finishScoringGameOverReveal,
-      finishScoringImpact,
-      finishScoringEnter,
-      finishScoringExit,
-      pendingRoundEndIsFinalHit,
-      pendingRoundEndTeam,
-      phase,
-      gameOverResetWinningTeam,
-      requestAbortRound,
-      requestEndRound,
-      requestNewGame,
-      resetRoundTransition,
-      startRoundTransition,
-    }),
-    [
-      applyPendingRoundEndDamage,
-      countdownLabel,
-      finishGuessingEnter,
-      finishGuessingExit,
-      finishPhraseEnter,
-      finishScoringGameOverExit,
-      finishScoringGameOverReset,
-      finishScoringGameOverResetEnter,
-      finishScoringGameOverReveal,
-      finishScoringImpact,
-      finishScoringEnter,
-      finishScoringExit,
-      pendingRoundEndIsFinalHit,
-      pendingRoundEndTeam,
-      phase,
-      gameOverResetWinningTeam,
-      requestAbortRound,
-      requestEndRound,
-      requestNewGame,
-      resetRoundTransition,
-      startRoundTransition,
-    ],
-  )
+export function RoundTransitionProvider({ children }: { children: ReactNode }) {
+  const value = useRoundTransitionController()
 
   return (
     <PrivateRoundTransitionContext value={value}>

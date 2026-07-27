@@ -1,3 +1,5 @@
+export const appBackgroundColor = '#000000'
+
 const amber = [
   '#fffbeb',
   '#fef3c7',
@@ -29,12 +31,12 @@ export const teamAColor = Object.fromEntries(
   [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((shade, i) => [
     shade,
     amber[i],
-  ])
+  ]),
 ) as Record<number, string>
 
 export const teamBColor = Object.fromEntries(
   [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((shade, i) => [
     shade,
     sky[i],
-  ])
+  ]),
 ) as Record<number, string>

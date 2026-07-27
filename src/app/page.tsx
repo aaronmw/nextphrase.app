@@ -1,5 +1,8 @@
 'use client'
 
+import { AppScreen } from '@/app/reducer'
+import { useAppContext } from '@/components/AppContext'
+import { LoadingScreen } from '@/components/LoadingScreen'
 import {
   DevPanel,
   RoundTransitionProvider,
@@ -19,6 +22,7 @@ gsap.registerPlugin(useGSAP)
 
 export default function Page() {
   const isClient = useIsClient()
+  const { isLoading, state } = useAppContext()
 
   useEffect(() => {
     const preventDefault = (event: Event) => event.preventDefault()
@@ -30,17 +34,23 @@ export default function Page() {
     }
   }, [])
 
-  if (!isClient) return null
-
   return (
-    <RoundTransitionProvider>
-      <ScreenForOptions />
-      <ScreenForInstructions />
-      <ScreenForMainMenu />
-      <ScreenForScoring />
-      <ScreenForGuessing />
-      <ScreenForWinners />
-      {process.env.NODE_ENV === 'development' && <DevPanel />}
-    </RoundTransitionProvider>
+    <>
+      {isClient && (
+        <RoundTransitionProvider>
+          <ScreenForOptions />
+          <ScreenForInstructions />
+          <ScreenForMainMenu />
+          <ScreenForScoring />
+          <ScreenForGuessing />
+          <ScreenForWinners />
+          {process.env.NODE_ENV === 'development' && <DevPanel />}
+        </RoundTransitionProvider>
+      )}
+      <LoadingScreen
+        animateToIntro={isClient && state.activeScreen === AppScreen.MainMenu}
+        isLoading={!isClient || isLoading}
+      />
+    </>
   )
 }

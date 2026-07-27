@@ -56,7 +56,7 @@ export function ScreenForGuessing() {
 
   return (
     <ScreenContainer
-      className="touch-auto"
+      className="touch-auto [&_.js-content-container]:row-start-1 [&_.js-header-container]:z-40"
       screenName={AppScreen.Guessing}
       slotForMain={
         <div className="flex h-full flex-col">
@@ -85,9 +85,9 @@ export function ScreenForGuessing() {
                   flex
                   h-full
                   w-screen
-                  overflow-hidden
                   items-center
                   justify-center
+                  overflow-hidden
                   text-center
                   text-5xl
                   leading-none

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import colors from 'tailwindcss/colors'
+import { appBackgroundColor } from './theme'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'A game!',
     start_url: '/',
     display: 'standalone',
-    background_color: colors.neutral['950'],
-    theme_color: 'transparent',
+    background_color: appBackgroundColor,
+    theme_color: appBackgroundColor,
     orientation: 'portrait-primary',
     icons: [
       {

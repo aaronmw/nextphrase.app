@@ -1,4 +1,4 @@
-import { SoundProperties } from '@/lib/useSoundPreloader'
+import type { SoundProperties } from '@/lib/useSoundPreloader'
 
 export const soundFiles = {
   'bonk': { src: '/sounds/bonk.mp3' },
@@ -8,3 +8,5 @@ export const soundFiles = {
   'spacebar-click': { src: '/sounds/spacebar-click.mp3' },
   'glass-explosion': { src: '/sounds/glass-explosion.mp3' },
 } satisfies Record<string, SoundProperties>
+
+export const soundSources = Object.values(soundFiles).map(({ src }) => src)
