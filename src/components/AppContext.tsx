@@ -2,6 +2,7 @@
 
 import {
   AppAction,
+  APP_STATE_STORAGE_KEY,
   AppState,
   appStateReducer,
   initialState,
@@ -9,6 +10,7 @@ import {
 } from '@/app/reducer'
 import { soundFiles } from '@/app/sounds'
 import { supabase } from '@/app/supabase'
+import { applyTextOnThemeColors } from '@/app/theme'
 import { usePersistedReducer } from '@/lib/usePersistedReducer'
 import { useSoundPreloader } from '@/lib/useSoundPreloader'
 import keyBy from 'lodash/keyBy'
@@ -18,6 +20,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from 'react'
@@ -44,12 +47,16 @@ const PrivateAppContext = createContext<AppContextObject>({
 export function AppContext({ children }: { children: ReactNode }) {
   const [state, dispatch] = usePersistedReducer({
     initialState,
-    key: 'appState',
+    key: APP_STATE_STORAGE_KEY,
     persistedKeys: persistedStateKeys,
     reducer: appStateReducer,
   })
   const [isLoadingPhrases, setIsLoadingPhrases] = useState(true)
   const sounds = useSoundPreloader(soundFiles)
+
+  useLayoutEffect(() => {
+    applyTextOnThemeColors()
+  }, [])
 
   useEffect(() => {
     let isCancelled = false

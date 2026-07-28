@@ -1,6 +1,8 @@
 'use client'
 
+import { resolveCssColor, THEME_COLORS_CHANGED_EVENT } from '@/app/theme'
 import { createPortal } from 'react-dom'
+import { useLayoutEffect, useState } from 'react'
 import ReactConfetti from 'react-confetti'
 
 interface ConfettiProps {
@@ -16,7 +18,20 @@ export function Confetti({
   onComplete,
   colors,
 }: ConfettiProps) {
+  const [, setThemeRevision] = useState(0)
+
+  useLayoutEffect(() => {
+    const refreshColors = () => setThemeRevision(revision => revision + 1)
+    window.addEventListener(THEME_COLORS_CHANGED_EVENT, refreshColors)
+
+    return () => {
+      window.removeEventListener(THEME_COLORS_CHANGED_EVENT, refreshColors)
+    }
+  }, [])
+
   if (typeof document === 'undefined') return null
+
+  const resolvedColors = colors.map(resolveCssColor)
 
   return createPortal(
     <ReactConfetti
@@ -32,7 +47,7 @@ export function Confetti({
         position: 'fixed',
         zIndex: 100,
       }}
-      colors={colors}
+      colors={resolvedColors}
       initialVelocityY={{
         min: -10,
         max: 10,

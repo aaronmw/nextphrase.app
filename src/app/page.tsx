@@ -4,7 +4,6 @@ import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { LoadingScreen } from '@/components/LoadingScreen'
 import {
-  DevPanel,
   RoundTransitionProvider,
   ScreenForGuessing,
   ScreenForInstructions,
@@ -15,10 +14,21 @@ import {
 } from '@/components'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
+import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 import { useEffect } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
-gsap.registerPlugin(useGSAP)
+gsap.registerPlugin(useGSAP, MotionPathPlugin)
+
+function DevelopmentTools() {
+  if (process.env.NODE_ENV !== 'development') return null
+
+  // Keep the full Tailwind palette out of production while loading the
+  // development tools synchronously, so persisted tokens apply before paint.
+  const { DevPanel } =
+    require('@/components/DevPanel') as typeof import('@/components/DevPanel')
+  return <DevPanel />
+}
 
 export default function Page() {
   const isClient = useIsClient()
@@ -44,7 +54,7 @@ export default function Page() {
           <ScreenForScoring />
           <ScreenForGuessing />
           <ScreenForWinners />
-          {process.env.NODE_ENV === 'development' && <DevPanel />}
+          <DevelopmentTools />
         </RoundTransitionProvider>
       )}
       <LoadingScreen

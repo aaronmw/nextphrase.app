@@ -26,6 +26,7 @@ export function GameOverOverlay({
         ref={scoreWinnerLabelRef}
         className="
           js-score-winner-label
+          text-neutralColor-100
           pointer-events-none
           invisible
           fixed
@@ -34,7 +35,6 @@ export function GameOverOverlay({
           z-[80]
           text-2xl
           leading-none
-          text-white
           uppercase
           opacity-0
           [text-shadow:2px_2px_2px_rgba(0,0,0,0.35)]
@@ -66,8 +66,8 @@ export function GameOverOverlay({
           className={twMerge(
             'h-14 w-full rounded-xl text-2xl',
             gameOverWinningTeam === 'A'
-              ? 'border-teamAColor-500 bg-teamAColor-500'
-              : 'border-teamBColor-500 bg-teamBColor-500',
+              ? 'border-teamAFillColor bg-teamAFillColor text-textOnTeamAColor'
+              : 'border-teamBFillColor bg-teamBFillColor text-textOnTeamBColor',
           )}
           variant="button.primary"
           onClick={onNewGame}

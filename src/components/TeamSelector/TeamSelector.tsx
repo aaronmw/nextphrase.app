@@ -1,7 +1,12 @@
 'use client'
 
 import { AppScreen } from '@/app/reducer'
-import { teamAColor, teamBColor } from '@/app/theme'
+import {
+  teamAColor,
+  teamAFillColor,
+  teamBColor,
+  teamBFillColor,
+} from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
 import gsap from 'gsap'
 import {
@@ -16,11 +21,9 @@ import { twMerge } from 'tailwind-merge'
 
 const SNAP_BACK_DEAD_ZONE_PX = 8
 
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r},${g},${b},${alpha})`
+function colorWithAlpha(color: string, alpha: number): string {
+  const percentage = Math.round(alpha * 10_000) / 100
+  return `color-mix(in srgb, ${color} ${percentage}%, transparent)`
 }
 
 function getClientX(e: React.TouchEvent | React.MouseEvent): number {
@@ -103,7 +106,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
     const rightAlpha = t
     const trackGradient =
       maxPosition > 0
-        ? `linear-gradient(to left, ${hexToRgba(teamAColor[500], leftAlpha)}, ${hexToRgba(teamBColor[500], rightAlpha)})`
+        ? `linear-gradient(to left, ${colorWithAlpha(teamAColor[500], leftAlpha)}, ${colorWithAlpha(teamBColor[500], rightAlpha)})`
         : `linear-gradient(to left, ${teamAColor[500]}, ${teamBColor[500]})`
 
     const updateMaxPosition = useCallback(() => {
@@ -243,7 +246,11 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
       runToPositionRef.current(idle, { startPx: positionPxRef.current })
     }, [activeTeam, isAnimating, isDragging, maxPosition])
 
-    const handleColor = t < 0.5 ? teamAColor[500] : teamBColor[500]
+    const isHandleOnTeamA = t < 0.5
+    const handleColor = isHandleOnTeamA ? teamAFillColor : teamBFillColor
+    const handleTextColor = isHandleOnTeamA
+      ? 'text-textOnTeamAColor'
+      : 'text-textOnTeamBColor'
     const passToLetter = activeTeam === 'A' ? 'B' : 'A'
 
     return (
@@ -287,7 +294,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 'items-center',
                 'justify-center',
                 'rounded-full',
-                'border-white',
+                'border-neutralColor-100',
                 'px-3',
                 'shadow-lg',
               )}
@@ -296,7 +303,12 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 backgroundColor: handleColor,
               }}
             >
-              <span className="inline-flex items-center text-sm whitespace-nowrap text-white">
+              <span
+                className={twMerge(
+                  'inline-flex items-center text-sm whitespace-nowrap',
+                  handleTextColor,
+                )}
+              >
                 <span>PASS TO</span>
                 <span className="ml-1 text-xl font-bold">{passToLetter}</span>
               </span>

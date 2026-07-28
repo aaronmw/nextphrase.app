@@ -3,9 +3,15 @@
 import { HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
-import { clamp } from 'lodash'
-import { useState } from 'react'
+import clamp from 'lodash/clamp'
+import { useLayoutEffect, useState } from 'react'
 import { twMerge, twJoin } from 'tailwind-merge'
+import {
+  applyDevThemePreview,
+  persistDevThemePreview,
+  readDevThemePreview,
+} from './devTheme'
+import { DevThemeControls } from './DevThemeControls'
 
 const ROUND_PRESETS = [
   { id: 'short' as const, label: 'Short', min: 3, max: 5 },
@@ -24,12 +30,18 @@ function getRoundPresetId(
 export function DevPanel() {
   const { dispatch, state } = useAppContext()
   const [open, setOpen] = useState(false)
+  const [themePreview, setThemePreview] = useState(readDevThemePreview)
   const {
     heartsRemainingForTeamA,
     heartsRemainingForTeamB,
     roundDurationMin,
     roundDurationMax,
   } = state
+
+  useLayoutEffect(() => {
+    applyDevThemePreview(themePreview)
+    persistDevThemePreview(themePreview)
+  }, [themePreview])
 
   function setHearts(team: 'A' | 'B', delta: number) {
     const current =
@@ -57,8 +69,8 @@ export function DevPanel() {
         onClick={() => setOpen(o => !o)}
         className={twMerge(
           'fixed',
-          'right-4',
-          'bottom-4',
+          'right-[max(1rem,env(safe-area-inset-right))]',
+          'bottom-[max(1rem,env(safe-area-inset-bottom))]',
           'z-200',
           'flex',
           'h-5',
@@ -68,40 +80,46 @@ export function DevPanel() {
           'rounded-full',
           'bg-black/20',
           'text-xs',
-          'text-white',
+          'text-neutralColor-100',
           'shadow',
           'hover:bg-black/30',
         )}
-        aria-label="Open dev panel"
+        aria-expanded={open}
+        aria-label={open ? 'Close dev panel' : 'Open dev panel'}
       >
         <Icon name="gear" />
       </button>
       {open && (
-        <div
+        <dialog
+          open
           className={twJoin(
             'fixed',
+            'top-auto',
             'bottom-10',
-            'right-4',
+            'left-auto',
+            'right-2',
             'z-200',
             'origin-bottom-right',
             'scale-75',
+            'm-0',
             'flex',
             'flex-col',
             'gap-3',
+            'max-h-[calc(100dvh-4rem)]',
+            'overflow-y-auto',
             'rounded-lg',
             'border',
-            'border-white/20',
+            'border-neutralColor-100/20',
             'bg-black/90',
             'p-4',
             'shadow-xl',
             'backdrop-blur',
             'whitespace-nowrap',
           )}
-          role="dialog"
           aria-label="Dev panel"
         >
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs tracking-wide text-white/70 uppercase">
+            <span className="text-neutralColor-100/70 text-xs tracking-wide uppercase">
               Team A
             </span>
             <div className="flex items-center gap-1">
@@ -109,19 +127,19 @@ export function DevPanel() {
                 type="button"
                 onClick={() => setHearts('A', -1)}
                 disabled={heartsRemainingForTeamA <= 0}
-                className="h-7 w-7 rounded border border-white/30 bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10"
+                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
                 aria-label="Decrease Team A score"
               >
                 −
               </button>
-              <span className="min-w-6 text-center text-white">
+              <span className="text-neutralColor-100 min-w-6 text-center">
                 {heartsRemainingForTeamA}
               </span>
               <button
                 type="button"
                 onClick={() => setHearts('A', 1)}
                 disabled={heartsRemainingForTeamA >= HEARTS_PER_TEAM}
-                className="h-7 w-7 rounded border border-white/30 bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10"
+                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
                 aria-label="Increase Team A score"
               >
                 +
@@ -129,7 +147,7 @@ export function DevPanel() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs tracking-wide text-white/70 uppercase">
+            <span className="text-neutralColor-100/70 text-xs tracking-wide uppercase">
               Team B
             </span>
             <div className="flex items-center gap-1">
@@ -137,19 +155,19 @@ export function DevPanel() {
                 type="button"
                 onClick={() => setHearts('B', -1)}
                 disabled={heartsRemainingForTeamB <= 0}
-                className="h-7 w-7 rounded border border-white/30 bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10"
+                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
                 aria-label="Decrease Team B score"
               >
                 −
               </button>
-              <span className="min-w-6 text-center text-white">
+              <span className="text-neutralColor-100 min-w-6 text-center">
                 {heartsRemainingForTeamB}
               </span>
               <button
                 type="button"
                 onClick={() => setHearts('B', 1)}
                 disabled={heartsRemainingForTeamB >= HEARTS_PER_TEAM}
-                className="h-7 w-7 rounded border border-white/30 bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10"
+                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
                 aria-label="Increase Team B score"
               >
                 +
@@ -157,7 +175,7 @@ export function DevPanel() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-xs tracking-wide text-white/70 uppercase">
+            <span className="text-neutralColor-100/70 text-xs tracking-wide uppercase">
               Round
             </span>
             <div className="flex gap-1">
@@ -173,8 +191,8 @@ export function DevPanel() {
                     className={twJoin(
                       'flex-1 rounded border px-2 py-1.5 text-xs',
                       active
-                        ? 'border-white/50 bg-white/20 text-white'
-                        : 'border-white/30 bg-white/10 text-white/70 hover:bg-white/15',
+                        ? 'border-neutralColor-100/50 bg-neutralColor-100/20 text-neutralColor-100'
+                        : 'border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100/70 hover:bg-neutralColor-100/15',
                     )}
                   >
                     {preset.label}
@@ -183,7 +201,12 @@ export function DevPanel() {
               })}
             </div>
           </div>
-        </div>
+          <div className="bg-neutralColor-100/20 h-px" />
+          <DevThemeControls
+            preview={themePreview}
+            onChange={setThemePreview}
+          />
+        </dialog>
       )}
     </>
   )

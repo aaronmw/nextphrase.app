@@ -9,10 +9,16 @@
 
 @theme {
   --color-bgColor: #000000;
-  --color-textColor: var(--color-rose-50);
+  --color-textColor: var(--color-neutralColor-100);
+  --color-textOnAccentColor: var(--color-neutralColor-100);
+  --color-textOnTeamAColor: var(--color-neutralColor-100);
+  --color-textOnTeamBColor: var(--color-neutralColor-100);
   --color-borderColor: rgb(148 163 184 / 0.1);
+  --color-dividerColor: rgb(148 163 184 / 0.2);
   --color-shadedBgColor: var(--color-borderColor);
   --color-fadedTextColor: var(--color-rose-500);
+  --color-teamATextColor: var(--color-teamAColor-500);
+  --color-teamBTextColor: var(--color-teamBColor-500);
   --color-primaryColor-50: var(--color-rose-50);
   --color-primaryColor-100: var(--color-rose-100);
   --color-primaryColor-200: var(--color-rose-200);
@@ -24,17 +30,28 @@
   --color-primaryColor-800: var(--color-rose-800);
   --color-primaryColor-900: var(--color-rose-900);
   --color-primaryColor-950: var(--color-rose-950);
-  --color-teamAColor-50: var(--color-amber-50);
-  --color-teamAColor-100: var(--color-amber-100);
-  --color-teamAColor-200: var(--color-amber-200);
-  --color-teamAColor-300: var(--color-amber-300);
-  --color-teamAColor-400: var(--color-amber-400);
-  --color-teamAColor-500: var(--color-amber-500);
-  --color-teamAColor-600: var(--color-amber-600);
-  --color-teamAColor-700: var(--color-amber-700);
-  --color-teamAColor-800: var(--color-amber-800);
-  --color-teamAColor-900: var(--color-amber-900);
-  --color-teamAColor-950: var(--color-amber-950);
+  --color-accentFillColor: var(--color-primaryColor-700);
+  --color-teamAFillColor: var(--color-teamAColor-700);
+  --color-teamBFillColor: var(--color-teamBColor-700);
+  --font-family-body: var(--font-atma), ui-sans-serif, system-ui, sans-serif;
+  --font-family-icon:
+    'Font Awesome 6 Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: ui-monospace, monospace;
+}
+
+/* Keep the full team palettes available to runtime canvas and animation code. */
+@theme static {
+  --color-teamAColor-50: var(--color-rose-50);
+  --color-teamAColor-100: var(--color-rose-100);
+  --color-teamAColor-200: var(--color-rose-200);
+  --color-teamAColor-300: var(--color-rose-300);
+  --color-teamAColor-400: var(--color-rose-400);
+  --color-teamAColor-500: var(--color-rose-500);
+  --color-teamAColor-600: var(--color-rose-600);
+  --color-teamAColor-700: var(--color-rose-700);
+  --color-teamAColor-800: var(--color-rose-800);
+  --color-teamAColor-900: var(--color-rose-900);
+  --color-teamAColor-950: var(--color-rose-950);
   --color-teamBColor-50: var(--color-sky-50);
   --color-teamBColor-100: var(--color-sky-100);
   --color-teamBColor-200: var(--color-sky-200);
@@ -46,10 +63,17 @@
   --color-teamBColor-800: var(--color-sky-800);
   --color-teamBColor-900: var(--color-sky-900);
   --color-teamBColor-950: var(--color-sky-950);
-  --font-family-body: var(--font-atma), ui-sans-serif, system-ui, sans-serif;
-  --font-family-icon:
-    'Font Awesome 6 Pro', ui-sans-serif, system-ui, sans-serif;
-  --font-family-mono: ui-monospace, monospace;
+  --color-neutralColor-50: var(--color-stone-50);
+  --color-neutralColor-100: var(--color-stone-100);
+  --color-neutralColor-200: var(--color-stone-200);
+  --color-neutralColor-300: var(--color-stone-300);
+  --color-neutralColor-400: var(--color-stone-400);
+  --color-neutralColor-500: var(--color-stone-500);
+  --color-neutralColor-600: var(--color-stone-600);
+  --color-neutralColor-700: var(--color-stone-700);
+  --color-neutralColor-800: var(--color-stone-800);
+  --color-neutralColor-900: var(--color-stone-900);
+  --color-neutralColor-950: var(--color-stone-950);
 }
 
 @layer base {
@@ -90,6 +114,22 @@
     background: transparent;
   }
   .scrollbar-styled::-webkit-scrollbar-thumb {
+    background: var(--color-primaryColor-500);
+    border-radius: 2rem;
+  }
+  .scrollbar-compact {
+    -ms-overflow-style: auto;
+    scrollbar-color: var(--color-primaryColor-500) transparent;
+    scrollbar-width: thin;
+  }
+  .scrollbar-compact::-webkit-scrollbar {
+    display: block;
+    width: 0.2rem;
+  }
+  .scrollbar-compact::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-compact::-webkit-scrollbar-thumb {
     background: var(--color-primaryColor-500);
     border-radius: 2rem;
   }

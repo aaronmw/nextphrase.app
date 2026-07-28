@@ -1,8 +1,25 @@
 'use client'
 
 import { Icon } from '@/components/Icon'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useIsClient, useSessionStorage } from 'usehooks-ts'
+
+const standaloneMediaQuery = '(display-mode: standalone)'
+
+function subscribeToStandaloneMode(onChange: () => void) {
+  const mediaQuery = window.matchMedia(standaloneMediaQuery)
+  mediaQuery.addEventListener('change', onChange)
+
+  return () => mediaQuery.removeEventListener('change', onChange)
+}
+
+function getStandaloneModeSnapshot() {
+  return window.matchMedia(standaloneMediaQuery).matches
+}
+
+function getStandaloneModeServerSnapshot() {
+  return false
+}
 
 export function InstallPrompt() {
   const isClient = useIsClient()
@@ -10,11 +27,11 @@ export function InstallPrompt() {
     'has-seen-prompt',
     'false',
   )
-  const [isStandalone, setIsStandalone] = useState(false)
-
-  useEffect(() => {
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
-  }, [])
+  const isStandalone = useSyncExternalStore(
+    subscribeToStandaloneMode,
+    getStandaloneModeSnapshot,
+    getStandaloneModeServerSnapshot,
+  )
 
   const handleClickDismiss = () => {
     setHasSeenPrompt('true')
@@ -41,13 +58,13 @@ export function InstallPrompt() {
       <div
         className="
           bg-secondaryColor-950
+          border-neutralColor-100
           relative
           flex
           flex-col
           gap-1
           rounded-md
           border-4
-          border-white
           p-2
           text-xs
           text-balance
@@ -78,8 +95,11 @@ export function InstallPrompt() {
         </ol>
 
         <button
+          aria-label="Dismiss install prompt"
           className="
-            bg-primaryColor-400
+            bg-accentFillColor
+            border-neutralColor-100
+            text-textOnAccentColor
             absolute
             top-0
             right-0
@@ -92,8 +112,8 @@ export function InstallPrompt() {
             justify-center
             rounded-full
             border-4
-            border-white
           "
+          type="button"
           onClick={handleClickDismiss}
         >
           <Icon name="solid:xmark" />

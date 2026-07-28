@@ -273,7 +273,7 @@ export function ScreenForScoring() {
           </main>
           <div
             ref={scoreFlashRef}
-            className="js-score-flash pointer-events-none invisible fixed top-0 left-0 z-[100] size-1 rounded-full bg-white opacity-0"
+            className="js-score-flash bg-neutralColor-100 pointer-events-none invisible fixed top-0 left-0 z-[100] size-1 rounded-full opacity-0"
           />
           <Confetti
             colors={confettiColors}

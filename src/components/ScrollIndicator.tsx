@@ -14,8 +14,7 @@ export function ScrollIndicator({
 }: ScrollIndicatorProps = {}) {
   const { isScrolled, canScroll } = useIsScrolled({
     scrollingElementRef: scrollingElementRef as
-      | RefObject<HTMLElement>
-      | undefined,
+      RefObject<HTMLElement> | undefined,
   })
 
   return (
@@ -27,24 +26,25 @@ export function ScrollIndicator({
           bottom-0
           left-1/2
           z-10
-          transition-opacity
-          duration-1000
           -translate-x-1/2
           -translate-y-1/2
+          transition-opacity
+          duration-1000
         `,
         canScroll && !isScrolled ? 'opacity-100' : 'opacity-0',
       )}
     >
       <div
         className="
+          border-neutralColor-100
+          bg-accentFillColor
+          text-textOnAccentColor
           flex
           size-8
           items-center
           justify-center
           rounded-full
           border-4
-          border-white
-          bg-primaryColor-500
         "
       >
         <Icon name="solid:chevron-down" />

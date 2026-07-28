@@ -11,16 +11,18 @@ export function DebugPanel({
   children,
   ...otherProps
 }: DebugPanelProps) {
+  if (typeof document === 'undefined') return null
+
   return createPortal(
     <div
       className={twMerge(
         `
+          text-neutralColor-100
           fixed
           z-50
           bg-black
           p-1
           text-[12px]
-          text-white
         `,
         className,
       )}

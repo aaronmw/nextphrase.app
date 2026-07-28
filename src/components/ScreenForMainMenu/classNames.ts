@@ -31,6 +31,8 @@ export const classNames = {
     mb-5
   `,
   scoreContainer: tw`
+    divide-neutralColor-100
+    border-neutralColor-100
     absolute
     top-full
     left-1/2
@@ -40,19 +42,19 @@ export const classNames = {
     items-center
     justify-center
     divide-x-4
-    divide-white
     overflow-hidden
     rounded-full
     border-4
-    border-white
     text-xs
   `,
   teamAScore: tw`
-    bg-teamAColor-500
+    bg-teamAFillColor
+    text-textOnTeamAColor
     px-2
   `,
   teamBScore: tw`
-    bg-teamBColor-500
+    bg-teamBFillColor
+    text-textOnTeamBColor
     px-2
   `,
 }

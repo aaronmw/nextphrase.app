@@ -7,12 +7,14 @@ export const classNames = {
     rounded-xl
   `,
   gotItButtonTeamA: `
-    border-teamAColor-500
-    bg-teamAColor-500
+    border-teamAFillColor
+    bg-teamAFillColor
+    text-textOnTeamAColor
   `,
   gotItButtonTeamB: `
-    border-teamBColor-500
-    bg-teamBColor-500
+    border-teamBFillColor
+    bg-teamBFillColor
+    text-textOnTeamBColor
   `,
   nextPhraseButton: `
     h-full

@@ -15,23 +15,23 @@ export const classNames = {
     js-point-button
     row-start-1
     row-end-2
-    border-teamAColor-500
-    bg-teamAColor-500
     text-4xl
   `,
   pointButtonTeamA: tw`
+    border-teamAFillColor
+    bg-teamAFillColor
+    text-textOnTeamAColor
     col-start-1
     col-end-2
     rounded-tl-xl
-    border-teamAColor-500
-    bg-teamAColor-500
   `,
   pointButtonTeamB: tw`
+    border-teamBFillColor
+    bg-teamBFillColor
+    text-textOnTeamBColor
     col-start-2
     col-end-3
     rounded-tr-xl
-    border-teamBColor-500
-    bg-teamBColor-500
   `,
   startButton: ({ activeTeam }: { activeTeam: 'A' | 'B' }) =>
     twMerge(
@@ -47,12 +47,14 @@ export const classNames = {
       `,
       activeTeam === 'A'
         ? `
-          border-teamAColor-500
-          bg-teamAColor-500
+          border-teamAFillColor
+          bg-teamAFillColor
+          text-textOnTeamAColor
         `
         : `
-          border-teamBColor-500
-          bg-teamBColor-500
+          border-teamBFillColor
+          bg-teamBFillColor
+          text-textOnTeamBColor
         `,
     ),
 }

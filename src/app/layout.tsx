@@ -68,6 +68,7 @@ export default async function RootLayout({
       className={twJoin(bodyFont.className, bodyFont.variable, 'font-bold')}
       data-screenshot-mode={isScreenshotMode ? 'true' : undefined}
       lang="en-US"
+      suppressHydrationWarning
       style={{ backgroundColor: appBackgroundColor }}
     >
       <head>

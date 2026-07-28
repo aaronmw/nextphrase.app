@@ -8,10 +8,12 @@ import {
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
 import { Icon } from '@/components/Icon'
+import { InsetDivider } from '@/components/InsetDivider'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
 import { ChangeEvent, ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { classNames } from './classNames'
 
 type CheckboxProps = Omit<ComponentProps<'input'>, 'type'>
 
@@ -24,25 +26,54 @@ const Checkbox = ({ className, onChange, ...otherProps }: CheckboxProps) => {
   }
 
   return (
-    <input
-      className={twMerge(
-        `
-          bg-primaryColor-700
-          text-primaryColor-500
+    <span
+      className={twMerge('relative inline-flex size-[1em] shrink-0', className)}
+    >
+      <input
+        className="
+          peer
+          bg-primaryColor-900
           !outline-primaryColor-400
-          checked:bg-primaryColor-500
+          checked:bg-accentFillColor
+          m-0
+          size-full
+          appearance-none
           rounded-sm
           border-none
+          bg-none
           transition-colors
-        `,
-        className,
-      )}
-      type="checkbox"
-      onChange={handleChange}
-      {...otherProps}
-    />
+        "
+        type="checkbox"
+        onChange={handleChange}
+        {...otherProps}
+      />
+      <Icon
+        aria-hidden="true"
+        className="
+          text-textOnAccentColor
+          pointer-events-none
+          absolute
+          inset-0
+          flex
+          items-center
+          justify-center
+          text-[0.65em]
+          opacity-0
+          transition-opacity
+          peer-checked:opacity-100
+        "
+        name="check"
+      />
+    </span>
   )
 }
+
+const checkboxRowClassName = `
+  flex
+  cursor-pointer
+  items-center
+  justify-between
+`
 
 function getRoundDurationLabel(multiplier: RoundDurationMultiplier) {
   return multiplier === 0.5 ? '½×' : `${multiplier}×`
@@ -96,6 +127,7 @@ export function ScreenForOptions() {
   return (
     <ScreenContainer
       className="touch-auto"
+      extendIntoBottomSafeArea
       screenName={AppScreen.Options}
       slotForHeader={
         <AppHeader
@@ -124,38 +156,36 @@ export function ScreenForOptions() {
             inset-0
             flex
             flex-col
-            gap-y-2
             overflow-y-auto
             px-3
-            pb-3
+            pb-[calc(0.75rem+env(safe-area-inset-bottom))]
           `}
         >
-          <div>
+          <div className={classNames.fieldGroup}>
             <StyledText variant="label">Phrase Categories</StyledText>
 
-            {Object.entries(categoriesById).map(([categoryId, category]) => (
-              <label
-                className={`
-                  flex
-                  cursor-pointer
-                  items-center
-                  justify-between
-                `}
-                htmlFor={`category-${categoryId}`}
-                key={categoryId}
-              >
-                <span>{category.label}</span>
+            <div className="flex flex-col">
+              {Object.entries(categoriesById).map(([categoryId, category]) => (
+                <label
+                  className={checkboxRowClassName}
+                  htmlFor={`category-${categoryId}`}
+                  key={categoryId}
+                >
+                  <span>{category.label}</span>
 
-                <Checkbox
-                  checked={!disabledCategoryIdsSet.has(categoryId)}
-                  id={`category-${categoryId}`}
-                  onChange={handleClickCheckbox.bind(null, categoryId)}
-                />
-              </label>
-            ))}
+                  <Checkbox
+                    checked={!disabledCategoryIdsSet.has(categoryId)}
+                    id={`category-${categoryId}`}
+                    onChange={handleClickCheckbox.bind(null, categoryId)}
+                  />
+                </label>
+              ))}
+            </div>
           </div>
 
-          <fieldset>
+          <InsetDivider />
+
+          <fieldset className={classNames.fieldGroup}>
             <StyledText
               as="legend"
               variant="label"
@@ -163,63 +193,61 @@ export function ScreenForOptions() {
               Round Duration
             </StyledText>
 
-            <div
-              className="
-                mt-0.5
-                grid
-                grid-cols-3
-                overflow-hidden
-                rounded-sm
-                border-4
-                border-white
-              "
-            >
-              {ROUND_DURATION_MULTIPLIERS.map((multiplier, index) => (
-                <label
-                  className="relative cursor-pointer"
-                  key={multiplier}
-                >
-                  <input
-                    checked={roundDurationMultiplier === multiplier}
-                    className="peer sr-only"
-                    name="round-duration"
-                    type="radio"
-                    value={multiplier}
-                    onChange={() => handleChangeRoundDuration(multiplier)}
-                  />
-                  <span
-                    className={twMerge(
-                      `
-                        peer-checked:bg-primaryColor-500
-                        peer-focus-visible:ring-primaryColor-100
-                        flex
-                        items-center
-                        justify-center
-                        py-1
-                        text-xs
-                        text-white
-                        transition-colors
-                        peer-checked:text-white
-                        peer-focus-visible:ring-2
-                        peer-focus-visible:ring-inset
-                      `,
-                      index > 0 && 'border-l-4 border-white',
-                    )}
+            <div className={classNames.hardEdgeControlGroup}>
+              <div
+                className="
+                  border-neutralColor-100
+                  grid
+                  grid-cols-3
+                  overflow-hidden
+                  rounded-sm
+                  border-4
+                "
+              >
+                {ROUND_DURATION_MULTIPLIERS.map((multiplier, index) => (
+                  <label
+                    className="relative cursor-pointer"
+                    key={multiplier}
                   >
-                    {getRoundDurationLabel(multiplier)}
-                  </span>
-                </label>
-              ))}
+                    <input
+                      checked={roundDurationMultiplier === multiplier}
+                      className="peer sr-only"
+                      name="round-duration"
+                      type="radio"
+                      value={multiplier}
+                      onChange={() => handleChangeRoundDuration(multiplier)}
+                    />
+                    <span
+                      className={twMerge(
+                        `
+                          peer-checked:bg-accentFillColor
+                          peer-focus-visible:ring-primaryColor-100
+                          text-neutralColor-100
+                          peer-checked:text-textOnAccentColor
+                          flex
+                          items-center
+                          justify-center
+                          py-1
+                          text-xs
+                          transition-colors
+                          peer-focus-visible:ring-2
+                          peer-focus-visible:ring-inset
+                        `,
+                        index > 0 && 'border-neutralColor-100 border-l-4',
+                      )}
+                    >
+                      {getRoundDurationLabel(multiplier)}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </fieldset>
 
+          <InsetDivider />
+
           <label
-            className="
-              flex
-              cursor-pointer
-              items-center
-              justify-between
-            "
+            className={checkboxRowClassName}
             htmlFor="countdown-enabled"
           >
             <span>Countdown</span>
@@ -230,13 +258,10 @@ export function ScreenForOptions() {
             />
           </label>
 
-          <div>
-            <StyledText
-              className="block"
-              variant="label"
-            >
-              Sound Boost
-            </StyledText>
+          <InsetDivider />
+
+          <div className={classNames.fieldGroup}>
+            <StyledText variant="label">Sound Boost</StyledText>
 
             <div
               className={`
@@ -269,12 +294,12 @@ export function ScreenForOptions() {
               />
               <span
                 className="
+                  text-neutralColor-100
                   col-start-1
                   row-start-2
                   text-xs
                   leading-tight
                   font-normal
-                  text-white
                 "
                 id="rotate-screen-description"
               >

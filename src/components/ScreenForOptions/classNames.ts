@@ -1,7 +1,12 @@
 import { tw } from '@/lib/tw'
 
 export const classNames = {
-  container: tw`
-    
+  fieldGroup: tw`
+    flex
+    flex-col
+    gap-y-0.5
+  `,
+  hardEdgeControlGroup: tw`
+    py-1.5
   `,
 }

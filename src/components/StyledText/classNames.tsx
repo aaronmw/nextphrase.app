@@ -2,21 +2,21 @@ import { tw } from '@/lib/tw'
 import { twMerge } from 'tailwind-merge'
 
 const buttonClassNames = tw`
+  before:from-bgColor/20
   relative
   inline-flex
   cursor-pointer
-  select-none
   items-center
   justify-center
   gap-1.5
   transition-all
+  select-none
   [-webkit-user-select:none]
   [text-shadow:2px_2px_2px_rgba(0,0,0,0.25)]
   before:pointer-events-none
   before:absolute
   before:inset-0
   before:bg-gradient-to-t
-  before:from-bgColor/20
   before:to-transparent
   before:opacity-0
   before:transition-opacity
@@ -34,8 +34,8 @@ export const classNames = {
       text-[var(--tw-prose-links)]
       underline
       underline-offset-4
-      hover:underline-offset-8
       hover:scale-100
+      hover:underline-offset-8
       [&_span]:ml-1
     `,
   ),
@@ -44,20 +44,20 @@ export const classNames = {
     buttonClassNames,
     `
       js-button-primary
+      border-accentFillColor
+      bg-accentFillColor
+      text-textOnAccentColor
       w-full
-      whitespace-nowrap
       rounded-sm
       border-4
-      border-primaryColor-500
-      bg-primaryColor-500
       px-3
       py-1
       text-center
       text-xs
-      uppercase
       leading-none
       tracking-tighter
-      text-white
+      whitespace-nowrap
+      uppercase
     `,
   ),
 
@@ -65,21 +65,21 @@ export const classNames = {
     buttonClassNames,
     `
       js-button-secondary
+      border-primaryColor-400/40
+      text-primaryColor-400
       relative
       z-10
       w-full
-      whitespace-nowrap
       rounded-sm
       border-4
-      border-primaryColor-400/40
       px-3
       py-1
       text-center
       text-xs
-      uppercase
       leading-none
       tracking-tighter
-      text-primaryColor-400
+      whitespace-nowrap
+      uppercase
       backdrop-blur-sm
     `,
   ),
@@ -88,15 +88,16 @@ export const classNames = {
     buttonClassNames,
     `
       hover:bg-primaryColor
+      bg-shadedBgColor
+      hover:text-neutralColor-100
       size-10
       rounded-none
-      bg-shadedBgColor
       text-xs
-      hover:text-white
     `,
   ),
 
   'button.tool': tw`
+    hover:bg-textColor/15
     -my-0.5
     inline-flex
     items-center
@@ -107,11 +108,11 @@ export const classNames = {
     py-0.5
     text-xs
     text-inherit
-    hover:bg-textColor/15
   `,
 
   'label': tw`
-    text-xs
     text-fadedTextColor
+    text-xs
+    leading-[1.5rem]
   `,
 }

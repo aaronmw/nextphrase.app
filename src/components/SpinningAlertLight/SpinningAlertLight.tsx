@@ -1,6 +1,11 @@
 'use client'
 
-import { teamAColor, teamBColor } from '@/app/theme'
+import {
+  teamAColor,
+  teamAFillColor,
+  teamBColor,
+  teamBFillColor,
+} from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
 import { Icon } from '@/components/Icon'
 import { useRoundTransition } from '@/components/RoundTransitionContext'
@@ -58,11 +63,12 @@ const classNames = {
     justify-center
     leading-none
     origin-center
-    text-white
     rounded-full
     size-4
     relative
     z-10
+    transition-colors
+    duration-300
   `,
 }
 
@@ -95,6 +101,10 @@ export const SpinningAlertLight = forwardRef<
     acceleratedTickRate,
   } = state
   const activeTeamColor = activeTeam === 'A' ? teamAColor[500] : teamBColor[500]
+  const activeTeamSurfaceColor =
+    activeTeam === 'A' ? teamAFillColor : teamBFillColor
+  const activeTeamTextColor =
+    activeTeam === 'A' ? 'text-textOnTeamAColor' : 'text-textOnTeamBColor'
 
   function handleClick() {
     sounds.stopSound('bonk')
@@ -314,8 +324,12 @@ export const SpinningAlertLight = forwardRef<
       </span>
 
       <span
-        className={twMerge(`js-spinning-icon`, classNames.spinningIcon)}
-        style={{ backgroundColor: 'var(--alert-light-color)' }}
+        className={twMerge(
+          `js-spinning-icon`,
+          classNames.spinningIcon,
+          activeTeamTextColor,
+        )}
+        style={{ backgroundColor: activeTeamSurfaceColor }}
       >
         <Icon
           className="flex size-full items-center justify-center leading-none"

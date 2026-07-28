@@ -17,7 +17,9 @@ export function ScreenForWinners() {
       slotForMain={
         <div className="flex h-full flex-col items-center justify-center gap-12 px-3">
           <div className="flex flex-col items-center">
-            <div className="text-2xl text-white uppercase">Winner:</div>
+            <div className="text-neutralColor-100 text-2xl uppercase">
+              Winner:
+            </div>
             <div className="text-8xl">{winner}</div>
           </div>
           <StyledText

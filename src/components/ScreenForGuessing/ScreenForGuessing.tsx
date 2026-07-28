@@ -78,6 +78,7 @@ export function ScreenForGuessing() {
                 ref={countdownElementRef}
                 className="
                   js-guess-countdown
+                  text-neutralColor-100
                   pointer-events-none
                   invisible
                   relative
@@ -91,7 +92,6 @@ export function ScreenForGuessing() {
                   text-center
                   text-5xl
                   leading-none
-                  text-white
                   uppercase
                   [text-shadow:2px_2px_2px_rgba(0,0,0,0.25)]
                 "

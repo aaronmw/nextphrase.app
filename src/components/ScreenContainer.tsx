@@ -13,6 +13,7 @@ interface ScreenContainerProps extends Omit<
   ComponentProps<'section'>,
   'children'
 > {
+  extendIntoBottomSafeArea?: boolean
   screenName: string
   slotForHeader?: ReactNode
   slotForMain?: ReactNode
@@ -58,6 +59,7 @@ function getScopedAnimationElements(outerElement: HTMLDivElement) {
 
 export function ScreenContainer({
   className,
+  extendIntoBottomSafeArea = false,
   screenName,
   slotForHeader,
   slotForMain,
@@ -230,7 +232,9 @@ export function ScreenContainer({
       if (!(outerElement && isClient)) return
 
       const upperMargin = 'env(safe-area-inset-top)'
-      const lowerMargin = 'env(safe-area-inset-bottom)'
+      const lowerMargin = extendIntoBottomSafeArea
+        ? 0
+        : 'env(safe-area-inset-bottom)'
       const nextRotation = rotateScreen ? 180 : 0
 
       if (!didSetInitialRotationRef.current) {
@@ -261,7 +265,7 @@ export function ScreenContainer({
       )
     },
     {
-      dependencies: [rotateScreen, isClient],
+      dependencies: [rotateScreen, isClient, extendIntoBottomSafeArea],
       scope: outerElementRef,
     },
   )

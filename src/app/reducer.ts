@@ -15,6 +15,7 @@ export enum AppScreen {
 }
 
 export const HEARTS_PER_TEAM = 7
+export const APP_STATE_STORAGE_KEY = 'appState'
 
 export const DEFAULT_ROUND_DURATION_MIN =
   process.env.NODE_ENV === 'development' ? 3 : 45
