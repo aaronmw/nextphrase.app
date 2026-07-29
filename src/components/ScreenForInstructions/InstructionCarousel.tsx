@@ -1,11 +1,32 @@
 'use client'
 
 import { AppScreen } from '@/app/reducer'
+import { teamBColor } from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
+import { Confetti } from '@/components/Confetti'
+import {
+  HEART_LOSS_ANIMATION_COLOR,
+  HEART_LOSS_ANIMATION_DURATION_SECONDS,
+  HEART_LOSS_ANIMATION_ROTATION_DEGREES,
+  HEART_LOSS_ANIMATION_SCALE,
+  HEART_LOSS_ANIMATION_Y_PERCENT,
+  HEART_LOSS_EXIT_DURATION_SECONDS,
+  HEART_LOSS_EXIT_OPACITY,
+  HEART_LOSS_EXIT_ROTATION_DEGREES,
+  HEART_LOSS_EXIT_SCALE,
+  HEART_LOSS_EXIT_Y_PERCENT,
+} from '@/components/heartLossAnimation'
 import { Icon } from '@/components/Icon'
+import type { RegularIconName } from '@/components/Icon/types'
+import { InstructionPhone } from '@/components/ScreenForInstructions/InstructionPhone'
+import {
+  InstructionTeamSelector,
+  type InstructionTeamSelectorHandle,
+} from '@/components/ScreenForInstructions/InstructionTeamSelector'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import {
+  CSSProperties,
   KeyboardEvent,
   PointerEvent,
   ReactNode,
@@ -38,39 +59,108 @@ interface DragState {
 }
 
 const PLAYER_TEAMS: Team[] = ['A', 'B', 'A', 'B']
-const PARTICLE_ANGLES = [0, 38, 78, 118, 158, 198, 238, 278, 318]
+const PLAYER_ORBIT_ORDER = [2, 3, 0, 1]
+const PLAYER_ORBIT_SCALE = 1.15
+const COMMENT_BURST_ANGLES = [-40, 0, 40]
+const COMMENT_BURST_ENTRANCE_ORDER = [0, 2, 1]
+const STAGGERED_ENTRANCE_ORDER = [0, 2, 1, 3]
+const COMMENT_BURST_ICON_NAMES = [
+  'question',
+  'exclamation',
+  'lightbulb',
+  'music',
+  'heart',
+  'star',
+  'bolt',
+  'hashtag',
+  'quote-left',
+  'ellipsis',
+  'face-smile',
+  'thumbs-up',
+] as const satisfies readonly RegularIconName[]
 const CIRCLE_BEZIER_FACTOR = 0.5522847498
 const PHONE_PLAYER_OVERLAP = 12
-const COMMENT_PLAYER_OVERLAP = -2
-const PLAYER_ORIENTATIONS = [180, 270, 0, 90]
 const PHONE_NOTCH_DURATION = 1.83
 const PHONE_HANDOFF_DURATION = 0.4
 const PHONE_PAUSE_DURATION = PHONE_NOTCH_DURATION - PHONE_HANDOFF_DURATION
+const PHONE_TEAM_CHANGE_DURATION = 0.15
+const PHONE_PHRASE_OUT_DURATION = 0.12
+const PHONE_PHRASE_IN_DURATION = 0.18
+const PHONE_SCREEN_EXIT_DURATION = 0.45
+const PHONE_SCREEN_BLANK_BEAT_DURATION = 0.08
+const PHONE_SCREEN_ENTER_DURATION = 0.3
+const PHONE_REVEAL_SLIDE_DURATION = 0.28
+const PHONE_REVEAL_DEPTH_DURATION = 0.14
+const PHONE_REVEAL_SETTLE_DURATION = 0.35
+const PLAYER_ENTRANCE_STAGGER = 0.14
+const PLAYER_START_DISTANCE_MULTIPLIER = 1.25
+const PLAYER_HOP_HEIGHT_MULTIPLIERS = [0.55, 0.42, 0.3]
+const PLAYER_HOP_PREP_DURATION = 0.06
+const PLAYER_HOP_RISE_DURATION = 0.14
+const PLAYER_HOP_FALL_DURATION = 0.12
+const PLAYER_HOP_IMPACT_DURATION = 0.04
+const PLAYER_HOP_RECOVERY_DURATION = 0.06
+const PLAYER_HOP_DURATION =
+  PLAYER_HOP_PREP_DURATION +
+  PLAYER_HOP_RISE_DURATION +
+  PLAYER_HOP_FALL_DURATION +
+  PLAYER_HOP_IMPACT_DURATION +
+  PLAYER_HOP_RECOVERY_DURATION
+const PLAYER_ASSIGNMENT_PREP_DURATION = 0.05
+const PLAYER_ASSIGNMENT_RISE_DURATION = 0.16
+const PLAYER_ASSIGNMENT_FALL_DURATION = 0.14
+const PLAYER_ASSIGNMENT_IMPACT_DURATION = 0.03
+const PLAYER_ASSIGNMENT_RECOVERY_DURATION = 0.06
+const PLAYER_ASSIGNMENT_DURATION =
+  PLAYER_ASSIGNMENT_PREP_DURATION +
+  PLAYER_ASSIGNMENT_RISE_DURATION +
+  PLAYER_ASSIGNMENT_FALL_DURATION +
+  PLAYER_ASSIGNMENT_IMPACT_DURATION +
+  PLAYER_ASSIGNMENT_RECOVERY_DURATION
+const TEAM_ASSIGNMENT_SEQUENCE_DURATION = PLAYER_ASSIGNMENT_DURATION * 2
+const VICTORY_REVEAL_DELAY = 0.6
+const TROPHY_BOUNCE_REPEAT_DELAY = 0.25
+const PHONE_REVEAL_DELAY_AFTER_ASSIGNMENTS = 0.5
+const TEAM_B_CONFETTI_COLORS = Object.values(teamBColor)
 const COMMENT_EXIT_DURATION = 0.16
 const COMMENT_EXIT_STAGGER = 0.12
+const COMMENT_BURST_TRIGGER_AT = 0.27
+const COMMENT_BUBBLE_FLIGHT_DURATION = 0.22
+const COMMENT_BUBBLE_STAGGER = COMMENT_BUBBLE_FLIGHT_DURATION * 0.75
+const COMMENT_BUBBLE_HOLD_DURATION = 0.12
+const COMMENT_BUBBLE_FADE_DURATION = 0.6
+const COMMENT_BURST_END_AT =
+  COMMENT_BURST_TRIGGER_AT +
+  COMMENT_BUBBLE_STAGGER * (COMMENT_BURST_ENTRANCE_ORDER.length - 1) +
+  COMMENT_BUBBLE_FLIGHT_DURATION +
+  COMMENT_BUBBLE_HOLD_DURATION +
+  COMMENT_BUBBLE_FADE_DURATION
 const HOLDER_COMMENT_EXIT_AT =
   PHONE_PAUSE_DURATION - COMMENT_EXIT_DURATION - COMMENT_EXIT_STAGGER
-const TEAMMATE_COMMENT_EXIT_AT = PHONE_PAUSE_DURATION - COMMENT_EXIT_DURATION
 
 const playerPositionClassNames = [
   `
-    top-0
+    top-[calc(50%-var(--instruction-orbit-radius))]
     left-1/2
     -translate-x-1/2
-  `,
-  `
-    top-1/2
-    right-0
     -translate-y-1/2
   `,
   `
-    bottom-0
+    top-1/2
+    left-[calc(50%+var(--instruction-orbit-radius))]
+    -translate-x-1/2
+    -translate-y-1/2
+  `,
+  `
+    top-[calc(50%+var(--instruction-orbit-radius))]
     left-1/2
     -translate-x-1/2
+    -translate-y-1/2
   `,
   `
     top-1/2
-    left-0
+    left-[calc(50%-var(--instruction-orbit-radius))]
+    -translate-x-1/2
     -translate-y-1/2
   `,
 ]
@@ -79,15 +169,14 @@ const instructionSlides: InstructionSlide[] = [
   {
     id: 'form-teams',
     label: 'Form the teams',
-    accessibleCaption:
-      'Sit in a circle, alternating Team A and Team B. You start on Team A.',
+    accessibleCaption: 'Sit in a circle, alternating Team A and Team B.',
     caption: (
       <>
         Sit in a circle, alternating{' '}
-        <strong className="text-teamATextColor font-bold">Team A</strong>
-        &nbsp;and{' '}
-        <strong className="text-teamBTextColor font-bold">Team B</strong>. You
-        start on Team&nbsp;A.
+        <span className="whitespace-nowrap">
+          <strong className="text-teamATextColor font-bold">Team A</strong> and{' '}
+          <strong className="text-teamBTextColor font-bold">Team B</strong>.
+        </span>
       </>
     ),
   },
@@ -95,13 +184,14 @@ const instructionSlides: InstructionSlide[] = [
     id: 'pass-phone',
     label: 'Pass the phone',
     accessibleCaption:
-      'Get your team to say the exact phrase, then pass the phone to the next team.',
+      'Get your team to say the exact phrase shown (swipe the phrase to get a new one) and then pass the phone left to the opposing team.',
     caption: (
       <>
         Get your team to say the{' '}
-        <u className="underline-offset-2">exact phrase</u>, then{' '}
-        <strong className="font-bold">pass the phone</strong>&nbsp;to the
-        next&nbsp;team.
+        <u className="underline-offset-2">exact phrase</u> shown (swipe the
+        phrase to get a new one) and then{' '}
+        <strong className="font-bold">pass the phone left</strong>&nbsp;to the
+        opposing&nbsp;team.
       </>
     ),
   },
@@ -126,38 +216,86 @@ function getTeamFillColor(team: Team) {
     : 'var(--color-teamBFillColor)'
 }
 
-function getPlayerSlotCenters(
-  stage: HTMLDivElement,
-  playerSlots: (HTMLDivElement | null)[],
+function setInstructionPhoneAlertTeam(phone: HTMLDivElement, team: Team) {
+  phone.style.setProperty('--alert-light-color', getTeamFillColor(team))
+}
+
+function setInstructionPhoneActiveTeam(
+  phone: HTMLDivElement,
+  selectorThumb: HTMLElement,
+  team: Team,
 ) {
-  if (
-    playerSlots.length !== PLAYER_TEAMS.length ||
-    playerSlots.some(playerSlot => !playerSlot)
+  phone.dataset.instructionPhoneTeam = team
+  phone.style.setProperty('--selector-color', getTeamFillColor(team))
+  selectorThumb.style.transform =
+    team === 'A' ? 'translateX(0%)' : 'translateX(100%)'
+}
+
+function setInstructionPhoneTeam(
+  phone: HTMLDivElement,
+  selectorThumb: HTMLElement,
+  team: Team,
+) {
+  setInstructionPhoneAlertTeam(phone, team)
+  setInstructionPhoneActiveTeam(phone, selectorThumb, team)
+}
+
+function selectCommentBurstIcons() {
+  const iconNames = [...COMMENT_BURST_ICON_NAMES]
+
+  for (
+    let selectionIndex = 0;
+    selectionIndex < COMMENT_BURST_ANGLES.length;
+    selectionIndex += 1
   ) {
-    return null
+    const randomIndex =
+      selectionIndex +
+      Math.floor(Math.random() * (iconNames.length - selectionIndex))
+    const selectedIconName = iconNames[selectionIndex]
+    iconNames[selectionIndex] = iconNames[randomIndex]
+    iconNames[randomIndex] = selectedIconName
   }
 
-  const stageWidth = stage.clientWidth
-  const stageHeight = stage.clientHeight
+  return iconNames.slice(0, COMMENT_BURST_ANGLES.length)
+}
+
+function assignCommentBurstIcons(bubbles: HTMLElement[]) {
+  selectCommentBurstIcons().forEach((iconName, index) => {
+    const glyph = bubbles[index].querySelector<HTMLElement>(
+      '[data-comment-burst-glyph]',
+    )
+    const icon = glyph?.querySelector<HTMLElement>('i')
+
+    if (!(glyph && icon)) return
+
+    const previousIconName = glyph.dataset.commentBurstIcon ?? 'question'
+    icon.classList.remove(`fa-${previousIconName}`)
+    icon.classList.add(`fa-${iconName}`)
+    glyph.dataset.commentBurstIcon = iconName
+  })
+}
+
+function getPlayerEntranceStartOffset(index: number, diameter: number): Point {
+  const distance = diameter * PLAYER_START_DISTANCE_MULTIPLIER
 
   return [
-    {
-      x: stageWidth / 2,
-      y: playerSlots[0]!.offsetHeight / 2,
-    },
-    {
-      x: stageWidth - playerSlots[1]!.offsetWidth / 2,
-      y: stageHeight / 2,
-    },
-    {
-      x: stageWidth / 2,
-      y: stageHeight - playerSlots[2]!.offsetHeight / 2,
-    },
-    {
-      x: playerSlots[3]!.offsetWidth / 2,
-      y: stageHeight / 2,
-    },
-  ]
+    { x: 0, y: -distance },
+    { x: distance, y: 0 },
+    { x: 0, y: distance },
+    { x: -distance, y: 0 },
+  ][index]
+}
+
+function getHopPoint(
+  start: Point,
+  end: Point,
+  progress: number,
+  lift: number,
+): Point {
+  return {
+    x: start.x + (end.x - start.x) * progress,
+    y: start.y + (end.y - start.y) * progress - lift,
+  }
 }
 
 function getInnerOrbitSlotPoints(
@@ -241,6 +379,10 @@ export function InstructionCarousel() {
   const isActive = state.activeScreen === AppScreen.Instructions
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const [activeSlide, setActiveSlide] = useState(0)
+  const [sceneSlide, setSceneSlide] = useState(0)
+  const [hasRevealedFinalRule, setHasRevealedFinalRule] = useState(false)
+  const [isInstructionConfettiActive, setIsInstructionConfettiActive] =
+    useState(false)
   const [stageGeometryVersion, setStageGeometryVersion] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -249,20 +391,27 @@ export function InstructionCarousel() {
   const playerSlotRefs = useRef<(HTMLDivElement | null)[]>([])
   const playerVisualRefs = useRef<(HTMLDivElement | null)[]>([])
   const playerLabelRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const commentBubbleSlotRefs = useRef<(HTMLDivElement | null)[]>([])
   const commentBubbleRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const commentIconRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const commentQuestionIconRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const commentBurstGroupRefs = useRef<(HTMLDivElement | null)[]>([])
   const youTagRef = useRef<HTMLSpanElement>(null)
   const phoneRef = useRef<HTMLDivElement>(null)
+  const teamSelectorDemoRef = useRef<InstructionTeamSelectorHandle | null>(null)
   const timerRef = useRef<HTMLDivElement>(null)
   const timerRingRef = useRef<SVGCircleElement>(null)
+  const heartLayerRef = useRef<HTMLDivElement>(null)
   const heartRef = useRef<HTMLDivElement>(null)
+  const lostHeartRef = useRef<HTMLDivElement>(null)
+  const trophyRef = useRef<HTMLDivElement>(null)
   const reducedPenaltyRef = useRef<HTMLSpanElement>(null)
-  const particleRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const roundResultRef = useRef<HTMLDivElement>(null)
+  const heartLossResultRef = useRef<HTMLSpanElement>(null)
+  const winnerResultRef = useRef<HTMLSpanElement>(null)
+  const finalRuleRef = useRef<HTMLSpanElement>(null)
   const entranceTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const sceneTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const dragStateRef = useRef<DragState | null>(null)
+  const pendingFinalActRef = useRef(false)
+  const phoneSeatRef = useRef<number | null>(2)
   const openedOnInstructionsRef = useRef(isActive)
   const hasRunEntranceRef = useRef(false)
   const wasActiveRef = useRef(false)
@@ -272,7 +421,16 @@ export function InstructionCarousel() {
     wasActiveRef.current = isActive
 
     if (isActive && !wasActive) {
+      pendingFinalActRef.current = false
+      phoneSeatRef.current = 2
+      setHasRevealedFinalRule(false)
+      setIsInstructionConfettiActive(false)
       setActiveSlide(0)
+      setSceneSlide(0)
+    } else if (!isActive) {
+      pendingFinalActRef.current = false
+      setHasRevealedFinalRule(false)
+      setIsInstructionConfettiActive(false)
     }
   }, [isActive])
 
@@ -309,7 +467,8 @@ export function InstructionCarousel() {
   useGSAP(
     () => {
       const stage = stageRef.current
-      const playerSlots = playerSlotRefs.current
+      const phone = phoneRef.current
+      const initialPlayerSlot = playerSlotRefs.current[2]
       const playerVisuals = playerVisualRefs.current.filter(
         (player): player is HTMLDivElement => Boolean(player),
       )
@@ -321,74 +480,100 @@ export function InstructionCarousel() {
       entranceTimelineRef.current?.kill()
       gsap.set(playerVisuals, { clearProps: 'willChange' })
 
+      const hasCompletePlayerScene =
+        initialPlayerSlot &&
+        youTag &&
+        playerVisuals.length === PLAYER_TEAMS.length &&
+        playerLabels.length === PLAYER_TEAMS.length
+
+      if (sceneSlide !== 0 && hasCompletePlayerScene) {
+        gsap.killTweensOf([...playerVisuals, ...playerLabels, youTag, phone])
+        gsap.set(playerVisuals, {
+          clearProps:
+            'transform,transformOrigin,willChange,backgroundColor,borderColor,opacity,visibility',
+        })
+        gsap.set([...playerLabels, youTag], {
+          clearProps: 'opacity,visibility',
+        })
+        gsap.set(initialPlayerSlot, { clearProps: 'zIndex' })
+        return
+      }
+
       if (!(
         isActive &&
         !isLoading &&
+        sceneSlide === 0 &&
         stage &&
-        youTag &&
-        playerVisuals.length === PLAYER_TEAMS.length &&
-        playerLabels.length === PLAYER_TEAMS.length &&
-        playerSlots.every(playerSlot => playerSlot)
+        phone &&
+        hasCompletePlayerScene
       )) {
         return
       }
 
-      gsap.killTweensOf([...playerVisuals, ...playerLabels, youTag])
+      gsap.killTweensOf([...playerVisuals, ...playerLabels, youTag, phone])
 
       if (prefersReducedMotion) {
         gsap.set(playerVisuals, {
           autoAlpha: 1,
-          clearProps: 'transform',
-        })
-        playerVisuals.forEach((player, index) => {
-          gsap.set(player, {
-            backgroundColor: getTeamFillColor(PLAYER_TEAMS[index]),
-          })
+          clearProps:
+            'transform,transformOrigin,willChange,backgroundColor,borderColor',
         })
         gsap.set([...playerLabels, youTag], { autoAlpha: 1 })
         hasRunEntranceRef.current = true
         return
       }
 
-      const playerSlotCenters = getPlayerSlotCenters(stage, playerSlots)
-
-      if (!playerSlotCenters) return
-
-      const stageCenter = {
-        x: stage.clientWidth / 2,
-        y: stage.clientHeight / 2,
-      }
-      const entrancePaths: { center: Point; start: Point }[] = []
-
-      playerVisuals.forEach((player, index) => {
-        const playerCenter = playerSlotCenters[index]
-        const previousPlayerCenter =
-          playerSlotCenters[
-            (index + PLAYER_TEAMS.length - 1) % PLAYER_TEAMS.length
-          ]
-        const start = {
-          x: previousPlayerCenter.x - playerCenter.x,
-          y: previousPlayerCenter.y - playerCenter.y,
-        }
-
-        entrancePaths.push({
-          center: {
-            x: stageCenter.x - playerCenter.x,
-            y: stageCenter.y - playerCenter.y,
-          },
-          start,
-        })
+      const entranceStartOffsets = playerVisuals.map((player, index) => {
+        const diameter = Math.max(player.offsetWidth, player.offsetHeight)
+        const start = getPlayerEntranceStartOffset(index, diameter)
 
         gsap.set(player, {
           autoAlpha: 0,
           backgroundColor: 'var(--color-neutralColor-800)',
           borderColor: 'var(--color-neutralColor-500)',
+          scaleX: 1,
+          scaleY: 1,
+          transformOrigin: '50% 100%',
           willChange: 'transform',
           x: start.x,
           y: start.y,
         })
+
+        return start
       })
       gsap.set([...playerLabels, youTag], { autoAlpha: 0 })
+      gsap.set(phone, {
+        autoAlpha: 0,
+        scale: 0.8,
+        z: 0,
+        zIndex: 20,
+      })
+
+      const phonePoints = getInnerOrbitSlotPoints(
+        stage,
+        playerSlotRefs.current,
+        phone,
+        PHONE_PLAYER_OVERLAP,
+      )
+
+      if (!phonePoints) return
+
+      const stageBounds = stage.getBoundingClientRect()
+      const initialPlayerBounds = initialPlayerSlot.getBoundingClientRect()
+      const phoneStart = {
+        x:
+          initialPlayerBounds.right -
+          stageBounds.left -
+          Math.max(phone.offsetWidth * 0.75, 1),
+        y:
+          initialPlayerBounds.top -
+          stageBounds.top +
+          (initialPlayerBounds.height - phone.offsetHeight) / 2,
+      }
+      const phoneClear = {
+        x: initialPlayerBounds.right - stageBounds.left + 2,
+        y: phoneStart.y,
+      }
 
       const shouldWaitForLoadingOverlay =
         openedOnInstructionsRef.current && !hasRunEntranceRef.current
@@ -398,60 +583,227 @@ export function InstructionCarousel() {
           ease: 'power3.out',
         },
         onComplete: () => {
-          gsap.set(playerVisuals, { clearProps: 'willChange' })
+          gsap.set(playerVisuals, {
+            clearProps:
+              'transform,transformOrigin,willChange,backgroundColor,borderColor',
+          })
+          gsap.set(initialPlayerSlot, { clearProps: 'zIndex' })
+          gsap.set(phone, { z: 0, zIndex: 20 })
         },
       })
 
-      playerVisuals.forEach((player, index) => {
+      STAGGERED_ENTRANCE_ORDER.forEach((playerIndex, entranceIndex) => {
+        const player = playerVisuals[playerIndex]
+        const entranceStart = entranceStartOffsets[playerIndex]
+        const diameter = Math.max(player.offsetWidth, player.offsetHeight)
+        const playerTimeline = gsap.timeline()
+        const playerStartTime = entranceIndex * PLAYER_ENTRANCE_STAGGER
+
         entranceTimeline.to(
           player,
           {
             autoAlpha: 1,
-            borderColor: 'var(--color-neutralColor-100)',
-            duration: 0.8,
-            ease: 'power2.inOut',
-            motionPath: {
-              autoRotate: false,
-              path: createClockwiseQuarterPath(
-                entrancePaths[index].start,
-                { x: 0, y: 0 },
-                entrancePaths[index].center,
-              ),
-            },
+            duration: 0.1,
+            ease: 'power1.out',
           },
-          index * 0.12,
+          playerStartTime,
         )
+
+        PLAYER_HOP_HEIGHT_MULTIPLIERS.forEach((heightMultiplier, hopIndex) => {
+          const hopStartProgress =
+            hopIndex / PLAYER_HOP_HEIGHT_MULTIPLIERS.length
+          const hopEndProgress =
+            (hopIndex + 1) / PLAYER_HOP_HEIGHT_MULTIPLIERS.length
+          const hopStart = {
+            x: entranceStart.x * (1 - hopStartProgress),
+            y: entranceStart.y * (1 - hopStartProgress),
+          }
+          const hopEnd = {
+            x: entranceStart.x * (1 - hopEndProgress),
+            y: entranceStart.y * (1 - hopEndProgress),
+          }
+          const lift = diameter * heightMultiplier
+          const apex = getHopPoint(hopStart, hopEnd, 0.5, lift)
+          const preImpact = getHopPoint(hopStart, hopEnd, 0.9, lift * 0.1)
+
+          playerTimeline
+            .to(player, {
+              duration: PLAYER_HOP_PREP_DURATION,
+              ease: 'power2.in',
+              scaleX: 1,
+              scaleY: 0.8,
+            })
+            .to(player, {
+              duration: PLAYER_HOP_RISE_DURATION,
+              ease: 'power2.out',
+              scaleX: 0.8,
+              scaleY: 1.2,
+              x: apex.x,
+              y: apex.y,
+            })
+            .to(player, {
+              duration: PLAYER_HOP_FALL_DURATION,
+              ease: 'power2.in',
+              scaleX: 1,
+              scaleY: 1,
+              x: preImpact.x,
+              y: preImpact.y,
+            })
+            .to(player, {
+              duration: PLAYER_HOP_IMPACT_DURATION,
+              ease: 'power4.in',
+              scaleX: 1,
+              scaleY: 0.8,
+              x: hopEnd.x,
+              y: hopEnd.y,
+            })
+            .to(player, {
+              duration: PLAYER_HOP_RECOVERY_DURATION,
+              ease: 'back.out(2)',
+              scaleX: 1,
+              scaleY: 1,
+            })
+        })
+
+        entranceTimeline.add(playerTimeline, playerStartTime)
       })
 
-      entranceTimeline.addLabel('assignTeams', '>-0.05')
+      const latestPlayerStart =
+        (STAGGERED_ENTRANCE_ORDER.length - 1) * PLAYER_ENTRANCE_STAGGER
+      const playerHopSequenceDuration =
+        PLAYER_HOP_HEIGHT_MULTIPLIERS.length * PLAYER_HOP_DURATION
+      entranceTimeline.addLabel(
+        'assignTeams',
+        latestPlayerStart + playerHopSequenceDuration,
+      )
 
       playerVisuals.forEach((player, index) => {
-        entranceTimeline.to(
-          player,
-          {
+        const diameter = Math.max(player.offsetWidth, player.offsetHeight)
+        const identityElements =
+          index === 2 ? [playerLabels[index], youTag] : [playerLabels[index]]
+        const assignmentTimeline = gsap
+          .timeline()
+          .set(player, {
+            rotationY: 0,
+            transformOrigin: '50% 100%',
+            transformPerspective: diameter * 8,
+            willChange: 'transform',
+          })
+          .to(player, {
+            duration: PLAYER_ASSIGNMENT_PREP_DURATION,
+            ease: 'power2.in',
+            scaleX: 1.08,
+            scaleY: 0.85,
+          })
+          .to(player, {
+            duration: PLAYER_ASSIGNMENT_RISE_DURATION,
+            ease: 'power2.out',
+            rotationY: 90,
+            scaleX: 0.9,
+            scaleY: 1.1,
+            y: -diameter * 0.32,
+          })
+          .set(player, {
             backgroundColor: getTeamFillColor(PLAYER_TEAMS[index]),
-            duration: 0.35,
-            ease: 'power2.inOut',
-          },
-          `assignTeams+=${index * 0.08}`,
+            borderColor: 'var(--color-neutralColor-100)',
+            rotationY: -90,
+          })
+          .set(identityElements, { autoAlpha: 1 })
+          .to(player, {
+            duration: PLAYER_ASSIGNMENT_FALL_DURATION,
+            ease: 'power2.in',
+            rotationY: 0,
+            scaleX: 1,
+            scaleY: 1,
+            y: 0,
+          })
+          .to(player, {
+            duration: PLAYER_ASSIGNMENT_IMPACT_DURATION,
+            ease: 'power3.out',
+            scaleX: 1.08,
+            scaleY: 0.85,
+          })
+          .to(player, {
+            duration: PLAYER_ASSIGNMENT_RECOVERY_DURATION,
+            ease: 'back.out(2)',
+            scaleX: 1,
+            scaleY: 1,
+          })
+
+        entranceTimeline.add(
+          assignmentTimeline,
+          `assignTeams+=${
+            PLAYER_TEAMS[index] === 'A' ? 0 : PLAYER_ASSIGNMENT_DURATION
+          }`,
         )
       })
 
-      entranceTimeline.to(
-        [...playerLabels, youTag],
-        {
-          autoAlpha: 1,
-          duration: 0.25,
-          stagger: 0.06,
-        },
-        'assignTeams+=0.12',
-      )
+      entranceTimeline
+        .addLabel(
+          'teamAssignmentsComplete',
+          `assignTeams+=${TEAM_ASSIGNMENT_SEQUENCE_DURATION}`,
+        )
+        .set(
+          playerVisuals,
+          {
+            clearProps:
+              'transform,transformOrigin,willChange,backgroundColor,borderColor',
+          },
+          'teamAssignmentsComplete',
+        )
+        .addLabel(
+          'revealPhone',
+          `teamAssignmentsComplete+=${PHONE_REVEAL_DELAY_AFTER_ASSIGNMENTS}`,
+        )
+
+      entranceTimeline
+        .set(initialPlayerSlot, { zIndex: 30 }, 'revealPhone')
+        .set(
+          phone,
+          {
+            autoAlpha: 1,
+            rotation: 20,
+            scale: 1,
+            transformPerspective: 240,
+            x: phoneStart.x,
+            y: phoneStart.y,
+            z: 0,
+            zIndex: 20,
+          },
+          'revealPhone',
+        )
+        .to(
+          phone,
+          {
+            duration: PHONE_REVEAL_SLIDE_DURATION,
+            ease: 'power2.out',
+            x: phoneClear.x,
+          },
+          'revealPhone',
+        )
+        .set(initialPlayerSlot, { clearProps: 'zIndex' })
+        .set(phone, { zIndex: 30 })
+        .to(phone, {
+          duration: PHONE_REVEAL_DEPTH_DURATION,
+          ease: 'back.out(1.6)',
+          scale: 1.1,
+          z: 24,
+        })
+        .to(phone, {
+          duration: PHONE_REVEAL_SETTLE_DURATION,
+          ease: 'power2.inOut',
+          rotation: 0,
+          scale: 1,
+          x: phonePoints[2].x,
+          y: phonePoints[2].y,
+          z: 0,
+        })
 
       hasRunEntranceRef.current = true
       entranceTimelineRef.current = entranceTimeline
     },
     {
-      dependencies: [isActive, isLoading, prefersReducedMotion],
+      dependencies: [isActive, isLoading, prefersReducedMotion, sceneSlide],
       scope: rootRef,
     },
   )
@@ -480,61 +832,167 @@ export function InstructionCarousel() {
     () => {
       const stage = stageRef.current
       const phone = phoneRef.current
+      const teamSelectorDemo = teamSelectorDemoRef.current
+      const phoneSelectorThumb =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-selector-thumb]',
+        ) ?? null
+      const phoneAlertLight =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-alert-light]',
+        ) ?? null
+      const phoneWhiteout =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-whiteout]',
+        ) ?? null
+      const phoneScoreboard =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-scoreboard]',
+        ) ?? null
+      const phoneGame =
+        phone?.querySelector<HTMLElement>('[data-instruction-phone-game]') ??
+        null
+      const phoneScreenDot =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-screen-dot]',
+        ) ?? null
+      const phonePhraseViewport =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-phrase-viewport]',
+        ) ?? null
+      const phoneSelector =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-selector]',
+        ) ?? null
+      const phoneScoreTeamA =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-score-team-a]',
+        ) ?? null
+      const phoneScoreTeamB =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-score-team-b]',
+        ) ?? null
+      const phoneScoreStart =
+        phone?.querySelector<HTMLElement>(
+          '[data-instruction-phone-score-start]',
+        ) ?? null
+      const phonePhrases = phone
+        ? Array.from(
+            phone.querySelectorAll<HTMLElement>(
+              '[data-instruction-phone-phrase]',
+            ),
+          )
+        : []
       const timer = timerRef.current
       const timerRing = timerRingRef.current
+      const heartLayer = heartLayerRef.current
       const heart = heartRef.current
+      const lostHeart = lostHeartRef.current
+      const trophy = trophyRef.current
       const reducedPenalty = reducedPenaltyRef.current
+      const roundResult = roundResultRef.current
+      const heartLossResult = heartLossResultRef.current
+      const winnerResult = winnerResultRef.current
+      const finalRule = finalRuleRef.current
       const playerVisuals = playerVisualRefs.current.filter(
         (player): player is HTMLDivElement => Boolean(player),
-      )
-      const commentBubbleSlots = commentBubbleSlotRefs.current.filter(
-        (slot): slot is HTMLDivElement => Boolean(slot),
       )
       const commentBubbles = commentBubbleRefs.current.filter(
         (comment): comment is HTMLSpanElement => Boolean(comment),
       )
-      const commentIcons = commentIconRefs.current.filter(
-        (comment): comment is HTMLSpanElement => Boolean(comment),
+      const commentBurstGroups = commentBurstGroupRefs.current.filter(
+        (group): group is HTMLDivElement => Boolean(group),
       )
-      const commentQuestionIcons = commentQuestionIconRefs.current.filter(
-        (comment): comment is HTMLSpanElement => Boolean(comment),
-      )
-      const particles = particleRefs.current.filter(
-        (particle): particle is HTMLSpanElement => Boolean(particle),
+      const commentBurstParticles = commentBurstGroups.flatMap(group =>
+        Array.from(
+          group.querySelectorAll<HTMLElement>('[data-comment-burst-particle]'),
+        ),
       )
 
       sceneTimelineRef.current?.kill()
       sceneTimelineRef.current = null
+      setHasRevealedFinalRule(false)
+      setIsInstructionConfettiActive(false)
 
       if (!(
         stage &&
         phone &&
+        teamSelectorDemo &&
+        phoneSelectorThumb &&
+        phoneAlertLight &&
+        phoneWhiteout &&
+        phoneScoreboard &&
+        phoneGame &&
+        phoneScreenDot &&
+        phonePhraseViewport &&
+        phoneSelector &&
+        phoneScoreTeamA &&
+        phoneScoreTeamB &&
+        phoneScoreStart &&
+        phonePhrases.length === 2 &&
         timer &&
         timerRing &&
+        heartLayer &&
         heart &&
+        lostHeart &&
+        trophy &&
         reducedPenalty &&
+        roundResult &&
+        heartLossResult &&
+        winnerResult &&
+        finalRule &&
         playerVisuals.length === PLAYER_TEAMS.length &&
-        commentBubbleSlots.length === PLAYER_TEAMS.length &&
         commentBubbles.length === PLAYER_TEAMS.length &&
-        commentIcons.length === PLAYER_TEAMS.length &&
-        commentQuestionIcons.length === PLAYER_TEAMS.length
+        commentBurstGroups.length === PLAYER_TEAMS.length &&
+        commentBurstParticles.length ===
+          PLAYER_TEAMS.length * COMMENT_BURST_ANGLES.length
       )) {
         return
       }
 
+      const entranceControlsPhone =
+        sceneSlide === 0 &&
+        Boolean(
+          entranceTimelineRef.current &&
+          entranceTimelineRef.current.progress() < 1,
+        )
+
       gsap.killTweensOf([
-        phone,
+        ...(entranceControlsPhone ? [] : [phone]),
+        phoneAlertLight,
+        phoneWhiteout,
+        phoneScoreboard,
+        phoneGame,
+        phoneScreenDot,
+        phonePhraseViewport,
+        phoneSelector,
+        phoneScoreTeamA,
+        phoneScoreTeamB,
+        phoneScoreStart,
+        ...phonePhrases,
         timer,
         timerRing,
+        heartLayer,
         heart,
+        lostHeart,
+        trophy,
         reducedPenalty,
+        roundResult,
+        heartLossResult,
+        winnerResult,
+        finalRule,
         ...commentBubbles,
-        ...commentIcons,
-        ...commentQuestionIcons,
-        ...particles,
+        ...commentBurstGroups,
+        ...commentBurstParticles,
       ])
 
-      if (!isActive) return
+      phoneAlertLight.style.animationPlayState =
+        isActive && sceneSlide === 1 ? 'running' : 'paused'
+
+      if (!isActive) {
+        teamSelectorDemo.reset()
+        return
+      }
 
       const phonePoints = getInnerOrbitSlotPoints(
         stage,
@@ -542,68 +1000,127 @@ export function InstructionCarousel() {
         phone,
         PHONE_PLAYER_OVERLAP,
       )
-      const commentPoints = getInnerOrbitSlotPoints(
-        stage,
-        playerSlotRefs.current,
-        commentBubbleSlots[0],
-        COMMENT_PLAYER_OVERLAP,
-      )
 
-      if (!(phonePoints && commentPoints)) return
+      if (!phonePoints) return
+
+      gsap.set(playerSlotRefs.current[2], { clearProps: 'zIndex' })
 
       gsap.set(timer, { autoAlpha: 0, scale: 0.8 })
       gsap.set(timerRing, { strokeDashoffset: 0 })
-      gsap.set(heart, { autoAlpha: 0, rotation: 0, scale: 0.4 })
+      gsap.set(heartLayer, { zIndex: 10 })
+      gsap.set(heart, { clearProps: 'color' })
+      gsap.set(heart, {
+        autoAlpha: 0,
+        rotation: 0,
+        scale: 0.4,
+        yPercent: 0,
+      })
+      gsap.set(lostHeart, {
+        autoAlpha: 0,
+        rotation: 0,
+        scale: HEART_LOSS_EXIT_SCALE,
+      })
+      gsap.set(trophy, {
+        clearProps: 'transformOrigin,transformPerspective,willChange',
+      })
+      gsap.set(trophy, {
+        autoAlpha: 0,
+        rotationY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        y: 0,
+      })
       gsap.set(reducedPenalty, { autoAlpha: 0, scale: 0.6 })
-      commentBubbleSlots.forEach((commentSlot, index) => {
-        gsap.set(commentSlot, {
-          rotation: PLAYER_ORIENTATIONS[index],
-          x: commentPoints[index].x,
-          y: commentPoints[index].y,
-        })
+      gsap.set(roundResult, {
+        autoAlpha: 0,
+        scale: 0.94,
+        y: 8,
+      })
+      gsap.set(heartLossResult, { autoAlpha: 1, xPercent: 0 })
+      gsap.set(winnerResult, { autoAlpha: 0, xPercent: 100 })
+      gsap.set(finalRule, { autoAlpha: 0 })
+      if (sceneSlide !== instructionSlides.length - 1) {
+        setInstructionPhoneTeam(phone, phoneSelectorThumb, 'A')
+      }
+      gsap.set(phonePhrases[0], { autoAlpha: 1, yPercent: 0 })
+      gsap.set(phonePhrases[1], { autoAlpha: 0, yPercent: 100 })
+      gsap.set(phoneWhiteout, { autoAlpha: 0 })
+      gsap.set([phoneScoreTeamA, phoneScoreTeamB, phoneScoreStart], {
+        autoAlpha: 1,
+        xPercent: 0,
+        yPercent: 0,
+      })
+      gsap.set(phoneAlertLight, { clearProps: 'transform' })
+      gsap.set([phoneScreenDot, phonePhraseViewport, phoneSelector], {
+        clearProps: 'transform,opacity,visibility',
       })
       gsap.set(commentBubbles, {
         autoAlpha: 0,
         scale: 0.8,
         y: 3,
       })
-      gsap.set(commentIcons, { autoAlpha: 1 })
-      gsap.set(commentQuestionIcons, { autoAlpha: 0 })
-      gsap.set(particles, {
+      gsap.set(commentBurstGroups, { autoAlpha: 0 })
+      gsap.set(commentBurstParticles, {
         autoAlpha: 0,
-        backgroundColor: 'var(--color-teamBFillColor)',
-        scale: 0,
+        scale: 0.72,
         x: 0,
         y: 0,
       })
+      if (sceneSlide !== 0) {
+        gsap.set(playerVisuals, { visibility: 'visible' })
+      }
 
-      if (activeSlide === 0) {
-        gsap.set(phone, { autoAlpha: 0, scale: 0.8 })
+      if (sceneSlide === 0) {
+        phoneSeatRef.current = 2
+        teamSelectorDemo.hide(prefersReducedMotion)
+        gsap.set(phoneGame, { autoAlpha: 0 })
+        gsap.set(phoneScoreboard, { autoAlpha: 1 })
+
+        if (!entranceControlsPhone) {
+          gsap.set(phone, {
+            autoAlpha: 1,
+            rotation: 0,
+            scale: 1,
+            x: phonePoints[2].x,
+            y: phonePoints[2].y,
+            z: 0,
+            zIndex: 20,
+          })
+        }
+
         if (
           !entranceTimelineRef.current ||
           entranceTimelineRef.current.progress() === 1
         ) {
           const resetPlayers = gsap.timeline()
           resetPlayers.to(playerVisuals, {
+            autoAlpha: 1,
             duration: 0.25,
             ease: 'power1.out',
-            opacity: 1,
           })
           sceneTimelineRef.current = resetPlayers
         }
         return
       }
 
-      if (activeSlide === 1) {
+      if (sceneSlide === 1) {
+        teamSelectorDemo.reset('A')
+
         if (prefersReducedMotion) {
+          gsap.set(phoneScoreboard, { autoAlpha: 0 })
+          gsap.set(phoneGame, { autoAlpha: 1 })
+          phoneSeatRef.current = 2
           gsap.set(playerVisuals, { opacity: 0.5 })
-          gsap.set([playerVisuals[1], playerVisuals[3]], { opacity: 1 })
+          gsap.set([playerVisuals[0], playerVisuals[2]], { opacity: 1 })
+          setInstructionPhoneTeam(phone, phoneSelectorThumb, 'A')
+          teamSelectorDemo.reset('A')
+          teamSelectorDemo.show(true)
           gsap.set(phone, {
             autoAlpha: 1,
-            rotation: 270,
+            rotation: 0,
             scale: 1,
-            x: phonePoints[1].x,
-            y: phonePoints[1].y,
+            x: phonePoints[2].x,
+            y: phonePoints[2].y,
           })
           return
         }
@@ -616,7 +1133,86 @@ export function InstructionCarousel() {
           { x: 0, y: 0 },
         )
         const phoneScene = gsap.timeline()
+        const phoneScreenTransition = gsap.timeline()
         const orbitLoop = gsap.timeline({ repeat: -1 })
+        const phoneScreenHeight = Math.max(phoneGame.offsetHeight, 1)
+
+        phoneSeatRef.current = 2
+        teamSelectorDemo.show()
+
+        phoneScreenTransition
+          .set(phoneScoreboard, { autoAlpha: 1 })
+          .set(phoneGame, { autoAlpha: 0 })
+          .addLabel('scoreExit')
+          .to(
+            phoneScoreTeamA,
+            {
+              duration: PHONE_SCREEN_EXIT_DURATION,
+              ease: 'power2.in',
+              xPercent: -160,
+            },
+            'scoreExit',
+          )
+          .to(
+            phoneScoreTeamB,
+            {
+              duration: PHONE_SCREEN_EXIT_DURATION,
+              ease: 'power2.in',
+              xPercent: 160,
+            },
+            'scoreExit',
+          )
+          .to(
+            phoneScoreStart,
+            {
+              duration: PHONE_SCREEN_EXIT_DURATION,
+              ease: 'power2.in',
+              yPercent: 160,
+            },
+            'scoreExit',
+          )
+          .addLabel(
+            'gameEnter',
+            `scoreExit+=${
+              PHONE_SCREEN_EXIT_DURATION + PHONE_SCREEN_BLANK_BEAT_DURATION
+            }`,
+          )
+          .set(phoneScoreboard, { autoAlpha: 0 }, 'gameEnter')
+          .set(phoneGame, { autoAlpha: 1 }, 'gameEnter')
+          .set(
+            [phoneAlertLight, phoneScreenDot],
+            { y: -phoneScreenHeight },
+            'gameEnter',
+          )
+          .set(phonePhraseViewport, { autoAlpha: 0 }, 'gameEnter')
+          .set(phoneSelector, { y: phoneScreenHeight }, 'gameEnter')
+          .to(
+            [phoneAlertLight, phoneScreenDot],
+            {
+              duration: PHONE_SCREEN_ENTER_DURATION,
+              ease: 'power2.out',
+              y: 0,
+            },
+            'gameEnter',
+          )
+          .to(
+            phonePhraseViewport,
+            {
+              autoAlpha: 1,
+              duration: PHONE_SCREEN_ENTER_DURATION,
+              ease: 'power2.out',
+            },
+            'gameEnter',
+          )
+          .to(
+            phoneSelector,
+            {
+              duration: PHONE_SCREEN_ENTER_DURATION,
+              ease: 'power2.out',
+              y: 0,
+            },
+            'gameEnter',
+          )
 
         phoneScene.to(playerVisuals, {
           duration: 0.25,
@@ -624,23 +1220,25 @@ export function InstructionCarousel() {
           opacity: 0.5,
         })
 
-        phoneScene
-          .set(phone, {
-            autoAlpha: 0,
-            rotation: 180,
-            scale: 0.75,
-            x: phonePoints[0].x,
-            y: phonePoints[0].y,
-          })
-          .to(phone, {
+        phoneScene.set(
+          phone,
+          {
             autoAlpha: 1,
-            duration: 0.25,
-            ease: 'back.out(1.8)',
+            rotation: 0,
             scale: 1,
-          })
+            x: phonePoints[2].x,
+            y: phonePoints[2].y,
+            z: 0,
+            zIndex: 20,
+          },
+          0,
+        )
+        phoneScene.add(phoneScreenTransition, 0)
 
-        phonePoints.forEach((start, index) => {
-          const endIndex = (index + 1) % phonePoints.length
+        PLAYER_ORBIT_ORDER.forEach((index, orbitIndex) => {
+          const start = phonePoints[index]
+          const endIndex =
+            PLAYER_ORBIT_ORDER[(orbitIndex + 1) % PLAYER_ORBIT_ORDER.length]
           const end = phonePoints[endIndex]
           const teammateIndex =
             (index + PLAYER_TEAMS.length / 2) % PLAYER_TEAMS.length
@@ -649,24 +1247,39 @@ export function InstructionCarousel() {
             playerVisuals[teammateIndex],
           ]
           const holderComment = commentBubbles[index]
-          const teammateComment = commentBubbles[teammateIndex]
-          const holderCommentIcon = commentIcons[index]
-          const holderQuestionIcon = commentQuestionIcons[index]
-          const teammateCommentIcon = commentIcons[teammateIndex]
-          const teammateQuestionIcon = commentQuestionIcons[teammateIndex]
+          const guesserBurst = commentBurstGroups[teammateIndex]
+          const guesserBurstParticles = Array.from(
+            guesserBurst.querySelectorAll<HTMLElement>(
+              '[data-comment-burst-particle]',
+            ),
+          )
+          const burstDistance = Math.max(
+            playerVisuals[teammateIndex].offsetWidth * 0.6,
+            32,
+          )
           const pauseLabel = `pause-${index}`
           const handoffLabel = `handoff-${index}`
+          const burstLabel = `${pauseLabel}+=${COMMENT_BURST_TRIGGER_AT}`
+          const teamChangeLabel = `${pauseLabel}+=${
+            PHONE_PAUSE_DURATION - PHONE_TEAM_CHANGE_DURATION
+          }`
+          const phraseChangeLabel = `${handoffLabel}`
+          const receivingTeam = PLAYER_TEAMS[endIndex]
+          const outgoingPhrase = phonePhrases[index % phonePhrases.length]
+          const incomingPhrase = phonePhrases[(index + 1) % phonePhrases.length]
 
           orbitLoop
             .addLabel(pauseLabel)
-            .set(
-              [holderCommentIcon, teammateQuestionIcon],
-              { autoAlpha: 1 },
-              pauseLabel,
-            )
-            .set(
-              [holderQuestionIcon, teammateCommentIcon],
-              { autoAlpha: 0 },
+            .call(
+              () => {
+                phoneSeatRef.current = index
+
+                if (index === 2 && pendingFinalActRef.current) {
+                  pendingFinalActRef.current = false
+                  setSceneSlide(2)
+                }
+              },
+              [],
               pauseLabel,
             )
             .to(
@@ -689,17 +1302,12 @@ export function InstructionCarousel() {
               },
               `${pauseLabel}+=0.15`,
             )
-            .to(
-              teammateComment,
-              {
-                autoAlpha: 1,
-                duration: 0.18,
-                ease: 'power2.out',
-                scale: 1,
-                y: 0,
-              },
-              `${pauseLabel}+=0.27`,
+            .call(
+              () => assignCommentBurstIcons(guesserBurstParticles),
+              [],
+              burstLabel,
             )
+            .set(guesserBurst, { autoAlpha: 1 }, burstLabel)
             .to(
               holderComment,
               {
@@ -711,18 +1319,53 @@ export function InstructionCarousel() {
               },
               `${pauseLabel}+=${HOLDER_COMMENT_EXIT_AT}`,
             )
+            .call(
+              () => {
+                setInstructionPhoneAlertTeam(phone, receivingTeam)
+                teamSelectorDemo.animatePass(receivingTeam, () =>
+                  setInstructionPhoneActiveTeam(
+                    phone,
+                    phoneSelectorThumb,
+                    receivingTeam,
+                  ),
+                )
+              },
+              [],
+              teamChangeLabel,
+            )
+            .addLabel(handoffLabel, `${pauseLabel}+=${PHONE_PAUSE_DURATION}`)
+            .call(
+              () => {
+                phoneSeatRef.current = null
+              },
+              [],
+              handoffLabel,
+            )
+            .set(
+              incomingPhrase,
+              { autoAlpha: 0, yPercent: 100 },
+              phraseChangeLabel,
+            )
             .to(
-              teammateComment,
+              outgoingPhrase,
               {
                 autoAlpha: 0,
-                duration: COMMENT_EXIT_DURATION,
+                duration: PHONE_PHRASE_OUT_DURATION,
                 ease: 'power2.in',
-                scale: 0.9,
-                y: -2,
+                yPercent: -100,
               },
-              `${pauseLabel}+=${TEAMMATE_COMMENT_EXIT_AT}`,
+              phraseChangeLabel,
             )
-            .addLabel(handoffLabel)
+            .to(
+              incomingPhrase,
+              {
+                autoAlpha: 1,
+                duration: PHONE_PHRASE_IN_DURATION,
+                ease: 'power2.out',
+                yPercent: 0,
+              },
+              `${phraseChangeLabel}+=${PHONE_PHRASE_OUT_DURATION}`,
+            )
             .to(
               activePlayers,
               {
@@ -731,6 +1374,13 @@ export function InstructionCarousel() {
                 opacity: 0.5,
               },
               handoffLabel,
+            )
+            .set(
+              outgoingPhrase,
+              { yPercent: 100 },
+              `${phraseChangeLabel}+=${
+                PHONE_PHRASE_OUT_DURATION + PHONE_PHRASE_IN_DURATION
+              }`,
             )
             .to(
               phone,
@@ -741,10 +1391,59 @@ export function InstructionCarousel() {
                   autoRotate: false,
                   path: createClockwiseQuarterPath(start, end, orbitCenter),
                 },
-                rotation: 270 + index * 90,
+                rotation: 90 * (orbitIndex + 1),
               },
               handoffLabel,
             )
+
+          COMMENT_BURST_ENTRANCE_ORDER.forEach((bubbleIndex, entranceIndex) => {
+            const bubble = guesserBurstParticles[bubbleIndex]
+            const angle = (COMMENT_BURST_ANGLES[bubbleIndex] * Math.PI) / 180
+            const bubbleStart =
+              COMMENT_BURST_TRIGGER_AT + COMMENT_BUBBLE_STAGGER * entranceIndex
+
+            orbitLoop
+              .set(
+                bubble,
+                {
+                  autoAlpha: 1,
+                  scale: 0.72,
+                  x: 0,
+                  y: 0,
+                },
+                `${pauseLabel}+=${bubbleStart}`,
+              )
+              .to(
+                bubble,
+                {
+                  duration: COMMENT_BUBBLE_FLIGHT_DURATION,
+                  ease: 'power2.out',
+                  scale: 1,
+                  x: Math.sin(angle) * burstDistance,
+                  y: -Math.cos(angle) * burstDistance,
+                },
+                `${pauseLabel}+=${bubbleStart}`,
+              )
+              .to(
+                bubble,
+                {
+                  autoAlpha: 0,
+                  duration: COMMENT_BUBBLE_FADE_DURATION,
+                  ease: 'power1.in',
+                },
+                `${pauseLabel}+=${
+                  bubbleStart +
+                  COMMENT_BUBBLE_FLIGHT_DURATION +
+                  COMMENT_BUBBLE_HOLD_DURATION
+                }`,
+              )
+          })
+
+          orbitLoop.set(
+            guesserBurst,
+            { autoAlpha: 0 },
+            `${pauseLabel}+=${COMMENT_BURST_END_AT}`,
+          )
         })
 
         phoneScene.add(orbitLoop)
@@ -752,21 +1451,78 @@ export function InstructionCarousel() {
         return
       }
 
+      teamSelectorDemo.hide(prefersReducedMotion)
+      gsap.set(phoneGame, { autoAlpha: 1 })
+      gsap.set(phoneScoreboard, { autoAlpha: 0 })
+      phoneSeatRef.current = null
+
       if (prefersReducedMotion) {
-        gsap.set(playerVisuals, { opacity: 1 })
-        gsap.set(phone, {
-          autoAlpha: 1,
-          rotation: 270,
-          scale: 1,
-          x: phonePoints[1].x,
-          y: phonePoints[1].y,
+        setInstructionPhoneTeam(phone, phoneSelectorThumb, 'A')
+        gsap.set(playerVisuals, {
+          opacity: playerIndex => (PLAYER_TEAMS[playerIndex] === 'B' ? 1 : 0),
         })
-        gsap.set(timer, { autoAlpha: 0.35, scale: 1 })
+        gsap.set(phone, {
+          autoAlpha: 0,
+          rotation: 360,
+          scale: 1,
+          x: phonePoints[2].x,
+          y: phonePoints[2].y,
+        })
+        gsap.set(timer, { autoAlpha: 0, scale: 1 })
         gsap.set(timerRing, { strokeDashoffset: 100 })
-        gsap.set(heart, { autoAlpha: 1, scale: 1 })
-        gsap.set(reducedPenalty, { autoAlpha: 1, scale: 1 })
+        gsap.set(heart, { autoAlpha: 0 })
+        gsap.set(lostHeart, { autoAlpha: 0 })
+        gsap.set(trophy, { autoAlpha: 1, rotationY: 0 })
+        gsap.set(phoneScoreboard, { autoAlpha: 1 })
+        gsap.set(roundResult, { autoAlpha: 1, scale: 1, y: 0 })
+        gsap.set(heartLossResult, { autoAlpha: 0, xPercent: -100 })
+        gsap.set(winnerResult, { autoAlpha: 1, xPercent: 0 })
+        gsap.set(finalRule, { autoAlpha: 1 })
+        setHasRevealedFinalRule(true)
+        phoneSeatRef.current = null
         return
       }
+
+      const trophyBounceLoop = gsap
+        .timeline({
+          repeat: -1,
+          repeatDelay: TROPHY_BOUNCE_REPEAT_DELAY,
+        })
+        .to(trophy, {
+          duration: PLAYER_ASSIGNMENT_PREP_DURATION,
+          ease: 'power2.in',
+          scaleX: 1.08,
+          scaleY: 0.85,
+        })
+        .to(trophy, {
+          duration: PLAYER_ASSIGNMENT_RISE_DURATION,
+          ease: 'power2.out',
+          rotationY: 90,
+          scaleX: 0.9,
+          scaleY: 1.1,
+          y: -Math.max(trophy.offsetHeight, 1) * 0.32,
+        })
+        .set(trophy, { rotationY: -90 })
+        .to(trophy, {
+          duration: PLAYER_ASSIGNMENT_FALL_DURATION,
+          ease: 'power2.in',
+          rotationY: 0,
+          scaleX: 1,
+          scaleY: 1,
+          y: 0,
+        })
+        .to(trophy, {
+          duration: PLAYER_ASSIGNMENT_IMPACT_DURATION,
+          ease: 'power3.out',
+          scaleX: 1.08,
+          scaleY: 0.85,
+        })
+        .to(trophy, {
+          duration: PLAYER_ASSIGNMENT_RECOVERY_DURATION,
+          ease: 'back.out(2)',
+          scaleX: 1,
+          scaleY: 1,
+        })
 
       const finalScene = gsap.timeline({
         defaults: {
@@ -774,27 +1530,53 @@ export function InstructionCarousel() {
         },
       })
 
-      finalScene.to(
-        playerVisuals,
-        {
-          duration: 0.25,
-          opacity: 1,
-        },
-        0,
-      )
-
       finalScene
-        .to(
+        .set(phone, {
+          autoAlpha: 1,
+          rotation: 360,
+          scale: 1,
+          x: phonePoints[2].x,
+          y: phonePoints[2].y,
+          z: 0,
+          zIndex: 20,
+        })
+        .addLabel('phoneSettled')
+        .call(
+          () => {
+            setInstructionPhoneTeam(phone, phoneSelectorThumb, 'A')
+            phoneSeatRef.current = 2
+          },
+          [],
+          'phoneSettled',
+        )
+        .set(
           phone,
           {
             autoAlpha: 1,
-            duration: 0.35,
-            rotation: 270,
             scale: 1,
-            x: phonePoints[1].x,
-            y: phonePoints[1].y,
+            x: phonePoints[2].x,
+            y: phonePoints[2].y,
           },
-          0,
+          'phoneSettled',
+        )
+        .to(
+          playerVisuals,
+          {
+            duration: 0.25,
+            opacity: playerIndex =>
+              PLAYER_TEAMS[playerIndex] === 'B' ? 0.5 : 1,
+          },
+          'phoneSettled',
+        )
+        .to(
+          heart,
+          {
+            autoAlpha: 1,
+            duration: 0.25,
+            ease: 'back.out(2)',
+            scale: 1,
+          },
+          'phoneSettled+=0.05',
         )
         .to(
           timer,
@@ -803,70 +1585,174 @@ export function InstructionCarousel() {
             duration: 0.25,
             scale: 1,
           },
-          '<0.1',
+          'phoneSettled+=0.12',
         )
-        .to(timerRing, {
-          duration: 1.4,
-          ease: 'none',
-          strokeDashoffset: 100,
-        })
-        .to(timer, {
-          autoAlpha: 0,
-          duration: 0.15,
-          scale: 0.75,
-        })
+        .to(
+          timerRing,
+          {
+            duration: 1.4,
+            ease: 'none',
+            strokeDashoffset: 100,
+          },
+          'phoneSettled+=0.37',
+        )
+        .addLabel('timerExpired', 'phoneSettled+=1.77')
+        .to(
+          timer,
+          {
+            autoAlpha: 0,
+            duration: 0.2,
+          },
+          'timerExpired',
+        )
+        .addLabel('heartBurst', 'timerExpired')
+        .set(heartLayer, { zIndex: 40 }, 'heartBurst')
+        .to(
+          phoneWhiteout,
+          {
+            autoAlpha: 1,
+            duration: 0.08,
+            ease: 'power2.out',
+          },
+          'heartBurst',
+        )
+        .set(phoneScoreboard, { autoAlpha: 1 }, 'heartBurst+=0.08')
+        .to(
+          phoneWhiteout,
+          {
+            autoAlpha: 0,
+            duration: 0.16,
+            ease: 'power2.out',
+          },
+          'heartBurst+=0.11',
+        )
         .to(
           heart,
           {
-            autoAlpha: 1,
-            duration: 0.22,
-            ease: 'back.out(2)',
-            scale: 1,
+            color: HEART_LOSS_ANIMATION_COLOR,
+            duration: HEART_LOSS_ANIMATION_DURATION_SECONDS,
+            ease: 'power1.inOut',
+            rotation: HEART_LOSS_ANIMATION_ROTATION_DEGREES,
+            scale: HEART_LOSS_ANIMATION_SCALE,
+            yPercent: HEART_LOSS_ANIMATION_Y_PERCENT,
           },
-          '<',
+          'heartBurst',
         )
-        .to(heart, {
-          duration: 0.16,
-          ease: 'power2.out',
-          scale: 1.35,
+        .to(
+          heart,
+          {
+            duration: HEART_LOSS_EXIT_DURATION_SECONDS,
+            ease: 'power2.inOut',
+            opacity: HEART_LOSS_EXIT_OPACITY,
+            rotation: HEART_LOSS_EXIT_ROTATION_DEGREES,
+            scale: HEART_LOSS_EXIT_SCALE,
+            yPercent: HEART_LOSS_EXIT_Y_PERCENT,
+          },
+          `heartBurst+=${HEART_LOSS_ANIMATION_DURATION_SECONDS}`,
+        )
+        .set(heart, { autoAlpha: 0 })
+        .set(lostHeart, {
+          autoAlpha: HEART_LOSS_EXIT_OPACITY,
+          rotation: HEART_LOSS_EXIT_ROTATION_DEGREES,
+          scale: HEART_LOSS_EXIT_SCALE,
         })
-        .to(heart, {
-          autoAlpha: 0,
-          duration: 0.16,
-          ease: 'power4.in',
-          rotation: -12,
-          scale: 0,
-        })
-
-      particles.forEach((particle, index) => {
-        const angle = (PARTICLE_ANGLES[index] * Math.PI) / 180
-        const distance = stage.clientWidth * (0.13 + (index % 3) * 0.025)
-
-        finalScene.fromTo(
-          particle,
+        .to(
+          roundResult,
           {
             autoAlpha: 1,
-            scale: 0.6,
-            x: 0,
+            duration: 0.3,
+            ease: 'back.out(1.8)',
+            scale: 1,
             y: 0,
           },
+          '+=0.12',
+        )
+        .addLabel('victoryReveal', `+=${VICTORY_REVEAL_DELAY}`)
+        .call(
+          () => {
+            setHasRevealedFinalRule(true)
+            setIsInstructionConfettiActive(true)
+          },
+          [],
+          'victoryReveal',
+        )
+        .to(
+          heartLossResult,
           {
             autoAlpha: 0,
-            duration: 0.55,
-            ease: 'power3.out',
-            scale: 0,
-            x: Math.cos(angle) * distance,
-            y: Math.sin(angle) * distance,
+            duration: 0.35,
+            ease: 'power2.inOut',
+            xPercent: -100,
           },
-          '<',
+          'victoryReveal',
         )
-      })
+        .to(
+          winnerResult,
+          {
+            autoAlpha: 1,
+            duration: 0.35,
+            ease: 'power2.inOut',
+            xPercent: 0,
+          },
+          'victoryReveal',
+        )
+        .to(
+          finalRule,
+          {
+            autoAlpha: 1,
+            duration: 0.45,
+            ease: 'power2.out',
+          },
+          'victoryReveal',
+        )
+        .to(
+          [playerVisuals[0], playerVisuals[2], phone],
+          {
+            autoAlpha: 0,
+            duration: 0.4,
+            ease: 'power2.in',
+          },
+          'victoryReveal',
+        )
+        .to(
+          [playerVisuals[1], playerVisuals[3]],
+          {
+            duration: 0.4,
+            ease: 'power2.out',
+            opacity: 1,
+          },
+          'victoryReveal',
+        )
+        .to(
+          lostHeart,
+          {
+            autoAlpha: 0,
+            duration: 0.15,
+            ease: 'power1.in',
+          },
+          'victoryReveal',
+        )
+        .set(
+          trophy,
+          {
+            autoAlpha: 1,
+            rotationY: 0,
+            scaleX: 1,
+            scaleY: 1,
+            transformOrigin: '50% 100%',
+            transformPerspective: Math.max(trophy.offsetHeight * 8, 160),
+            willChange: 'transform',
+            y: 0,
+          },
+          'victoryReveal',
+        )
+        .add(trophyBounceLoop, 'victoryReveal')
 
       sceneTimelineRef.current = finalScene
     },
     {
       dependencies: [
-        activeSlide,
+        sceneSlide,
         isActive,
         prefersReducedMotion,
         stageGeometryVersion,
@@ -901,7 +1787,29 @@ export function InstructionCarousel() {
       return
     }
 
+    if (
+      clampedSlide === instructionSlides.length - 1 &&
+      !prefersReducedMotion
+    ) {
+      setActiveSlide(clampedSlide)
+
+      if (sceneSlide === 1 && phoneSeatRef.current === 2) {
+        pendingFinalActRef.current = false
+        setSceneSlide(clampedSlide)
+      } else {
+        pendingFinalActRef.current = true
+
+        if (sceneSlide !== 1) {
+          setSceneSlide(1)
+        }
+      }
+
+      return
+    }
+
+    pendingFinalActRef.current = false
     setActiveSlide(clampedSlide)
+    setSceneSlide(clampedSlide)
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -1003,6 +1911,7 @@ export function InstructionCarousel() {
         flex
         touch-pan-y
         flex-col
+        justify-around
         overflow-hidden
         px-3
         pt-1
@@ -1023,224 +1932,274 @@ export function InstructionCarousel() {
       <div
         aria-hidden="true"
         className="
-          flex
-          min-h-0
-          flex-1
-          items-center
-          justify-center
+          relative
+          grid
+          h-[calc(min(68vw,34dvh,10rem)+5.25rem)]
+          w-full
+          shrink-0
+          place-items-center
         "
+        data-instruction-stage-slot
       >
         <div
-          ref={stageRef}
-          className="
-            relative
-            size-[min(76vw,48dvh,11rem)]
-            shrink-0
-          "
+          className={`
+            flex
+            w-full
+            flex-col
+            items-center
+            gap-6
+            overflow-visible
+            transition-[height,padding-top]
+            duration-300
+            ease-in-out
+            motion-reduce:transition-none
+            ${
+              sceneSlide === 1
+                ? 'h-[calc(min(68vw,34dvh,10rem)+5.25rem)] pt-6'
+                : 'h-[min(68vw,34dvh,10rem)] pt-0'
+            }
+          `}
+          data-instruction-stage-stack
         >
-          {PLAYER_TEAMS.map((team, index) => (
-            <div
-              ref={element => {
-                playerSlotRefs.current[index] = element
-              }}
-              className={`
-                absolute
-                size-[clamp(2rem,19vw,2.75rem)]
-                ${playerPositionClassNames[index]}
-              `}
-              key={`${team}-${index}`}
-            >
-              <div
-                ref={element => {
-                  playerVisualRefs.current[index] = element
-                }}
-                className={`
-                  border-neutralColor-100
-                  relative
-                  flex
-                  size-full
-                  items-center
-                  justify-center
-                  rounded-full
-                  border-4
-                  shadow-lg
-                  ${
-                    team === 'A'
-                      ? 'bg-teamAFillColor text-textOnTeamAColor'
-                      : 'bg-teamBFillColor text-textOnTeamBColor'
-                  }
-                `}
-              >
-                <span
-                  ref={element => {
-                    playerLabelRefs.current[index] = element
-                  }}
-                  className={`
-                    text-lg
-                    leading-none
-                    ${team === 'B' ? 'translate-y-[3px]' : 'translate-y-px'}
-                  `}
-                >
-                  {team}
-                </span>
-
-                {index === 0 && (
-                  <span
-                    ref={youTagRef}
-                    className="
-                      bg-neutralColor-100
-                      text-neutralColor-950
-                      border-neutralColor-100
-                      absolute
-                      top-[-0.35rem]
-                      left-1/2
-                      flex
-                      h-[0.8rem]
-                      -translate-x-1/2
-                      items-center
-                      justify-center
-                      rounded-full
-                      border-2
-                      px-1
-                      text-[0.4rem]
-                      leading-none
-                      uppercase
-                    "
-                  >
-                    <span className="translate-y-[2px]">You</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {PLAYER_TEAMS.map((team, index) => (
-            <div
-              ref={element => {
-                commentBubbleSlotRefs.current[index] = element
-              }}
+          <div
+            ref={stageRef}
+            className="
+              relative
+              size-[min(68vw,34dvh,10rem)]
+              shrink-0
+            "
+            style={
+              {
+                '--instruction-player-size': 'clamp(2rem, 19vw, 2.75rem)',
+                '--instruction-orbit-radius': `calc((100% - var(--instruction-player-size)) * ${
+                  PLAYER_ORBIT_SCALE / 2
+                })`,
+              } as CSSProperties
+            }
+          >
+            <svg
               className="
+                stroke-dividerColor
                 pointer-events-none
                 absolute
-                top-0
-                left-0
-                z-10
-                flex
-                size-8
-                items-center
-                justify-center
-                will-change-transform
+                top-1/2
+                left-1/2
+                z-0
+                -translate-x-1/2
+                -translate-y-1/2
+                overflow-visible
               "
-              key={`comment-${team}-${index}`}
+              style={{
+                height: 'calc(var(--instruction-orbit-radius) * 2)',
+                width: 'calc(var(--instruction-orbit-radius) * 2)',
+              }}
+              viewBox="0 0 100 100"
             >
+              <circle
+                cx="50"
+                cy="50"
+                fill="none"
+                r="48"
+                strokeDasharray="4 7"
+                strokeLinecap="round"
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+
+            {PLAYER_TEAMS.map((team, index) => (
               <div
-                className="
-                  relative
-                  flex
-                  size-full
-                  translate-x-3
-                  -translate-y-3
-                "
+                ref={element => {
+                  playerSlotRefs.current[index] = element
+                }}
+                className={`
+                  absolute
+                  z-10
+                  size-[var(--instruction-player-size)]
+                  ${playerPositionClassNames[index]}
+                `}
+                key={`${team}-${index}`}
               >
-                <span
+                <div
                   ref={element => {
-                    commentBubbleRefs.current[index] = element
+                    playerVisualRefs.current[index] = element
                   }}
                   className={`
+                    border-neutralColor-100
                     relative
                     flex
                     size-full
                     items-center
                     justify-center
-                    text-[1.4rem]
-                    leading-none
-                    opacity-0
-                    drop-shadow-md
+                    rounded-full
+                    border-4
+                    shadow-lg
+                    backface-visible
                     ${
                       team === 'A'
-                        ? 'text-teamAFillColor'
-                        : 'text-teamBFillColor'
+                        ? 'bg-teamAFillColor text-textOnTeamAColor'
+                        : 'bg-teamBFillColor text-textOnTeamBColor'
                     }
                   `}
+                  data-instruction-player={index}
                 >
                   <span
                     ref={element => {
-                      commentIconRefs.current[index] = element
+                      playerLabelRefs.current[index] = element
                     }}
-                    className="
-                      absolute
-                      inset-0
+                    className={`
+                      text-lg
+                      leading-none
+                      ${team === 'B' ? 'translate-y-[3px]' : 'translate-y-px'}
+                    `}
+                  >
+                    {team}
+                  </span>
+
+                  {index === 2 && (
+                    <span
+                      ref={youTagRef}
+                      className="
+                        bg-neutralColor-100
+                        text-neutralColor-950
+                        border-neutralColor-100
+                        absolute
+                        bottom-[-0.35rem]
+                        left-1/2
+                        flex
+                        h-[0.8rem]
+                        -translate-x-1/2
+                        items-center
+                        justify-center
+                        rounded-full
+                        border-2
+                        px-1
+                        text-[0.4rem]
+                        leading-none
+                        uppercase
+                      "
+                    >
+                      <span className="translate-y-[2px]">You</span>
+                    </span>
+                  )}
+                </div>
+                <div
+                  className="
+                    pointer-events-none
+                    absolute
+                    top-1/4
+                    left-3/4
+                    z-10
+                    flex
+                    size-8
+                    -translate-y-full
+                    items-center
+                    justify-center
+                  "
+                >
+                  <span
+                    ref={element => {
+                      commentBubbleRefs.current[index] = element
+                    }}
+                    className={`
                       flex
+                      size-full
                       items-center
                       justify-center
-                    "
+                      text-[1.4rem]
+                      leading-none
+                      opacity-0
+                      drop-shadow-md
+                      ${
+                        team === 'A'
+                          ? 'text-teamAFillColor'
+                          : 'text-teamBFillColor'
+                      }
+                    `}
                   >
                     <Icon name="solid:comment" />
                   </span>
-                  <span
-                    ref={element => {
-                      commentQuestionIconRefs.current[index] = element
-                    }}
-                    className="
-                      absolute
-                      inset-0
-                      flex
-                      translate-y-3
-                      items-center
-                      justify-center
-                      opacity-0
-                    "
-                  >
+                </div>
+
+                <div
+                  ref={element => {
+                    commentBurstGroupRefs.current[index] = element
+                  }}
+                  aria-hidden="true"
+                  className="
+                    pointer-events-none
+                    absolute
+                    top-1/4
+                    left-1/2
+                    z-20
+                    size-0
+                    opacity-0
+                  "
+                >
+                  {COMMENT_BURST_ANGLES.map(angle => (
                     <span
-                      className="
-                        bg-neutralColor-100
+                      className={`
                         absolute
-                        top-[43%]
-                        left-1/2
-                        z-0
-                        h-[0.75em]
-                        w-[0.48em]
+                        top-0
+                        left-0
+                        flex
+                        size-7
                         -translate-x-1/2
                         -translate-y-1/2
-                        rounded-[50%]
-                      "
-                    />
-                    <Icon
-                      className="
-                        relative
-                        z-10
-                      "
-                      name="solid:comment-question"
-                    />
-                  </span>
-                </span>
+                        items-center
+                        justify-center
+                        text-[1rem]
+                        leading-none
+                        opacity-0
+                        drop-shadow-md
+                        ${
+                          team === 'A'
+                            ? 'text-teamAFillColor'
+                            : 'text-teamBFillColor'
+                        }
+                      `}
+                      data-comment-burst-particle
+                      key={angle}
+                    >
+                      <Icon
+                        className="
+                          absolute
+                          inset-0
+                          z-0
+                          flex
+                          items-center
+                          justify-center
+                        "
+                        name="solid:comment-middle"
+                        style={{ transform: `rotate(${angle}deg)` }}
+                      />
+                      <Icon
+                        className="
+                          text-neutralColor-100
+                          absolute
+                          inset-0
+                          z-10
+                          flex
+                          items-center
+                          justify-center
+                          text-[0.42em]
+                        "
+                        data-comment-burst-glyph
+                        data-comment-burst-icon="question"
+                        name="solid:question"
+                        style={{ transform: `rotate(${angle}deg)` }}
+                      />
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          <div
-            ref={phoneRef}
-            className="
-              absolute
-              top-0
-              left-0
-              z-20
-              flex
-              size-[1.25rem]
-              items-center
-              justify-center
-              text-[1.25rem]
-              leading-none
-              opacity-0
-              will-change-transform
-            "
-          >
-            📱
-          </div>
+            <InstructionPhone ref={phoneRef} />
 
-          <div
-            ref={timerRef}
-            className="
+            <div
+              ref={timerRef}
+              className="
               absolute
               inset-0
               flex
@@ -1248,118 +2207,199 @@ export function InstructionCarousel() {
               justify-center
               opacity-0
             "
-          >
-            <svg
-              className="
-                size-[2.6rem]
+            >
+              <svg
+                className="
+                size-[3.4rem]
                 -rotate-90
                 overflow-visible
               "
-              viewBox="0 0 100 100"
-            >
-              <circle
-                className="stroke-neutralColor-800"
-                cx="50"
-                cy="50"
-                fill="none"
-                r="43"
-                strokeWidth="10"
-              />
-              <circle
-                ref={timerRingRef}
-                className="stroke-teamBTextColor"
-                cx="50"
-                cy="50"
-                fill="none"
-                pathLength="100"
-                r="43"
-                strokeDasharray="100"
-                strokeDashoffset="0"
-                strokeLinecap="round"
-                strokeWidth="10"
-              />
-            </svg>
-          </div>
+                viewBox="0 0 100 100"
+              >
+                <circle
+                  className="stroke-neutralColor-800"
+                  cx="50"
+                  cy="50"
+                  fill="none"
+                  r="43"
+                  strokeWidth="10"
+                />
+                <circle
+                  ref={timerRingRef}
+                  className="stroke-teamATextColor"
+                  cx="50"
+                  cy="50"
+                  fill="none"
+                  pathLength="100"
+                  r="43"
+                  strokeDasharray="100"
+                  strokeDashoffset="0"
+                  strokeLinecap="round"
+                  strokeWidth="10"
+                />
+              </svg>
+            </div>
 
-          <div
-            ref={heartRef}
-            className="
-              text-teamBTextColor
+            <div
+              ref={heartLayerRef}
+              className="
               absolute
               inset-0
               z-10
               flex
               items-center
               justify-center
-              text-[2.1rem]
-              opacity-0
             "
-          >
-            <Icon name="solid:heart" />
-            <span
-              ref={reducedPenaltyRef}
-              className="
-                text-textOnTeamBColor
-                absolute
-                text-xs
+              data-instruction-heart-layer
+            >
+              <div
+                ref={heartRef}
+                className="
+                text-teamATextColor
+                relative
+                flex
+                size-[1em]
+                items-center
+                justify-center
+                text-[1.8rem]
                 leading-none
                 opacity-0
               "
-            >
-              −1
-            </span>
-          </div>
-
-          <div
-            className="
-              pointer-events-none
-              absolute
-              top-1/2
-              left-1/2
-              z-20
-            "
-          >
-            {PARTICLE_ANGLES.map((angle, index) => (
-              <span
-                ref={element => {
-                  particleRefs.current[index] = element
-                }}
-                className="
-                  bg-teamBFillColor
+                data-instruction-heart
+              >
+                <Icon
+                  className="translate-y-[0.15rem]"
+                  name="solid:heart"
+                />
+                <span
+                  ref={reducedPenaltyRef}
+                  className="
+                  text-textOnTeamAColor
                   absolute
-                  size-[0.28rem]
-                  rounded-full
+                  inset-0
+                  flex
+                  items-center
+                  justify-center
+                  text-xs
+                  leading-none
                   opacity-0
                 "
-                key={angle}
-              />
-            ))}
+                >
+                  −1
+                </span>
+              </div>
+
+              <div
+                ref={lostHeartRef}
+                className="
+                  text-neutralColor-100
+                  absolute
+                  flex
+                  size-[1em]
+                  items-center
+                  justify-center
+                  text-[1.8rem]
+                  leading-none
+                  opacity-0
+                "
+                data-instruction-lost-heart
+              >
+                <Icon name="solid:xmark" />
+              </div>
+
+              <div
+                ref={trophyRef}
+                aria-hidden="true"
+                className="
+                  absolute
+                  flex
+                  size-[1em]
+                  items-center
+                  justify-center
+                  text-[2rem]
+                  leading-none
+                  opacity-0
+                  backface-visible
+                "
+                data-instruction-trophy
+              >
+                🏆
+              </div>
+            </div>
           </div>
+
+          <InstructionTeamSelector ref={teamSelectorDemoRef} />
+        </div>
+
+        <div
+          ref={roundResultRef}
+          className="
+            pointer-events-none
+            absolute
+            -bottom-[1.125rem]
+            left-1/2
+            grid
+            h-[2.25rem]
+            w-[min(82vw,18rem)]
+            -translate-x-1/2
+            place-items-center
+            overflow-hidden
+            text-center
+            text-lg
+            leading-none
+            opacity-0
+          "
+          data-instruction-round-result
+        >
+          <span
+            ref={heartLossResultRef}
+            className="
+              whitespace-nowrap
+              [grid-area:1/1]
+            "
+          >
+            <strong className="text-teamATextColor">Team A</strong>
+            <br />
+            Loses a Heart
+          </span>
+          <span
+            ref={winnerResultRef}
+            className="
+              whitespace-nowrap
+              opacity-0
+              [grid-area:1/1]
+            "
+          >
+            Winner:
+            <br />
+            <strong className="text-teamBTextColor">Team B!</strong>
+          </span>
         </div>
       </div>
 
-      <div className="shrink-0">
+      <div
+        ref={captionViewportRef}
+        className="
+          h-[clamp(3.5rem,15dvh,4.5rem)]
+          shrink-0
+          translate-y-2
+          overflow-hidden
+        "
+      >
         <div
-          ref={captionViewportRef}
+          ref={captionTrackRef}
           className="
-            h-[4.5rem]
-            overflow-hidden
+            grid
+            h-full
+            w-full
+            grid-cols-[repeat(3,100%)]
+            will-change-transform
           "
         >
-          <div
-            ref={captionTrackRef}
-            className="
-              grid
-              h-full
-              w-full
-              grid-cols-[repeat(3,100%)]
-              will-change-transform
-            "
-          >
-            {instructionSlides.map((slide, index) => (
-              <p
-                aria-hidden={activeSlide !== index}
-                className="
+          {instructionSlides.map((slide, index) => (
+            <p
+              aria-hidden={activeSlide !== index}
+              className="
                   flex
                   h-full
                   items-center
@@ -1369,33 +2409,51 @@ export function InstructionCarousel() {
                   text-xs
                   font-normal
                 "
-                id={`instruction-caption-${slide.id}`}
-                key={slide.id}
-              >
+              id={`instruction-caption-${slide.id}`}
+              key={slide.id}
+            >
+              {index === instructionSlides.length - 1 ? (
+                <span>
+                  {slide.caption}{' '}
+                  <span
+                    ref={finalRuleRef}
+                    aria-hidden={!hasRevealedFinalRule}
+                    className="opacity-0"
+                  >
+                    The team to lose its{' '}
+                    <strong className="font-bold whitespace-nowrap">
+                      last heart
+                    </strong>{' '}
+                    loses the game.
+                  </span>
+                </span>
+              ) : (
                 <span>{slide.caption}</span>
-              </p>
-            ))}
-          </div>
+              )}
+            </p>
+          ))}
         </div>
+      </div>
 
-        <div
-          aria-label="Instruction slides"
-          className="
-            flex
-            h-1.5
-            items-center
-            justify-center
-          "
-          role="group"
-        >
-          {instructionSlides.map((slide, index) => {
-            const isCurrent = activeSlide === index
+      <div
+        aria-label="Instruction slides"
+        className="
+          flex
+          h-6
+          shrink-0
+          items-center
+          justify-center
+        "
+        role="group"
+      >
+        {instructionSlides.map((slide, index) => {
+          const isCurrent = activeSlide === index
 
-            return (
-              <button
-                aria-current={isCurrent ? 'step' : undefined}
-                aria-label={`Go to instruction ${index + 1}: ${slide.label}`}
-                className="
+          return (
+            <button
+              aria-current={isCurrent ? 'step' : undefined}
+              aria-label={`Go to instruction ${index + 1}: ${slide.label}`}
+              className="
                   focus-visible:ring-primaryColor-500
                   flex
                   size-6
@@ -1406,13 +2464,13 @@ export function InstructionCarousel() {
                   outline-none
                   focus-visible:ring-2
                 "
-                key={slide.id}
-                type="button"
-                onClick={() => goToSlide(index)}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`
+              key={slide.id}
+              type="button"
+              onClick={() => goToSlide(index)}
+            >
+              <span
+                aria-hidden="true"
+                className={`
                     border-neutralColor-100
                     size-2
                     rounded-full
@@ -1420,23 +2478,59 @@ export function InstructionCarousel() {
                     transition-all
                     ${
                       isCurrent
-                        ? 'bg-primaryColor-500 scale-110'
+                        ? 'bg-neutralColor-100 scale-110'
                         : 'bg-transparent opacity-55'
                     }
                   `}
-                />
-              </button>
-            )
-          })}
-        </div>
+              />
+            </button>
+          )
+        })}
       </div>
 
       <p
         aria-live="polite"
         className="sr-only"
       >
-        {`Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption}`}
+        {activeSlide === instructionSlides.length - 1 && hasRevealedFinalRule
+          ? `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption} The team to lose its last heart loses the game.`
+          : `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption}`}
       </p>
+
+      <Confetti
+        colors={TEAM_B_CONFETTI_COLORS}
+        overlay={
+          isActive && isInstructionConfettiActive ? (
+            <span
+              aria-hidden="true"
+              className={`
+                bg-bgColor
+                pointer-events-none
+                fixed
+                z-[110]
+                flex
+                size-6
+                items-center
+                justify-center
+                rounded-full
+                text-xs
+                ${
+                  state.rotateScreen
+                    ? 'right-3 bottom-[calc(env(safe-area-inset-bottom)+0.25rem)] rotate-180'
+                    : 'top-[calc(env(safe-area-inset-top)+0.25rem)] left-3'
+                }
+              `}
+            >
+              <Icon
+                className="translate-y-px"
+                name="arrow-left-long"
+              />
+            </span>
+          ) : null
+        }
+        recycle={isActive && isInstructionConfettiActive}
+        trigger={isActive && isInstructionConfettiActive}
+      />
     </div>
   )
 }

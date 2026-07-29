@@ -23,6 +23,14 @@ export function ScreenForInstructions() {
             <StyledText
               as="button"
               aria-label="Back to main menu"
+              className="
+                bg-bgColor
+                relative
+                z-[110]
+                size-6
+                rounded-full
+                p-0
+              "
               variant="button.tool"
               onClick={() =>
                 dispatch({
@@ -31,7 +39,10 @@ export function ScreenForInstructions() {
                 })
               }
             >
-              <Icon name="arrow-left-long" />
+              <Icon
+                className="translate-y-px"
+                name="arrow-left-long"
+              />
             </StyledText>
           }
         />

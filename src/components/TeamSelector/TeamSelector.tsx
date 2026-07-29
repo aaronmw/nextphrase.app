@@ -285,6 +285,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
           <div
             ref={railRef}
             className="flex h-full w-full min-w-0 overflow-hidden"
+            data-team-selector-rail
           >
             <div
               ref={handleRef}
@@ -302,15 +303,18 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 transform: `translateX(${displayPosition}px)`,
                 backgroundColor: handleColor,
               }}
+              data-team-selector-handle
             >
               <span
                 className={twMerge(
-                  'inline-flex items-center text-sm whitespace-nowrap',
+                  'inline-flex translate-y-px items-center text-sm whitespace-nowrap',
                   handleTextColor,
                 )}
               >
                 <span>PASS TO</span>
-                <span className="ml-1 text-xl font-bold">{passToLetter}</span>
+                <span className="ml-1 inline-flex w-[0.7em] shrink-0 items-center justify-center text-xl font-bold">
+                  {passToLetter}
+                </span>
               </span>
             </div>
           </div>

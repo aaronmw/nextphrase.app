@@ -2,6 +2,10 @@
 
 import { HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
+import {
+  HEART_LOSS_ANIMATION_CLASS_NAME,
+  HEART_LOSS_ANIMATION_DURATION_MS,
+} from '@/components/heartLossAnimation'
 import { Icon } from '@/components/Icon'
 import { usePrevious } from '@/lib/usePrevious'
 import { ComponentProps, useEffect, useRef, useState } from 'react'
@@ -20,16 +24,13 @@ export function PointDots({
   ...otherProps
 }: PointDotsProps) {
   const { state, sounds } = useAppContext()
-  const {
-    heartsRemainingForTeamA,
-    heartsRemainingForTeamB,
-    isNewGame,
-  } = state
+  const { heartsRemainingForTeamA, heartsRemainingForTeamB, isNewGame } = state
   const isClient = useIsClient()
   const playSoundRef = useRef(sounds.playSound)
   const heartsRemaining =
     team === 'A' ? heartsRemainingForTeamA : heartsRemainingForTeamB
-  const previousHeartsRemaining = usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
+  const previousHeartsRemaining =
+    usePrevious(heartsRemaining) ?? HEARTS_PER_TEAM
   const pointBgColor =
     team === 'A' ? 'text-teamAColor-500' : 'text-teamBColor-500'
   const didIncrease =
@@ -79,7 +80,8 @@ export function PointDots({
   ])
 
   useEffect(() => {
-    if (!playChangeAnimation || pendingPointToAnimateRef.current === null) return
+    if (!playChangeAnimation || pendingPointToAnimateRef.current === null)
+      return
 
     const pendingPointToAnimate = pendingPointToAnimateRef.current
     pendingPointToAnimateRef.current = null
@@ -98,7 +100,7 @@ export function PointDots({
       if (isGameOver) {
         cheeringId = setTimeout(() => playSoundRef.current('cheering'), 500)
       }
-    }, 1000)
+    }, HEART_LOSS_ANIMATION_DURATION_MS)
 
     return () => {
       clearTimeout(animationDoneId)
@@ -146,24 +148,18 @@ export function PointDots({
                     scale-100
                   `
                   : `
-                    opacity-50
                     scale-75
+                    opacity-50
                   `,
                 isAnimating
-                  ? `
-                    text-red-500
-                    duration-1000
-                    translate-y-full
-                    rotate-6
-                    scale-[5]
-                  `
+                  ? HEART_LOSS_ANIMATION_CLASS_NAME
                   : isHeart
                     ? `
                       scale-100
                     `
                     : `
-                      rotate-[360deg]
                       scale-75
+                      rotate-[360deg]
                     `,
               )}
               key={slotNumber}

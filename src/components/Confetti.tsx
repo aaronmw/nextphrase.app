@@ -2,7 +2,7 @@
 
 import { resolveCssColor, THEME_COLORS_CHANGED_EVENT } from '@/app/theme'
 import { createPortal } from 'react-dom'
-import { useLayoutEffect, useState } from 'react'
+import { type ReactNode, useLayoutEffect, useState } from 'react'
 import ReactConfetti from 'react-confetti'
 
 interface ConfettiProps {
@@ -10,6 +10,7 @@ interface ConfettiProps {
   recycle?: boolean
   onComplete?: (confetti?: { reset: () => void }) => void
   colors: string[]
+  overlay?: ReactNode
 }
 
 export function Confetti({
@@ -17,6 +18,7 @@ export function Confetti({
   recycle = true,
   onComplete,
   colors,
+  overlay,
 }: ConfettiProps) {
   const [, setThemeRevision] = useState(0)
 
@@ -34,34 +36,37 @@ export function Confetti({
   const resolvedColors = colors.map(resolveCssColor)
 
   return createPortal(
-    <ReactConfetti
-      className={`
-        pointer-events-none
-        fixed
-        inset-0
-        z-[100]
-      `}
-      style={{
-        inset: 0,
-        pointerEvents: 'none',
-        position: 'fixed',
-        zIndex: 100,
-      }}
-      colors={resolvedColors}
-      initialVelocityY={{
-        min: -10,
-        max: 10,
-      }}
-      initialVelocityX={10}
-      gravity={0.05}
-      recycle={trigger && recycle}
-      run={true}
-      numberOfPieces={trigger ? 500 : 0}
-      onConfettiComplete={confetti => {
-        confetti?.reset()
-        onComplete?.(confetti)
-      }}
-    />,
+    <>
+      <ReactConfetti
+        className={`
+          pointer-events-none
+          fixed
+          inset-0
+          z-[100]
+        `}
+        style={{
+          inset: 0,
+          pointerEvents: 'none',
+          position: 'fixed',
+          zIndex: 100,
+        }}
+        colors={resolvedColors}
+        initialVelocityY={{
+          min: -10,
+          max: 10,
+        }}
+        initialVelocityX={10}
+        gravity={0.05}
+        recycle={trigger && recycle}
+        run={true}
+        numberOfPieces={trigger ? 500 : 0}
+        onConfettiComplete={confetti => {
+          confetti?.reset()
+          onComplete?.(confetti)
+        }}
+      />
+      {overlay}
+    </>,
     document.body,
   )
 }
