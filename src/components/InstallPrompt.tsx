@@ -51,7 +51,7 @@ export function InstallPrompt() {
         flex-col
         items-center
         justify-center
-        p-2
+        p-4
         backdrop-blur-md
       "
     >
@@ -61,13 +61,15 @@ export function InstallPrompt() {
           border-neutralColor-100
           relative
           flex
+          w-full
+          max-w-sm
           flex-col
-          gap-1
+          gap-2
           rounded-md
           border-4
-          p-2
+          p-4
           text-xs
-          text-balance
+          text-pretty
         "
       >
         <p>For the best time,</p>
@@ -75,21 +77,56 @@ export function InstallPrompt() {
         <ol
           className="
             flex
-            list-decimal
+            list-none
             flex-col
-            gap-1
-            pl-3
+            gap-2
           "
         >
-          <li>
-            Tap the{' '}
-            <span className="text-primaryColor-400">
-              Share Button <Icon name="regular:arrow-up-from-square" />
+          <li className="flex items-baseline gap-1">
+            <span
+              aria-hidden="true"
+              className="w-4 shrink-0 text-right"
+            >
+              1.
+            </span>
+            <span>
+              Tap{' '}
+              <span className="text-primaryColor-400">
+                More <Icon name="solid:ellipsis" />
+              </span>
+              , then{' '}
+              <span className="text-primaryColor-400">
+                Share <Icon name="regular:arrow-up-from-square" />
+              </span>
             </span>
           </li>
-          <li>
-            <span className="text-primaryColor-400">
-              Add to Home Screen <Icon name="regular:square-plus" />
+          <li className="flex items-baseline gap-1">
+            <span
+              aria-hidden="true"
+              className="w-4 shrink-0 text-right"
+            >
+              2.
+            </span>
+            <span>
+              Tap{' '}
+              <span className="text-primaryColor-400">
+                View More <Icon name="regular:chevron-down" />
+              </span>
+            </span>
+          </li>
+          <li className="flex items-baseline gap-1">
+            <span
+              aria-hidden="true"
+              className="w-4 shrink-0 text-right"
+            >
+              3.
+            </span>
+            <span>
+              Tap{' '}
+              <span className="text-primaryColor-400">
+                Add to Home Screen <Icon name="regular:square-plus" />
+              </span>
+              , then <span className="text-primaryColor-400">Add</span>
             </span>
           </li>
         </ol>
@@ -116,7 +153,10 @@ export function InstallPrompt() {
           type="button"
           onClick={handleClickDismiss}
         >
-          <Icon name="solid:xmark" />
+          <Icon
+            className="translate-y-px"
+            name="solid:xmark"
+          />
         </button>
       </div>
     </div>
