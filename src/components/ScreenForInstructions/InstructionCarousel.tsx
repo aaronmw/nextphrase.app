@@ -23,6 +23,7 @@ import {
   InstructionTeamSelector,
   type InstructionTeamSelectorHandle,
 } from '@/components/ScreenForInstructions/InstructionTeamSelector'
+import { createTrophyCelebrationTimeline } from '@/components/trophyCelebrationAnimation'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import {
@@ -89,6 +90,7 @@ const PHONE_PHRASE_IN_DURATION = 0.18
 const PHONE_SCREEN_EXIT_DURATION = 0.45
 const PHONE_SCREEN_BLANK_BEAT_DURATION = 0.08
 const PHONE_SCREEN_ENTER_DURATION = 0.3
+const TEAM_SELECTOR_ENTER_DURATION = 0.55
 const PHONE_REVEAL_SLIDE_DURATION = 0.28
 const PHONE_REVEAL_DEPTH_DURATION = 0.14
 const PHONE_REVEAL_SETTLE_DURATION = 0.35
@@ -119,7 +121,6 @@ const PLAYER_ASSIGNMENT_DURATION =
   PLAYER_ASSIGNMENT_RECOVERY_DURATION
 const TEAM_ASSIGNMENT_SEQUENCE_DURATION = PLAYER_ASSIGNMENT_DURATION * 2
 const VICTORY_REVEAL_DELAY = 0.6
-const TROPHY_BOUNCE_REPEAT_DELAY = 0.25
 const PHONE_REVEAL_DELAY_AFTER_ASSIGNMENTS = 0.5
 const TEAM_B_CONFETTI_COLORS = Object.values(teamBColor)
 const COMMENT_EXIT_DURATION = 0.16
@@ -298,13 +299,28 @@ function getHopPoint(
   }
 }
 
+function getLocalPlayerSlotBounds(playerSlot: HTMLDivElement) {
+  const width = playerSlot.offsetWidth
+  const height = playerSlot.offsetHeight
+  const centerX = playerSlot.offsetLeft
+  const centerY = playerSlot.offsetTop
+
+  return {
+    bottom: centerY + height / 2,
+    height,
+    left: centerX - width / 2,
+    right: centerX + width / 2,
+    top: centerY - height / 2,
+    width,
+  }
+}
+
 function getInnerOrbitSlotPoints(
   stage: HTMLDivElement,
   playerSlots: (HTMLDivElement | null)[],
   orbitElement: HTMLElement,
   playerOverlap: number,
 ) {
-  const stageBounds = stage.getBoundingClientRect()
   const elementWidth = Math.max(orbitElement.offsetWidth, 1)
   const elementHeight = Math.max(orbitElement.offsetHeight, 1)
 
@@ -316,17 +332,17 @@ function getInnerOrbitSlotPoints(
   }
 
   const playerBounds = playerSlots.map(playerSlot =>
-    playerSlot!.getBoundingClientRect(),
+    getLocalPlayerSlotBounds(playerSlot!),
   )
   const stageCenter = {
-    x: stageBounds.width / 2,
-    y: stageBounds.height / 2,
+    x: stage.offsetWidth / 2,
+    y: stage.offsetHeight / 2,
   }
   const innerCircleRadius = Math.min(
-    stageCenter.y - (playerBounds[0].bottom - stageBounds.top),
-    playerBounds[1].left - stageBounds.left - stageCenter.x,
-    playerBounds[2].top - stageBounds.top - stageCenter.y,
-    stageCenter.x - (playerBounds[3].right - stageBounds.left),
+    stageCenter.y - playerBounds[0].bottom,
+    playerBounds[1].left - stageCenter.x,
+    playerBounds[2].top - stageCenter.y,
+    stageCenter.x - playerBounds[3].right,
   )
   const elementRadius = Math.max(elementWidth, elementHeight) / 2
   const orbitRadius = Math.max(
@@ -380,6 +396,7 @@ export function InstructionCarousel() {
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const [activeSlide, setActiveSlide] = useState(0)
   const [sceneSlide, setSceneSlide] = useState(0)
+  const [sceneReplayKey, setSceneReplayKey] = useState(0)
   const [hasRevealedFinalRule, setHasRevealedFinalRule] = useState(false)
   const [isInstructionConfettiActive, setIsInstructionConfettiActive] =
     useState(false)
@@ -429,8 +446,11 @@ export function InstructionCarousel() {
       setSceneSlide(0)
     } else if (!isActive) {
       pendingFinalActRef.current = false
+      phoneSeatRef.current = 2
       setHasRevealedFinalRule(false)
       setIsInstructionConfettiActive(false)
+      setActiveSlide(0)
+      setSceneSlide(0)
     }
   }, [isActive])
 
@@ -478,6 +498,7 @@ export function InstructionCarousel() {
       const youTag = youTagRef.current
 
       entranceTimelineRef.current?.kill()
+      entranceTimelineRef.current = null
       gsap.set(playerVisuals, { clearProps: 'willChange' })
 
       const hasCompletePlayerScene =
@@ -558,20 +579,15 @@ export function InstructionCarousel() {
 
       if (!phonePoints) return
 
-      const stageBounds = stage.getBoundingClientRect()
-      const initialPlayerBounds = initialPlayerSlot.getBoundingClientRect()
+      const initialPlayerBounds = getLocalPlayerSlotBounds(initialPlayerSlot)
       const phoneStart = {
-        x:
-          initialPlayerBounds.right -
-          stageBounds.left -
-          Math.max(phone.offsetWidth * 0.75, 1),
+        x: initialPlayerBounds.right - Math.max(phone.offsetWidth * 0.75, 1),
         y:
-          initialPlayerBounds.top -
-          stageBounds.top +
+          initialPlayerBounds.top +
           (initialPlayerBounds.height - phone.offsetHeight) / 2,
       }
       const phoneClear = {
-        x: initialPlayerBounds.right - stageBounds.left + 2,
+        x: initialPlayerBounds.right + 2,
         y: phoneStart.y,
       }
 
@@ -803,7 +819,13 @@ export function InstructionCarousel() {
       entranceTimelineRef.current = entranceTimeline
     },
     {
-      dependencies: [isActive, isLoading, prefersReducedMotion, sceneSlide],
+      dependencies: [
+        isActive,
+        isLoading,
+        prefersReducedMotion,
+        sceneReplayKey,
+        sceneSlide,
+      ],
       scope: rootRef,
     },
   )
@@ -991,6 +1013,12 @@ export function InstructionCarousel() {
 
       if (!isActive) {
         teamSelectorDemo.reset()
+        gsap.set(playerSlotRefs.current[2], { clearProps: 'zIndex' })
+        gsap.set(phone, {
+          autoAlpha: 0,
+          clearProps:
+            'transform,transformOrigin,transformPerspective,willChange,zIndex',
+        })
         return
       }
 
@@ -1138,7 +1166,6 @@ export function InstructionCarousel() {
         const phoneScreenHeight = Math.max(phoneGame.offsetHeight, 1)
 
         phoneSeatRef.current = 2
-        teamSelectorDemo.show()
 
         phoneScreenTransition
           .set(phoneScoreboard, { autoAlpha: 1 })
@@ -1322,6 +1349,13 @@ export function InstructionCarousel() {
             .call(
               () => {
                 setInstructionPhoneAlertTeam(phone, receivingTeam)
+
+                if (orbitIndex === 0) {
+                  teamSelectorDemo.show({
+                    duration: TEAM_SELECTOR_ENTER_DURATION,
+                  })
+                }
+
                 teamSelectorDemo.animatePass(receivingTeam, () =>
                   setInstructionPhoneActiveTeam(
                     phone,
@@ -1472,7 +1506,15 @@ export function InstructionCarousel() {
         gsap.set(timerRing, { strokeDashoffset: 100 })
         gsap.set(heart, { autoAlpha: 0 })
         gsap.set(lostHeart, { autoAlpha: 0 })
-        gsap.set(trophy, { autoAlpha: 1, rotationY: 0 })
+        gsap.set(trophy, {
+          autoAlpha: 1,
+          rotation: 0,
+          rotationY: 0,
+          scaleX: 1,
+          scaleY: 1,
+          x: 0,
+          y: 0,
+        })
         gsap.set(phoneScoreboard, { autoAlpha: 1 })
         gsap.set(roundResult, { autoAlpha: 1, scale: 1, y: 0 })
         gsap.set(heartLossResult, { autoAlpha: 0, xPercent: -100 })
@@ -1483,46 +1525,7 @@ export function InstructionCarousel() {
         return
       }
 
-      const trophyBounceLoop = gsap
-        .timeline({
-          repeat: -1,
-          repeatDelay: TROPHY_BOUNCE_REPEAT_DELAY,
-        })
-        .to(trophy, {
-          duration: PLAYER_ASSIGNMENT_PREP_DURATION,
-          ease: 'power2.in',
-          scaleX: 1.08,
-          scaleY: 0.85,
-        })
-        .to(trophy, {
-          duration: PLAYER_ASSIGNMENT_RISE_DURATION,
-          ease: 'power2.out',
-          rotationY: 90,
-          scaleX: 0.9,
-          scaleY: 1.1,
-          y: -Math.max(trophy.offsetHeight, 1) * 0.32,
-        })
-        .set(trophy, { rotationY: -90 })
-        .to(trophy, {
-          duration: PLAYER_ASSIGNMENT_FALL_DURATION,
-          ease: 'power2.in',
-          rotationY: 0,
-          scaleX: 1,
-          scaleY: 1,
-          y: 0,
-        })
-        .to(trophy, {
-          duration: PLAYER_ASSIGNMENT_IMPACT_DURATION,
-          ease: 'power3.out',
-          scaleX: 1.08,
-          scaleY: 0.85,
-        })
-        .to(trophy, {
-          duration: PLAYER_ASSIGNMENT_RECOVERY_DURATION,
-          ease: 'back.out(2)',
-          scaleX: 1,
-          scaleY: 1,
-        })
+      const trophyCelebrationLoop = createTrophyCelebrationTimeline(trophy)
 
       const finalScene = gsap.timeline({
         defaults: {
@@ -1736,23 +1739,25 @@ export function InstructionCarousel() {
           trophy,
           {
             autoAlpha: 1,
+            rotation: 0,
             rotationY: 0,
             scaleX: 1,
             scaleY: 1,
             transformOrigin: '50% 100%',
-            transformPerspective: Math.max(trophy.offsetHeight * 8, 160),
             willChange: 'transform',
+            x: 0,
             y: 0,
           },
           'victoryReveal',
         )
-        .add(trophyBounceLoop, 'victoryReveal')
+        .add(trophyCelebrationLoop, 'victoryReveal')
 
       sceneTimelineRef.current = finalScene
     },
     {
       dependencies: [
         sceneSlide,
+        sceneReplayKey,
         isActive,
         prefersReducedMotion,
         stageGeometryVersion,
@@ -1810,6 +1815,18 @@ export function InstructionCarousel() {
     pendingFinalActRef.current = false
     setActiveSlide(clampedSlide)
     setSceneSlide(clampedSlide)
+  }
+
+  function handleDotClick(slide: number) {
+    if (slide !== activeSlide) {
+      goToSlide(slide)
+      return
+    }
+
+    pendingFinalActRef.current = false
+    setSceneSlide(slide)
+    setSceneReplayKey(key => key + 1)
+    settleCaptionTrack()
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -1911,11 +1928,9 @@ export function InstructionCarousel() {
         flex
         touch-pan-y
         flex-col
-        justify-around
         overflow-hidden
         px-3
         pt-1
-        pb-2
         outline-none
         focus-visible:ring-2
         focus-visible:ring-inset
@@ -1933,13 +1948,24 @@ export function InstructionCarousel() {
         aria-hidden="true"
         className="
           relative
+          mt-auto
           grid
           h-[calc(min(68vw,34dvh,10rem)+5.25rem)]
           w-full
           shrink-0
           place-items-center
+          transition-transform
+          duration-300
+          ease-in-out
+          motion-reduce:transition-none
         "
         data-instruction-stage-slot
+        style={{
+          transform:
+            sceneSlide === 1
+              ? 'translateY(0)'
+              : 'translateY(calc(0px - min(6.8vw, 3.4dvh, 1rem)))',
+        }}
       >
         <div
           className={`
@@ -2380,6 +2406,7 @@ export function InstructionCarousel() {
       <div
         ref={captionViewportRef}
         className="
+          my-auto
           h-[clamp(3.5rem,15dvh,4.5rem)]
           shrink-0
           translate-y-2
@@ -2466,7 +2493,7 @@ export function InstructionCarousel() {
                 "
               key={slide.id}
               type="button"
-              onClick={() => goToSlide(index)}
+              onClick={() => handleDotClick(index)}
             >
               <span
                 aria-hidden="true"
@@ -2498,6 +2525,7 @@ export function InstructionCarousel() {
       </p>
 
       <Confetti
+        key={`instruction-confetti-${sceneReplayKey}`}
         colors={TEAM_B_CONFETTI_COLORS}
         overlay={
           isActive && isInstructionConfettiActive ? (

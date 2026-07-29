@@ -13,6 +13,7 @@ export function ScreenForWinners() {
 
   return (
     <ScreenContainer
+      extendIntoBottomSafeArea
       screenName={AppScreen.Winners}
       slotForMain={
         <div className="flex h-full flex-col items-center justify-center gap-12 px-3">

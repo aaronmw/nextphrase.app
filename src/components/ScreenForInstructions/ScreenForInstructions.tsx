@@ -15,6 +15,7 @@ export function ScreenForInstructions() {
     <ScreenContainer
       aria-label="How to Play"
       className="touch-pan-y"
+      extendIntoBottomSafeArea
       screenName={AppScreen.Instructions}
       slotForHeader={
         <AppHeader

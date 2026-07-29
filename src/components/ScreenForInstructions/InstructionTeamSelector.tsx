@@ -17,11 +17,16 @@ interface TouchGeometry {
   y: number
 }
 
+interface ShowOptions {
+  delay?: number
+  duration?: number
+}
+
 export interface InstructionTeamSelectorHandle {
   animatePass: (team: Team, onToggle?: () => void) => void
   hide: (immediate?: boolean) => void
   reset: (team?: Team) => void
-  show: (immediate?: boolean) => void
+  show: (options?: ShowOptions | true) => void
 }
 
 function ignoreTeamSelection() {}
@@ -174,21 +179,22 @@ export const InstructionTeamSelector =
           })
         },
         reset,
-        show(immediate = false) {
+        show(options: ShowOptions | true = {}) {
           const root = rootRef.current
 
           if (!root) return
 
           gsap.killTweensOf(root)
 
-          if (immediate) {
+          if (options === true) {
             gsap.set(root, { autoAlpha: 1, y: 0 })
             return
           }
 
           gsap.to(root, {
             autoAlpha: 1,
-            duration: 0.25,
+            delay: options.delay ?? 0,
+            duration: options.duration ?? 0.25,
             ease: 'power2.out',
             y: 0,
           })

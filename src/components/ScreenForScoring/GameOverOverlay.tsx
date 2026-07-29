@@ -11,6 +11,7 @@ interface GameOverOverlayProps {
   roundTransitionPhase: RoundTransitionPhase
   scoreWinnerLabelRef: RefObject<HTMLDivElement | null>
   scoreWinnerNewGameRef: RefObject<HTMLDivElement | null>
+  scoreWinnerTrophyRef: RefObject<HTMLDivElement | null>
 }
 
 export function GameOverOverlay({
@@ -19,6 +20,7 @@ export function GameOverOverlay({
   roundTransitionPhase,
   scoreWinnerLabelRef,
   scoreWinnerNewGameRef,
+  scoreWinnerTrophyRef,
 }: GameOverOverlayProps) {
   return (
     <>
@@ -74,6 +76,28 @@ export function GameOverOverlay({
         >
           New Game
         </StyledText>
+      </div>
+      <div
+        ref={scoreWinnerTrophyRef}
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          invisible
+          fixed
+          top-0
+          left-0
+          z-[90]
+          flex
+          size-[clamp(3.5rem,12dvh,5rem)]
+          items-center
+          justify-center
+          text-[clamp(3.5rem,12dvh,5rem)]
+          leading-none
+          opacity-0
+          backface-visible
+        "
+      >
+        🏆
       </div>
     </>
   )

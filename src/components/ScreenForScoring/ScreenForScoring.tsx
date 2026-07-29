@@ -49,6 +49,7 @@ export function ScreenForScoring() {
   const scoreTeamBRef = useRef<HTMLDivElement>(null)
   const scoreWinnerLabelRef = useRef<HTMLDivElement>(null)
   const scoreWinnerNewGameRef = useRef<HTMLDivElement>(null)
+  const scoreWinnerTrophyRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<NodeJS.Timeout>(null)
   const touchStartedAtRef = useRef<number | null>(null)
   const gameOverWinningTeam =
@@ -105,6 +106,7 @@ export function ScreenForScoring() {
     scoreTeamBRef,
     scoreWinnerLabelRef,
     scoreWinnerNewGameRef,
+    scoreWinnerTrophyRef,
   })
 
   function handleTouchStart(team: 'A' | 'B') {
@@ -135,6 +137,7 @@ export function ScreenForScoring() {
   return (
     <ScreenContainer
       className="[&_.js-header-container]:z-40"
+      extendIntoBottomSafeArea
       screenName={AppScreen.Scoring}
       slotForHeader={
         <AppHeader
@@ -287,6 +290,7 @@ export function ScreenForScoring() {
               roundTransitionPhase={roundTransitionPhase}
               scoreWinnerLabelRef={scoreWinnerLabelRef}
               scoreWinnerNewGameRef={scoreWinnerNewGameRef}
+              scoreWinnerTrophyRef={scoreWinnerTrophyRef}
             />
           )}
         </>

@@ -19,6 +19,7 @@ export function ScreenForMainMenu() {
 
   return (
     <ScreenContainer
+      extendIntoBottomSafeArea
       screenName={AppScreen.MainMenu}
       slotForHeader={<AppHeader />}
       slotForMain={

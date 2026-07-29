@@ -29,6 +29,7 @@ function getRoundPresetId(
 
 export function DevPanel() {
   const { dispatch, state } = useAppContext()
+  const [hiddenUntilReload, setHiddenUntilReload] = useState(false)
   const [open, setOpen] = useState(false)
   const [themePreview, setThemePreview] = useState(readDevThemePreview)
   const {
@@ -61,6 +62,8 @@ export function DevPanel() {
       roundDurationMax: max,
     })
   }
+
+  if (hiddenUntilReload) return null
 
   return (
     <>
@@ -206,6 +209,33 @@ export function DevPanel() {
             preview={themePreview}
             onChange={setThemePreview}
           />
+          <div className="bg-neutralColor-100/20 h-px" />
+          <button
+            type="button"
+            onClick={() => setHiddenUntilReload(true)}
+            className="
+              border-neutralColor-100/30
+              bg-neutralColor-100/10
+              text-neutralColor-100
+              hover:bg-neutralColor-100/20
+              flex
+              h-8
+              w-full
+              shrink-0
+              items-center
+              justify-center
+              gap-2
+              rounded
+              border
+              px-3
+              text-xs
+            "
+          >
+            <span className="inline-flex w-4 justify-center">
+              <Icon name="eye-slash" />
+            </span>
+            <span>Hide Until Reload</span>
+          </button>
         </dialog>
       )}
     </>
