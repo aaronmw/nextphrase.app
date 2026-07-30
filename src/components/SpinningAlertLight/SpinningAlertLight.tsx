@@ -31,8 +31,8 @@ const classNames = {
   lightsContainer: `
     pointer-events-none
     absolute
-    left-1/2
-    top-4
+    top-0
+    left-0
     size-[240vmax]
     -translate-x-1/2
     -translate-y-1/2

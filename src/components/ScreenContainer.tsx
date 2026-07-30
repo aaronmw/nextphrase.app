@@ -15,6 +15,7 @@ interface ScreenContainerProps extends Omit<
 > {
   extendIntoBottomSafeArea?: boolean
   screenName: string
+  slotForBackground?: ReactNode
   slotForHeader?: ReactNode
   slotForMain?: ReactNode
 }
@@ -61,6 +62,7 @@ export function ScreenContainer({
   className,
   extendIntoBottomSafeArea = false,
   screenName,
+  slotForBackground,
   slotForHeader,
   slotForMain,
   ...otherProps
@@ -276,7 +278,7 @@ export function ScreenContainer({
       className={twMerge(
         `
           invisible
-          absolute
+          fixed
           top-0
           right-0
           bottom-0
@@ -302,6 +304,23 @@ export function ScreenContainer({
           slotForHeader ? 'grid-rows-[2rem_auto]' : 'grid-rows-[0_auto]',
         )}
       >
+        {slotForBackground && (
+          <div
+            className="
+              js-background-container
+              pointer-events-none
+              relative
+              z-0
+              col-start-1
+              col-end-2
+              row-start-1
+              row-end-2
+              overflow-visible
+            "
+          >
+            {slotForBackground}
+          </div>
+        )}
         <div
           className="
             js-header-container

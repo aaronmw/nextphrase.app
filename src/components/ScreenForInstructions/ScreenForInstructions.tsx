@@ -28,9 +28,6 @@ export function ScreenForInstructions() {
                 bg-bgColor
                 relative
                 z-[110]
-                size-6
-                rounded-full
-                p-0
               "
               variant="button.tool"
               onClick={() =>

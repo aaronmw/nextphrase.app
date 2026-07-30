@@ -387,7 +387,8 @@ export function useScoringRoundTransition({
           'rotation',
           'deg',
         )
-        const setScale = gsap.quickSetter(losingTeamElement, 'scale')
+        const setScaleX = gsap.quickSetter(losingTeamElement, 'scaleX')
+        const setScaleY = gsap.quickSetter(losingTeamElement, 'scaleY')
 
         gsap.set(scoreElements, {
           autoAlpha: 1,
@@ -433,7 +434,10 @@ export function useScoringRoundTransition({
               setX(Math.cos(angle) * radius)
               setY(Math.sin(angle * 1.31) * radius * 0.8)
               setRotation(Math.sin(angle * 0.73) * radius * 0.2)
-              setScale(1 + shakeState.progress * 0.025)
+              const scale = 1 + shakeState.progress * 0.025
+
+              setScaleX(scale)
+              setScaleY(scale)
             },
           })
           .set(losingTeamElement, { rotation: 0, scale: 1, x: 0, y: 0 })

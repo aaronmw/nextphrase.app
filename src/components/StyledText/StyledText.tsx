@@ -1,5 +1,13 @@
+'use client'
+
 import { useAppContext } from '@/components/AppContext'
-import { ComponentProps, ElementType, TouchEvent } from 'react'
+import {
+  ComponentProps,
+  ElementType,
+  PointerEvent,
+  useEffect,
+  useRef,
+} from 'react'
 import { twMerge } from 'tailwind-merge'
 import { classNames } from './classNames'
 
@@ -17,11 +25,12 @@ export function StyledText<T extends ElementType = 'span'>({
   as,
   className,
   variant,
-  onTouchStart,
+  onPointerDown,
   ...otherProps
 }: StyledTextProps<T>) {
   const { sounds } = useAppContext()
   const Component = as || 'span'
+  const releaseSoundCleanupRef = useRef<(() => void) | null>(null)
 
   const classNamesForVariant = Array.isArray(variant)
     ? variant.map(v => classNames[v])
@@ -33,15 +42,47 @@ export function StyledText<T extends ElementType = 'span'>({
     ? variant.some(v => v.startsWith('button'))
     : variant?.startsWith('button')
 
-  function handleTouchStart(event: TouchEvent) {
-    sounds.playSound('spacebar-click')
-    onTouchStart?.(event)
+  useEffect(
+    () => () => {
+      releaseSoundCleanupRef.current?.()
+    },
+    [],
+  )
+
+  function handlePointerDown(event: PointerEvent) {
+    const isPrimaryPress =
+      event.isPrimary && (event.pointerType !== 'mouse' || event.button === 0)
+
+    if (isPrimaryPress && !releaseSoundCleanupRef.current) {
+      const { pointerId } = event
+
+      sounds.playSound('spacebar-down')
+
+      const finishPress = (releaseEvent: globalThis.PointerEvent) => {
+        if (releaseEvent.pointerId !== pointerId) return
+
+        releaseSoundCleanupRef.current?.()
+        sounds.playSound('spacebar-up')
+      }
+
+      const cleanup = () => {
+        window.removeEventListener('pointerup', finishPress, true)
+        window.removeEventListener('pointercancel', finishPress, true)
+        releaseSoundCleanupRef.current = null
+      }
+
+      releaseSoundCleanupRef.current = cleanup
+      window.addEventListener('pointerup', finishPress, true)
+      window.addEventListener('pointercancel', finishPress, true)
+    }
+
+    onPointerDown?.(event)
   }
 
   return (
     <Component
       className={twMerge(classNamesForVariant, className)}
-      onTouchStart={isButton ? handleTouchStart : onTouchStart}
+      onPointerDown={isButton ? handlePointerDown : onPointerDown}
       {...otherProps}
     />
   )

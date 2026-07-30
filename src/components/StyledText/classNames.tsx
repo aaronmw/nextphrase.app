@@ -116,19 +116,24 @@ export const classNames = {
     `,
   ),
 
-  'button.tool': tw`
-    hover:bg-textColor/15
-    -my-0.5
-    inline-flex
-    items-center
-    justify-center
-    gap-2
-    rounded-sm
-    px-1
-    py-0.5
-    text-xs
-    text-inherit
-  `,
+  'button.tool': twMerge(
+    buttonClassNames,
+    `
+      -my-0.5
+      inline-flex
+      size-6
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      p-0
+      text-xs
+      text-inherit
+      hover:bg-current/10
+      focus-visible:bg-current/10
+      active:bg-current/15
+    `,
+  ),
 
   'label': tw`
     text-fadedTextColor

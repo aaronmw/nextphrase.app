@@ -36,7 +36,7 @@ export function ScreenForGuessing() {
   > | null>(null)
   const phraseFlipperRef = useRef<PhraseFlipperHandle | null>(null)
   const selectorElementRef = useRef<HTMLDivElement>(null)
-  const [alertLightLayerElement, setAlertLightLayerElement] =
+  const [alertLightAnchorElement, setAlertLightAnchorElement] =
     useState<HTMLDivElement | null>(null)
   const isTeamSelectorInteractive =
     activeScreen === AppScreen.Guessing && roundTransitionPhase === 'idle'
@@ -44,6 +44,7 @@ export function ScreenForGuessing() {
   useGuessingRoundTransition({
     activeScreen,
     alertElementRef,
+    alertLightAnchorElement,
     countdownElementRef,
     countdownLabel,
     countdownLabelElementRef,
@@ -62,11 +63,6 @@ export function ScreenForGuessing() {
       screenName={AppScreen.Guessing}
       slotForMain={
         <div className="relative flex h-full flex-col">
-          <div
-            ref={setAlertLightLayerElement}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
-          />
           <div className="relative min-h-0 flex-1 overflow-hidden">
             <div
               ref={handoffTrackElementRef}
@@ -142,6 +138,24 @@ export function ScreenForGuessing() {
           />
         </div>
       }
+      slotForBackground={
+        <div
+          aria-hidden="true"
+          className="
+            absolute
+            inset-0
+            flex
+            items-center
+            justify-center
+            overflow-visible
+          "
+        >
+          <div
+            ref={setAlertLightAnchorElement}
+            className="relative size-0 overflow-visible"
+          />
+        </div>
+      }
       slotForHeader={
         <AppHeader
           centerSlot={
@@ -152,7 +166,7 @@ export function ScreenForGuessing() {
               <SpinningAlertLight
                 ref={spinningLightRef}
                 activeTeam={activeTeamInRound}
-                lightLayerTarget={alertLightLayerElement}
+                lightLayerTarget={alertLightAnchorElement}
                 onClick={requestAbortRound}
               />
             </div>

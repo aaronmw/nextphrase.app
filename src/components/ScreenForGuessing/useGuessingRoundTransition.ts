@@ -15,6 +15,7 @@ const COUNTDOWN_LABEL_STEP_DURATION = 0.8
 interface UseGuessingRoundTransitionProps {
   activeScreen: AppScreen
   alertElementRef: RefObject<HTMLDivElement | null>
+  alertLightAnchorElement: HTMLDivElement | null
   countdownElementRef: RefObject<HTMLDivElement | null>
   countdownLabel: string | null
   countdownLabelElementRef: RefObject<HTMLSpanElement | null>
@@ -30,6 +31,7 @@ interface UseGuessingRoundTransitionProps {
 export function useGuessingRoundTransition({
   activeScreen,
   alertElementRef,
+  alertLightAnchorElement,
   countdownElementRef,
   countdownLabel,
   countdownLabelElementRef,
@@ -97,22 +99,22 @@ export function useGuessingRoundTransition({
       const phraseElement = phraseElementRef.current
       const selectorElement = selectorElementRef.current
 
-      if (
-        !(
-          alertElement &&
-          countdownElement &&
-          handoffTrackElement &&
-          phraseElement &&
-          selectorElement
-        )
-      ) {
+      if (!(
+        alertElement &&
+        alertLightAnchorElement &&
+        countdownElement &&
+        handoffTrackElement &&
+        phraseElement &&
+        selectorElement
+      )) {
         return
       }
 
       const viewportHeight = window.innerHeight
       const viewportWidth = window.innerWidth
+      const alertElements = [alertElement, alertLightAnchorElement]
       const animatedElements = [
-        alertElement,
+        ...alertElements,
         countdownElement,
         handoffTrackElement,
         phraseElement,
@@ -125,7 +127,7 @@ export function useGuessingRoundTransition({
         gsap.set(handoffTrackElement, { autoAlpha: 1, x: 0 })
         gsap.set(phraseElement, { autoAlpha: 0, xPercent: 0 })
         gsap.set(countdownElement, { autoAlpha: 0, xPercent: 0 })
-        gsap.set(alertElement, {
+        gsap.set(alertElements, {
           autoAlpha: 0,
           y: -viewportHeight,
         })
@@ -138,7 +140,7 @@ export function useGuessingRoundTransition({
       }
 
       if (roundTransitionPhase === 'countdown') {
-        gsap.set(alertElement, {
+        gsap.set(alertElements, {
           autoAlpha: 0,
           x: 0,
           y: -viewportHeight,
@@ -176,7 +178,7 @@ export function useGuessingRoundTransition({
           y: viewportHeight,
           willChange: 'transform, opacity',
         })
-        gsap.set(alertElement, {
+        gsap.set(alertElements, {
           autoAlpha: 0,
           y: -viewportHeight,
           willChange: 'transform, opacity',
@@ -199,24 +201,16 @@ export function useGuessingRoundTransition({
               gsap.set(selectorElement, {
                 clearProps: 'transform,opacity,visibility,willChange',
               })
-              gsap.set(alertElement, {
+              gsap.set(alertElements, {
                 clearProps: 'willChange',
               })
               finishPhraseEnter()
             },
           })
+          .to(handoffTrackElement, { ease: 'power2.out', x: -viewportWidth }, 0)
+          .to(selectorElement, { autoAlpha: 1, ease: 'power2.out', y: 0 }, 0)
           .to(
-            handoffTrackElement,
-            { ease: 'power2.out', x: -viewportWidth },
-            0,
-          )
-          .to(
-            selectorElement,
-            { autoAlpha: 1, ease: 'power2.out', y: 0 },
-            0,
-          )
-          .to(
-            alertElement,
+            alertElements,
             {
               autoAlpha: 1,
               ease: 'power2.out',
@@ -247,7 +241,7 @@ export function useGuessingRoundTransition({
               finishGuessingExit()
             },
           })
-          .to(alertElement, { autoAlpha: 0, y: -viewportHeight }, 0)
+          .to(alertElements, { autoAlpha: 0, y: -viewportHeight }, 0)
           .to(selectorElement, { autoAlpha: 0, y: viewportHeight }, 0)
 
         if (shouldExitPhrase) {
@@ -270,7 +264,7 @@ export function useGuessingRoundTransition({
           autoAlpha: 1,
           clearProps: 'transform,opacity,visibility,willChange',
         })
-        gsap.set(alertElement, {
+        gsap.set(alertElements, {
           autoAlpha: 1,
           clearProps: 'willChange',
           y: ALERT_REST_Y_PX,
@@ -284,6 +278,7 @@ export function useGuessingRoundTransition({
     {
       dependencies: [
         activeScreen,
+        alertLightAnchorElement,
         countdownLabel,
         finishGuessingEnter,
         finishGuessingExit,

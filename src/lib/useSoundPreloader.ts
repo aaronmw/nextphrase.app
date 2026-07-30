@@ -40,6 +40,25 @@ export const useSoundPreloader = <T extends string>(
   const loadedSoundsRef = useRef<LoadedSounds<T>>({})
   const stopRepeatingSounds = useRef<Partial<Record<T, () => void>>>({})
   const audioContextRef = useRef<AudioContext | null>(null)
+  const resumeAudioContextPromiseRef = useRef<Promise<void> | null>(null)
+
+  const ensureAudioContextIsRunning = useCallback(
+    (audioContext: AudioContext) => {
+      if (audioContext.state === 'running' || audioContext.state === 'closed') {
+        return
+      }
+
+      if (!resumeAudioContextPromiseRef.current) {
+        resumeAudioContextPromiseRef.current = audioContext
+          .resume()
+          .catch(() => undefined)
+          .finally(() => {
+            resumeAudioContextPromiseRef.current = null
+          })
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
     setIsPreloading(true)
@@ -53,22 +72,22 @@ export const useSoundPreloader = <T extends string>(
       return
     }
 
-    const audioContext = new AudioContextConstructor()
+    const audioContext = new AudioContextConstructor({
+      latencyHint: 'interactive',
+    })
     const abortController = new AbortController()
     let isCancelled = false
 
     audioContextRef.current = audioContext
 
     function unlockAudioContext() {
-      if (audioContext.state === 'suspended') {
-        void audioContext.resume()
-      }
-
-      window.removeEventListener('pointerdown', unlockAudioContext, true)
-      window.removeEventListener('keydown', unlockAudioContext, true)
+      ensureAudioContextIsRunning(audioContext)
     }
 
+    // Keep listening after the initial unlock because installed iOS apps can
+    // interrupt the audio session whenever they move into the background.
     window.addEventListener('pointerdown', unlockAudioContext, true)
+    window.addEventListener('touchstart', unlockAudioContext, true)
     window.addEventListener('keydown', unlockAudioContext, true)
 
     async function loadSound(
@@ -130,6 +149,7 @@ export const useSoundPreloader = <T extends string>(
       isCancelled = true
       abortController.abort()
       window.removeEventListener('pointerdown', unlockAudioContext, true)
+      window.removeEventListener('touchstart', unlockAudioContext, true)
       window.removeEventListener('keydown', unlockAudioContext, true)
 
       for (const name of Object.keys(stopRepeatingSounds.current) as T[]) {
@@ -139,9 +159,10 @@ export const useSoundPreloader = <T extends string>(
       stopRepeatingSounds.current = {}
       loadedSoundsRef.current = {}
       audioContextRef.current = null
+      resumeAudioContextPromiseRef.current = null
       void audioContext.close()
     }
-  }, [sounds])
+  }, [ensureAudioContextIsRunning, sounds])
 
   const fadeAudio = useCallback(
     (
@@ -173,34 +194,27 @@ export const useSoundPreloader = <T extends string>(
       const audioContext = audioContextRef.current
       const sound = loadedSoundsRef.current[name]
 
-      if (!audioContext) return
-
-      if (audioContext.state === 'suspended') {
-        void audioContext.resume()
-      }
-
-      if (!sound) return
-
-      const {
-        buffer,
-        trimStart,
-        trimEnd,
-        fadeInDuration,
-        fadeOutDuration,
-        delay,
-        volume,
-      } = sound
-      const source = audioContext.createBufferSource()
-      const gainNode = audioContext.createGain()
-
-      source.buffer = buffer
-      source.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-
-      const initialVolume = volume ?? 1
-      gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime)
+      if (!(audioContext && sound)) return
 
       const startAudio = () => {
+        const {
+          buffer,
+          trimStart,
+          trimEnd,
+          fadeInDuration,
+          fadeOutDuration,
+          delay,
+          volume,
+        } = sound
+        const source = audioContext.createBufferSource()
+        const gainNode = audioContext.createGain()
+        const initialVolume = volume ?? 1
+
+        source.buffer = buffer
+        source.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+        gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime)
+
         const startTime = audioContext.currentTime + (delay ?? 0)
         const offset = trimStart ?? 0
         const end = trimEnd ?? buffer.duration
@@ -212,23 +226,28 @@ export const useSoundPreloader = <T extends string>(
         }
 
         source.start(startTime, offset, duration)
+
+        if (trimEnd !== undefined && fadeOutDuration) {
+          const duration = ((delay ?? 0) + trimEnd - (trimStart ?? 0)) * 1000
+
+          setTimeout(() => {
+            fadeAudio(gainNode, 0, fadeOutDuration, () => source.stop())
+          }, duration)
+        }
       }
 
-      if (trimStart !== undefined && trimStart >= 0) {
-        setTimeout(startAudio, (delay ?? 0) * 1000)
-      } else {
+      if (audioContext.state === 'running') {
         startAudio()
+        return
       }
 
-      if (trimEnd !== undefined && fadeOutDuration) {
-        const duration = (trimEnd - (trimStart ?? 0)) * 1000
-
-        setTimeout(() => {
-          fadeAudio(gainNode, 0, fadeOutDuration, () => source.stop())
-        }, duration)
-      }
+      // Schedule immediately while Safari resumes. AudioContext time is frozen
+      // while suspended, so the source begins as soon as the session unlocks
+      // instead of being dropped during Safari's transient state change.
+      ensureAudioContextIsRunning(audioContext)
+      startAudio()
     },
-    [fadeAudio],
+    [ensureAudioContextIsRunning, fadeAudio],
   )
 
   const playSound = useCallback(
