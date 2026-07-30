@@ -58,7 +58,7 @@ export function InstallPrompt() {
     >
       <div
         className="
-          bg-secondaryColor-950
+          bg-bgColor
           border-neutralColor-100
           relative
           flex
@@ -89,8 +89,7 @@ export function InstallPrompt() {
 
         <StyledText
           as="button"
-          className="border-0"
-          variant="button.secondary"
+          variant="button.tertiary"
           type="button"
           onClick={handleClickDismiss}
         >

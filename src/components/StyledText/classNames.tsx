@@ -84,6 +84,26 @@ export const classNames = {
     `,
   ),
 
+  'button.tertiary': twMerge(
+    buttonClassNames,
+    `
+      text-primaryColor-400
+      relative
+      z-10
+      w-full
+      rounded-sm
+      bg-transparent
+      px-3
+      py-1
+      text-center
+      text-xs
+      leading-none
+      tracking-tighter
+      whitespace-nowrap
+      uppercase
+    `,
+  ),
+
   'button.icon': twMerge(
     buttonClassNames,
     `
