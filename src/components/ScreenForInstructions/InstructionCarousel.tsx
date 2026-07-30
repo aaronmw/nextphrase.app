@@ -2407,7 +2407,7 @@ export function InstructionCarousel() {
         ref={captionViewportRef}
         className="
           my-auto
-          h-[clamp(3.5rem,15dvh,4.5rem)]
+          h-[clamp(4.5rem,18dvh,5.5rem)]
           shrink-0
           translate-y-2
           overflow-hidden
