@@ -1,6 +1,7 @@
 'use client'
 
 import { Icon } from '@/components/Icon'
+import { StyledText } from '@/components/StyledText'
 import { useSyncExternalStore } from 'react'
 import { useIsClient, useSessionStorage } from 'usehooks-ts'
 
@@ -72,92 +73,29 @@ export function InstallPrompt() {
           text-pretty
         "
       >
-        <p>For the best time,</p>
+        <div className="text-center leading-relaxed">
+          <p>For the best time:</p>
+          <p className="whitespace-nowrap">
+            Tap{' '}
+            <span className="text-primaryColor-400">
+              <Icon name="regular:arrow-up-from-square" /> Share
+            </span>{' '}
+            then
+          </p>
+          <p className="text-primaryColor-400 whitespace-nowrap">
+            <Icon name="regular:square-plus" /> Add to Home Screen
+          </p>
+        </div>
 
-        <ol
-          className="
-            flex
-            list-none
-            flex-col
-            gap-2
-          "
-        >
-          <li className="flex items-baseline gap-1">
-            <span
-              aria-hidden="true"
-              className="w-4 shrink-0 text-right"
-            >
-              1.
-            </span>
-            <span>
-              Tap{' '}
-              <span className="text-primaryColor-400">
-                More <Icon name="solid:ellipsis" />
-              </span>
-              , then{' '}
-              <span className="text-primaryColor-400">
-                Share <Icon name="regular:arrow-up-from-square" />
-              </span>
-            </span>
-          </li>
-          <li className="flex items-baseline gap-1">
-            <span
-              aria-hidden="true"
-              className="w-4 shrink-0 text-right"
-            >
-              2.
-            </span>
-            <span>
-              Tap{' '}
-              <span className="text-primaryColor-400">
-                View More <Icon name="regular:chevron-down" />
-              </span>
-            </span>
-          </li>
-          <li className="flex items-baseline gap-1">
-            <span
-              aria-hidden="true"
-              className="w-4 shrink-0 text-right"
-            >
-              3.
-            </span>
-            <span>
-              Tap{' '}
-              <span className="text-primaryColor-400">
-                Add to Home Screen <Icon name="regular:square-plus" />
-              </span>
-              , then <span className="text-primaryColor-400">Add</span>
-            </span>
-          </li>
-        </ol>
-
-        <button
-          aria-label="Dismiss install prompt"
-          className="
-            bg-accentFillColor
-            border-neutralColor-100
-            text-textOnAccentColor
-            absolute
-            top-0
-            right-0
-            z-10
-            flex
-            size-6
-            translate-x-1/3
-            -translate-y-1/3
-            items-center
-            justify-center
-            rounded-full
-            border-4
-          "
+        <StyledText
+          as="button"
+          className="border-0"
+          variant="button.secondary"
           type="button"
           onClick={handleClickDismiss}
         >
-          <Icon
-            className="translate-y-px"
-            name="solid:xmark"
-          />
-        </button>
+          Play Anyway
+        </StyledText>
       </div>
     </div>
   )

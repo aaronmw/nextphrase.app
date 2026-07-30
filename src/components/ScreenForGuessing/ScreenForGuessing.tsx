@@ -11,7 +11,7 @@ import { useRoundTransition } from '@/components/RoundTransitionContext'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { SpinningAlertLight } from '@/components/SpinningAlertLight'
 import { TeamSelector } from '@/components/TeamSelector'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useGuessingRoundTransition } from './useGuessingRoundTransition'
 
@@ -36,6 +36,8 @@ export function ScreenForGuessing() {
   > | null>(null)
   const phraseFlipperRef = useRef<PhraseFlipperHandle | null>(null)
   const selectorElementRef = useRef<HTMLDivElement>(null)
+  const [alertLightLayerElement, setAlertLightLayerElement] =
+    useState<HTMLDivElement | null>(null)
   const isTeamSelectorInteractive =
     activeScreen === AppScreen.Guessing && roundTransitionPhase === 'idle'
 
@@ -59,7 +61,12 @@ export function ScreenForGuessing() {
       className="touch-auto [&_.js-content-container]:row-start-1 [&_.js-header-container]:z-40"
       screenName={AppScreen.Guessing}
       slotForMain={
-        <div className="flex h-full flex-col">
+        <div className="relative flex h-full flex-col">
+          <div
+            ref={setAlertLightLayerElement}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+          />
           <div className="relative min-h-0 flex-1 overflow-hidden">
             <div
               ref={handoffTrackElementRef}
@@ -145,6 +152,7 @@ export function ScreenForGuessing() {
               <SpinningAlertLight
                 ref={spinningLightRef}
                 activeTeam={activeTeamInRound}
+                lightLayerTarget={alertLightLayerElement}
                 onClick={requestAbortRound}
               />
             </div>

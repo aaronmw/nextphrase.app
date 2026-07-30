@@ -29,7 +29,6 @@ function getRoundPresetId(
 
 export function DevPanel() {
   const { dispatch, state } = useAppContext()
-  const [hiddenUntilReload, setHiddenUntilReload] = useState(false)
   const [open, setOpen] = useState(false)
   const [themePreview, setThemePreview] = useState(readDevThemePreview)
   const {
@@ -63,11 +62,10 @@ export function DevPanel() {
     })
   }
 
-  if (hiddenUntilReload) return null
-
   return (
     <>
       <button
+        data-dev-panel
         type="button"
         onClick={() => setOpen(o => !o)}
         className={twMerge(
@@ -94,6 +92,7 @@ export function DevPanel() {
       </button>
       {open && (
         <dialog
+          data-dev-panel
           open
           className={twJoin(
             'fixed',
@@ -212,7 +211,9 @@ export function DevPanel() {
           <div className="bg-neutralColor-100/20 h-px" />
           <button
             type="button"
-            onClick={() => setHiddenUntilReload(true)}
+            onClick={() => {
+              document.documentElement.dataset.devUiHidden = 'true'
+            }}
             className="
               border-neutralColor-100/30
               bg-neutralColor-100/10

@@ -140,9 +140,10 @@
     touch-action: manipulation;
   }
 
-  html[data-screenshot-mode='true'] nextjs-portal,
-  html[data-screenshot-mode='true'] [data-nextjs-dev-overlay],
-  html[data-screenshot-mode='true'] [data-nextjs-toast] {
+  html[data-dev-ui-hidden='true'] nextjs-portal,
+  html[data-dev-ui-hidden='true'] [data-nextjs-dev-overlay],
+  html[data-dev-ui-hidden='true'] [data-nextjs-toast],
+  html[data-dev-ui-hidden='true'] [data-dev-panel] {
     display: none !important;
   }
 }

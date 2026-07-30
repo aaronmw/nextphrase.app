@@ -12,6 +12,7 @@ import { useRoundTransition } from '@/components/RoundTransitionContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { twMerge } from 'tailwind-merge'
 
 const QUICK_SPIN_ROTATIONS = 0.25
@@ -31,7 +32,7 @@ const classNames = {
     pointer-events-none
     absolute
     left-1/2
-    top-1/2
+    top-4
     size-[240vmax]
     -translate-x-1/2
     -translate-y-1/2
@@ -76,12 +77,21 @@ export interface SpinningAlertLightHandle {
   triggerQuickSpin: () => void
 }
 
+interface SpinningAlertLightProps {
+  activeTeam: 'A' | 'B'
+  lightLayerTarget: Element | null
+  onClick: () => void
+}
+
 export const SpinningAlertLight = forwardRef<
   SpinningAlertLightHandle,
-  { activeTeam: 'A' | 'B'; onClick: () => void }
->(function SpinningAlertLight({ activeTeam, onClick }, ref) {
+  SpinningAlertLightProps
+>(function SpinningAlertLight({ activeTeam, lightLayerTarget, onClick }, ref) {
   const containerRef = useRef<HTMLButtonElement>(null)
   const lightsContainerRef = useRef<HTMLSpanElement>(null)
+  const rotatingLightRef = useRef<HTMLSpanElement>(null)
+  const flashingLightRef = useRef<HTMLSpanElement>(null)
+  const spinningIconRef = useRef<HTMLSpanElement>(null)
   const timelinesRef = useRef<{
     rotating: gsap.core.Timeline
     spinning: gsap.core.Timeline
@@ -158,10 +168,16 @@ export const SpinningAlertLight = forwardRef<
     () => {
       const lightsContainer = containerRef.current
       const lightsWash = lightsContainerRef.current
+      const rotatingLight = rotatingLightRef.current
+      const flashingLight = flashingLightRef.current
+      const spinningIcon = spinningIconRef.current
 
       if (!(
         lightsContainer &&
         lightsWash &&
+        rotatingLight &&
+        flashingLight &&
+        spinningIcon &&
         currentRoundAccelerationStartTime &&
         currentRoundEndTime &&
         currentRoundStartTime
@@ -194,7 +210,7 @@ export const SpinningAlertLight = forwardRef<
       sounds.playSound('bonk', tickRate)
 
       rotatingLightTimeline.fromTo(
-        `.js-rotating-light`,
+        rotatingLight,
         { rotate: 0 },
         {
           duration: tickRate * 2,
@@ -204,7 +220,7 @@ export const SpinningAlertLight = forwardRef<
       )
 
       spinningIconTimeline.fromTo(
-        `.js-spinning-icon`,
+        spinningIcon,
         { rotate: 360 },
         {
           duration: tickRate * 2,
@@ -214,11 +230,11 @@ export const SpinningAlertLight = forwardRef<
       )
 
       flashingLightTimeline
-        .to(`.js-flashing-light`, { opacity: 1, duration: 0.1 })
-        .to(`.js-flashing-light`, { opacity: 0, duration: 0.1 })
-        .to(`.js-flashing-light`, { opacity: 1, duration: 0.1 })
-        .to(`.js-flashing-light`, { opacity: 0, duration: 0.1 })
-        .to(`.js-flashing-light`, {
+        .to(flashingLight, { opacity: 1, duration: 0.1 })
+        .to(flashingLight, { opacity: 0, duration: 0.1 })
+        .to(flashingLight, { opacity: 1, duration: 0.1 })
+        .to(flashingLight, { opacity: 0, duration: 0.1 })
+        .to(flashingLight, {
           opacity: 0,
           duration: tickRate * 2 - 0.4,
         })
@@ -278,64 +294,75 @@ export const SpinningAlertLight = forwardRef<
         currentRoundAccelerationStartTime,
         currentRoundEndTime,
         currentRoundStartTime,
+        lightLayerTarget,
         requestEndRound,
       ],
     },
   )
 
-  return (
-    <button
-      ref={containerRef}
-      aria-label="Abort round"
-      type="button"
-      className={classNames.button}
-      onClick={handleClick}
-      style={
-        {
-          '--alert-light-color': activeTeamColor,
-          'transition': '--alert-light-color 0.25s ease',
-        } as React.CSSProperties
-      }
-    >
-      <span
-        ref={lightsContainerRef}
-        className={classNames.lightsContainer}
-      >
-        <span
-          className={twMerge(`js-rotating-light`, classNames.rotatingLight)}
-          style={{
-            backgroundImage: `
-              conic-gradient(
-                from 0deg at 50% 50%,
-                transparent 15%,
-                var(--alert-light-color) 25%,
-                transparent 35%,
-                transparent 65%,
-                var(--alert-light-color) 75%,
-                transparent 85%
-              )
-            `,
-          }}
-        />
-        <span
-          className={twMerge(`js-flashing-light`, classNames.flashingLight)}
-        />
-        <span className={classNames.lightEdgeDarkener} />
-      </span>
+  const alertLightStyle = {
+    '--alert-light-color': activeTeamColor,
+    'transition': '--alert-light-color 0.25s ease',
+  } as React.CSSProperties
 
-      <span
-        className={twMerge(
-          `js-spinning-icon`,
-          classNames.spinningIcon,
-          activeTeamTextColor,
+  return (
+    <>
+      {lightLayerTarget &&
+        createPortal(
+          <span
+            ref={lightsContainerRef}
+            className={classNames.lightsContainer}
+            style={alertLightStyle}
+          >
+            <span
+              ref={rotatingLightRef}
+              className={twMerge(`js-rotating-light`, classNames.rotatingLight)}
+              style={{
+                backgroundImage: `
+                  conic-gradient(
+                    from 0deg at 50% 50%,
+                    transparent 15%,
+                    var(--alert-light-color) 25%,
+                    transparent 35%,
+                    transparent 65%,
+                    var(--alert-light-color) 75%,
+                    transparent 85%
+                  )
+                `,
+              }}
+            />
+            <span
+              ref={flashingLightRef}
+              className={twMerge(`js-flashing-light`, classNames.flashingLight)}
+            />
+            <span className={classNames.lightEdgeDarkener} />
+          </span>,
+          lightLayerTarget,
         )}
-        style={{ backgroundColor: activeTeamSurfaceColor }}
+
+      <button
+        ref={containerRef}
+        aria-label="Abort round"
+        type="button"
+        className={classNames.button}
+        onClick={handleClick}
+        style={alertLightStyle}
       >
-        <Icon
-          className="flex size-full items-center justify-center leading-none"
-          name="circle-quarters"
-        />
-      </span>
-    </button>
+        <span
+          ref={spinningIconRef}
+          className={twMerge(
+            `js-spinning-icon`,
+            classNames.spinningIcon,
+            activeTeamTextColor,
+          )}
+          style={{ backgroundColor: activeTeamSurfaceColor }}
+        >
+          <Icon
+            className="flex size-full items-center justify-center leading-none"
+            name="circle-quarters"
+          />
+        </span>
+      </button>
+    </>
   )
 })

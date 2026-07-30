@@ -1,6 +1,5 @@
 import { AppContext } from '@/components'
 import { InstallPrompt } from '@/components/InstallPrompt'
-import { isScreenshotMode } from './screenshotMode'
 import { soundSources } from './sounds'
 import { appBackgroundColor } from './theme'
 import type { Metadata, Viewport } from 'next'
@@ -81,7 +80,6 @@ export default async function RootLayout({
   return (
     <html
       className={twJoin(bodyFont.className, bodyFont.variable, 'font-bold')}
-      data-screenshot-mode={isScreenshotMode ? 'true' : undefined}
       lang="en-US"
       suppressHydrationWarning
       style={{ backgroundColor: appBackgroundColor }}
@@ -95,7 +93,7 @@ export default async function RootLayout({
 
       <body style={{ backgroundColor: appBackgroundColor }}>
         <AppContext>{children}</AppContext>
-        {!isScreenshotMode && <InstallPrompt />}
+        <InstallPrompt />
       </body>
     </html>
   )
