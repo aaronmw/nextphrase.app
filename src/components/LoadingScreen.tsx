@@ -19,8 +19,9 @@ const LOGO_ARROW_CROSSFADE_DURATION = 0.08
 const LOGO_RING_REVEAL_DURATION = 0.18
 const LOGO_TEXT_REVEAL_DURATION = 0.22
 const OVERLAY_EXIT_DURATION = 0.16
-const BUTTON_REVEAL_DURATION = 0.24
-const BUTTON_REVEAL_STAGGER = 0.08
+const BUTTON_REVEAL_DURATION = 0.32
+const BUTTON_REVEAL_STAGGER = 0.07
+const BUTTON_REVEAL_Y = 14
 const VOLLEY_TRAJECTORY_ANGLE_DEGREES = -15
 const VOLLEY_TRAJECTORY_SLOPE = Math.tan(
   (VOLLEY_TRAJECTORY_ANGLE_DEGREES * Math.PI) / 180,
@@ -178,8 +179,7 @@ export function LoadingScreen({
     if (actions) {
       gsap.set(actions, {
         autoAlpha: 1,
-        clearProps: 'opacity,transform,visibility',
-        y: 0,
+        clearProps: 'opacity,visibility,willChange',
       })
     }
 
@@ -268,11 +268,7 @@ export function LoadingScreen({
 
     const blueStart = getBuildArrowStart('B', targetBounds)
     const pinkStart = getBuildArrowStart('A', targetBounds)
-    const actionRevealTargets = actionChildren.length
-      ? actionChildren
-      : actions
-        ? [actions]
-        : []
+    const actionRevealTargets = actionChildren
 
     gsap.killTweensOf(
       getPresentElements([
@@ -292,10 +288,18 @@ export function LoadingScreen({
 
     gsap.set(target, { autoAlpha: 0 })
     if (actions) {
-      gsap.set(actions, { autoAlpha: 0, y: 22 })
+      gsap.set(actions, {
+        autoAlpha: 1,
+        clearProps: 'opacity,visibility',
+      })
     }
     if (actionChildren.length) {
-      gsap.set(actionChildren, { autoAlpha: 0, y: 18 })
+      gsap.set(actionChildren, {
+        autoAlpha: 0,
+        transformOrigin: '50% 50%',
+        willChange: 'transform,opacity',
+        y: BUTTON_REVEAL_Y,
+      })
     }
     gsap.set(logoFrame, {
       autoAlpha: 1,
@@ -418,15 +422,7 @@ export function LoadingScreen({
       })
 
     if (actions) {
-      buildTimeline.set(actions, { autoAlpha: 1 }, '<').to(
-        actions,
-        {
-          duration: BUTTON_REVEAL_DURATION,
-          ease: 'power2.out',
-          y: 0,
-        },
-        '<',
-      )
+      buildTimeline.set(actions, { autoAlpha: 1 }, '<')
     }
 
     if (actionRevealTargets.length) {
@@ -435,7 +431,7 @@ export function LoadingScreen({
         {
           autoAlpha: 1,
           duration: BUTTON_REVEAL_DURATION,
-          ease: 'power2.out',
+          ease: 'power3.out',
           stagger: BUTTON_REVEAL_STAGGER,
           y: 0,
         },
