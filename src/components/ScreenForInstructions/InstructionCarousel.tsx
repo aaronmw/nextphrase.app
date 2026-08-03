@@ -18,6 +18,12 @@ import {
 } from '@/components/heartLossAnimation'
 import { Icon } from '@/components/Icon'
 import type { RegularIconName } from '@/components/Icon/types'
+import {
+  addPlayerHopToTimeline,
+  PLAYER_HOP_DURATION,
+  PLAYER_HOP_HEIGHT_MULTIPLIERS,
+  type Point,
+} from '@/components/playerHopAnimation'
 import { InstructionPhone } from '@/components/ScreenForInstructions/InstructionPhone'
 import {
   InstructionTeamSelector,
@@ -44,11 +50,6 @@ interface InstructionSlide {
   caption: ReactNode
   id: string
   label: string
-}
-
-interface Point {
-  x: number
-  y: number
 }
 
 interface DragState {
@@ -96,18 +97,6 @@ const PHONE_REVEAL_DEPTH_DURATION = 0.14
 const PHONE_REVEAL_SETTLE_DURATION = 0.35
 const PLAYER_ENTRANCE_STAGGER = 0.14
 const PLAYER_START_DISTANCE_MULTIPLIER = 1.25
-const PLAYER_HOP_HEIGHT_MULTIPLIERS = [0.55, 0.42, 0.3]
-const PLAYER_HOP_PREP_DURATION = 0.06
-const PLAYER_HOP_RISE_DURATION = 0.14
-const PLAYER_HOP_FALL_DURATION = 0.12
-const PLAYER_HOP_IMPACT_DURATION = 0.04
-const PLAYER_HOP_RECOVERY_DURATION = 0.06
-const PLAYER_HOP_DURATION =
-  PLAYER_HOP_PREP_DURATION +
-  PLAYER_HOP_RISE_DURATION +
-  PLAYER_HOP_FALL_DURATION +
-  PLAYER_HOP_IMPACT_DURATION +
-  PLAYER_HOP_RECOVERY_DURATION
 const PLAYER_ASSIGNMENT_PREP_DURATION = 0.05
 const PLAYER_ASSIGNMENT_RISE_DURATION = 0.16
 const PLAYER_ASSIGNMENT_FALL_DURATION = 0.14
@@ -285,18 +274,6 @@ function getPlayerEntranceStartOffset(index: number, diameter: number): Point {
     { x: 0, y: distance },
     { x: -distance, y: 0 },
   ][index]
-}
-
-function getHopPoint(
-  start: Point,
-  end: Point,
-  progress: number,
-  lift: number,
-): Point {
-  return {
-    x: start.x + (end.x - start.x) * progress,
-    y: start.y + (end.y - start.y) * progress - lift,
-  }
 }
 
 function getLocalPlayerSlotBounds(playerSlot: HTMLDivElement) {
@@ -520,14 +497,16 @@ export function InstructionCarousel() {
         return
       }
 
-      if (!(
-        isActive &&
-        !isLoading &&
-        sceneSlide === 0 &&
-        stage &&
-        phone &&
-        hasCompletePlayerScene
-      )) {
+      if (
+        !(
+          isActive &&
+          !isLoading &&
+          sceneSlide === 0 &&
+          stage &&
+          phone &&
+          hasCompletePlayerScene
+        )
+      ) {
         return
       }
 
@@ -639,46 +618,12 @@ export function InstructionCarousel() {
             y: entranceStart.y * (1 - hopEndProgress),
           }
           const lift = diameter * heightMultiplier
-          const apex = getHopPoint(hopStart, hopEnd, 0.5, lift)
-          const preImpact = getHopPoint(hopStart, hopEnd, 0.9, lift * 0.1)
-
-          playerTimeline
-            .to(player, {
-              duration: PLAYER_HOP_PREP_DURATION,
-              ease: 'power2.in',
-              scaleX: 1,
-              scaleY: 0.8,
-            })
-            .to(player, {
-              duration: PLAYER_HOP_RISE_DURATION,
-              ease: 'power2.out',
-              scaleX: 0.8,
-              scaleY: 1.2,
-              x: apex.x,
-              y: apex.y,
-            })
-            .to(player, {
-              duration: PLAYER_HOP_FALL_DURATION,
-              ease: 'power2.in',
-              scaleX: 1,
-              scaleY: 1,
-              x: preImpact.x,
-              y: preImpact.y,
-            })
-            .to(player, {
-              duration: PLAYER_HOP_IMPACT_DURATION,
-              ease: 'power4.in',
-              scaleX: 1,
-              scaleY: 0.8,
-              x: hopEnd.x,
-              y: hopEnd.y,
-            })
-            .to(player, {
-              duration: PLAYER_HOP_RECOVERY_DURATION,
-              ease: 'back.out(2)',
-              scaleX: 1,
-              scaleY: 1,
-            })
+          addPlayerHopToTimeline(playerTimeline, {
+            end: hopEnd,
+            lift,
+            positionTarget: player,
+            start: hopStart,
+          })
         })
 
         entranceTimeline.add(playerTimeline, playerStartTime)
@@ -936,39 +881,41 @@ export function InstructionCarousel() {
       setHasRevealedFinalRule(false)
       setIsInstructionConfettiActive(false)
 
-      if (!(
-        stage &&
-        phone &&
-        teamSelectorDemo &&
-        phoneSelectorThumb &&
-        phoneAlertLight &&
-        phoneWhiteout &&
-        phoneScoreboard &&
-        phoneGame &&
-        phoneScreenDot &&
-        phonePhraseViewport &&
-        phoneSelector &&
-        phoneScoreTeamA &&
-        phoneScoreTeamB &&
-        phoneScoreStart &&
-        phonePhrases.length === 2 &&
-        timer &&
-        timerRing &&
-        heartLayer &&
-        heart &&
-        lostHeart &&
-        trophy &&
-        reducedPenalty &&
-        roundResult &&
-        heartLossResult &&
-        winnerResult &&
-        finalRule &&
-        playerVisuals.length === PLAYER_TEAMS.length &&
-        commentBubbles.length === PLAYER_TEAMS.length &&
-        commentBurstGroups.length === PLAYER_TEAMS.length &&
-        commentBurstParticles.length ===
-          PLAYER_TEAMS.length * COMMENT_BURST_ANGLES.length
-      )) {
+      if (
+        !(
+          stage &&
+          phone &&
+          teamSelectorDemo &&
+          phoneSelectorThumb &&
+          phoneAlertLight &&
+          phoneWhiteout &&
+          phoneScoreboard &&
+          phoneGame &&
+          phoneScreenDot &&
+          phonePhraseViewport &&
+          phoneSelector &&
+          phoneScoreTeamA &&
+          phoneScoreTeamB &&
+          phoneScoreStart &&
+          phonePhrases.length === 2 &&
+          timer &&
+          timerRing &&
+          heartLayer &&
+          heart &&
+          lostHeart &&
+          trophy &&
+          reducedPenalty &&
+          roundResult &&
+          heartLossResult &&
+          winnerResult &&
+          finalRule &&
+          playerVisuals.length === PLAYER_TEAMS.length &&
+          commentBubbles.length === PLAYER_TEAMS.length &&
+          commentBurstGroups.length === PLAYER_TEAMS.length &&
+          commentBurstParticles.length ===
+            PLAYER_TEAMS.length * COMMENT_BURST_ANGLES.length
+        )
+      ) {
         return
       }
 
@@ -1848,11 +1795,9 @@ export function InstructionCarousel() {
     const dragState = dragStateRef.current
     const captionTrack = captionTrackRef.current
 
-    if (!(
-      dragState &&
-      captionTrack &&
-      dragState.pointerId === event.pointerId
-    )) {
+    if (
+      !(dragState && captionTrack && dragState.pointerId === event.pointerId)
+    ) {
       return
     }
 

@@ -51,7 +51,8 @@ export const classNames = {
       rounded-sm
       border-4
       px-3
-      py-1
+      pt-[0.3125rem]
+      pb-[0.1875rem]
       text-center
       text-xs
       leading-none
@@ -73,7 +74,8 @@ export const classNames = {
       rounded-sm
       border-4
       px-3
-      py-1
+      pt-[0.3125rem]
+      pb-[0.1875rem]
       text-center
       text-xs
       leading-none
@@ -94,7 +96,8 @@ export const classNames = {
       rounded-sm
       bg-transparent
       px-3
-      py-1
+      pt-[0.3125rem]
+      pb-[0.1875rem]
       text-center
       text-xs
       leading-none
