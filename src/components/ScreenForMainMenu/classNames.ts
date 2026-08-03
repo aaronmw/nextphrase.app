@@ -16,6 +16,7 @@ export const classNames = {
     w-full
   `,
   mainContainer: tw`
+    js-main-menu-actions
     fixed
     top-2/3
     left-1/2
