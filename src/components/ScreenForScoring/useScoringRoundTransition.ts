@@ -37,6 +37,8 @@ type ExitDirection = 'left' | 'right' | 'up' | 'down' | 'upLeft' | 'upRight'
 
 const EDGE_EXIT_BUFFER_PX = 24
 const SCORE_TRANSITION_DURATION = 0.45
+const SCORE_HUD_REVEAL_DELAY = 0.12
+const SCORE_HUD_REVEAL_DURATION = 0.08
 const IMPACT_SHAKE_DURATION = 0.9
 const FLASH_EXPAND_DURATION = 0.16
 const FLASH_HOLD_DURATION = 0.06
@@ -45,12 +47,20 @@ const MAX_WINNER_CARD_SCALE = 2
 const WINNER_CARD_REVEAL_DURATION = 0.65
 const WINNER_COPY_DURATION = 0.28
 
+function getScreenRect(element: HTMLElement) {
+  return (
+    element.closest('section')?.getBoundingClientRect() ??
+    new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+  )
+}
+
 function getExitTransform(element: HTMLElement, direction: ExitDirection) {
   const rect = element.getBoundingClientRect()
-  const left = -rect.right - EDGE_EXIT_BUFFER_PX
-  const right = window.innerWidth - rect.left + EDGE_EXIT_BUFFER_PX
-  const up = -rect.bottom - EDGE_EXIT_BUFFER_PX
-  const down = window.innerHeight - rect.top + EDGE_EXIT_BUFFER_PX
+  const screenRect = getScreenRect(element)
+  const left = screenRect.left - rect.right - EDGE_EXIT_BUFFER_PX
+  const right = screenRect.right - rect.left + EDGE_EXIT_BUFFER_PX
+  const up = screenRect.top - rect.bottom - EDGE_EXIT_BUFFER_PX
+  const down = screenRect.bottom - rect.top + EDGE_EXIT_BUFFER_PX
 
   switch (direction) {
     case 'left':
@@ -104,9 +114,7 @@ function getWinnerLayout({
   const labelRect = labelElement.getBoundingClientRect()
   const newGameRect = newGameElement.getBoundingClientRect()
   const trophyRect = trophyElement.getBoundingClientRect()
-  const screenRect =
-    winningTeamElement.closest('section')?.getBoundingClientRect() ??
-    new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+  const screenRect = getScreenRect(winningTeamElement)
   const gap = gsap.utils.clamp(18, 32, screenRect.height * 0.035)
   const topInset = gsap.utils.clamp(16, 32, screenRect.height * 0.025)
   const bottomInset = gsap.utils.clamp(18, 32, screenRect.height * 0.03)
@@ -199,15 +207,17 @@ export function useScoringRoundTransition({
       const scoreWinnerNewGame = scoreWinnerNewGameRef.current
       const scoreWinnerTrophy = scoreWinnerTrophyRef.current
 
-      if (!(
-        scoreBack &&
-        scoreFlash &&
-        scoreHeartsA &&
-        scoreHeartsB &&
-        scoreStart &&
-        scoreTeamA &&
-        scoreTeamB
-      )) {
+      if (
+        !(
+          scoreBack &&
+          scoreFlash &&
+          scoreHeartsA &&
+          scoreHeartsB &&
+          scoreStart &&
+          scoreTeamA &&
+          scoreTeamB
+        )
+      ) {
         return
       }
 
@@ -219,6 +229,8 @@ export function useScoringRoundTransition({
         scoreTeamA,
         scoreTeamB,
       ]
+      const scoreCardElements = [scoreStart, scoreTeamA, scoreTeamB]
+      const scoreHudElements = [scoreBack, scoreHeartsA, scoreHeartsB]
       const winnerCopyElements = [
         scoreWinnerLabel,
         scoreWinnerNewGame,
@@ -340,34 +352,45 @@ export function useScoringRoundTransition({
         gsap.set(scoreTeamA, { autoAlpha: 1, ...scoreExitTransforms.teamA })
         gsap.set(scoreTeamB, { autoAlpha: 1, ...scoreExitTransforms.teamB })
         gsap.set(scoreHeartsA, {
-          autoAlpha: 1,
+          autoAlpha: 0,
           ...scoreExitTransforms.heartsA,
         })
         gsap.set(scoreHeartsB, {
-          autoAlpha: 1,
+          autoAlpha: 0,
           ...scoreExitTransforms.heartsB,
         })
-        gsap.set(scoreBack, { autoAlpha: 1, ...scoreExitTransforms.back })
+        gsap.set(scoreBack, { autoAlpha: 0, ...scoreExitTransforms.back })
         gsap.set(scoreElements, { willChange: 'transform' })
-        gsap.to(scoreElements, {
-          autoAlpha: 1,
-          duration: SCORE_TRANSITION_DURATION,
-          ease: 'power2.out',
-          overwrite: true,
-          x: 0,
-          y: 0,
-          onComplete: () => {
-            gsap.set(scoreElements, {
-              clearProps:
-                'transform,opacity,visibility,willChange,animation,zIndex,pointerEvents',
-            })
-            gsap.set(winnerCopyElements, {
-              clearProps:
-                'left,top,transform,transformOrigin,transformPerspective,opacity,visibility,willChange,pointerEvents',
-            })
-            finishScoringEnter()
-          },
-        })
+        gsap
+          .timeline({
+            defaults: {
+              duration: SCORE_TRANSITION_DURATION,
+              ease: 'power2.out',
+              overwrite: true,
+            },
+            onComplete: () => {
+              gsap.set(scoreElements, {
+                clearProps:
+                  'transform,opacity,visibility,willChange,animation,zIndex,pointerEvents',
+              })
+              gsap.set(winnerCopyElements, {
+                clearProps:
+                  'left,top,transform,transformOrigin,transformPerspective,opacity,visibility,willChange,pointerEvents',
+              })
+              finishScoringEnter()
+            },
+          })
+          .to(scoreCardElements, { autoAlpha: 1, x: 0, y: 0 }, 0)
+          .to(scoreHudElements, { x: 0, y: 0 }, 0)
+          .to(
+            scoreHudElements,
+            {
+              autoAlpha: 1,
+              duration: SCORE_HUD_REVEAL_DURATION,
+              ease: 'none',
+            },
+            SCORE_HUD_REVEAL_DELAY,
+          )
         return
       }
 
@@ -515,12 +538,14 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverExit') {
-        if (!(
-          gameOverTransitionTeam &&
-          scoreWinnerLabel &&
-          scoreWinnerNewGame &&
-          scoreWinnerTrophy
-        )) {
+        if (
+          !(
+            gameOverTransitionTeam &&
+            scoreWinnerLabel &&
+            scoreWinnerNewGame &&
+            scoreWinnerTrophy
+          )
+        ) {
           finishScoringGameOverExit()
           return
         }
@@ -577,12 +602,14 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverReveal') {
-        if (!(
-          gameOverTransitionTeam &&
-          scoreWinnerLabel &&
-          scoreWinnerNewGame &&
-          scoreWinnerTrophy
-        )) {
+        if (
+          !(
+            gameOverTransitionTeam &&
+            scoreWinnerLabel &&
+            scoreWinnerNewGame &&
+            scoreWinnerTrophy
+          )
+        ) {
           finishScoringGameOverReveal()
           return
         }
@@ -683,12 +710,14 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOver') {
-        if (!(
-          gameOverTransitionTeam &&
-          scoreWinnerLabel &&
-          scoreWinnerNewGame &&
-          scoreWinnerTrophy
-        )) {
+        if (
+          !(
+            gameOverTransitionTeam &&
+            scoreWinnerLabel &&
+            scoreWinnerNewGame &&
+            scoreWinnerTrophy
+          )
+        ) {
           return
         }
 
@@ -757,12 +786,14 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverReset') {
-        if (!(
-          gameOverTransitionTeam &&
-          scoreWinnerLabel &&
-          scoreWinnerNewGame &&
-          scoreWinnerTrophy
-        )) {
+        if (
+          !(
+            gameOverTransitionTeam &&
+            scoreWinnerLabel &&
+            scoreWinnerNewGame &&
+            scoreWinnerTrophy
+          )
+        ) {
           finishScoringGameOverReset()
           return
         }
@@ -874,14 +905,14 @@ export function useScoringRoundTransition({
         })
         gsap.set(scoreStart, { autoAlpha: 1, ...scoreExitTransforms.start })
         gsap.set(scoreHeartsA, {
-          autoAlpha: 1,
+          autoAlpha: 0,
           ...scoreExitTransforms.heartsA,
         })
         gsap.set(scoreHeartsB, {
-          autoAlpha: 1,
+          autoAlpha: 0,
           ...scoreExitTransforms.heartsB,
         })
-        gsap.set(scoreBack, { autoAlpha: 1, ...scoreExitTransforms.back })
+        gsap.set(scoreBack, { autoAlpha: 0, ...scoreExitTransforms.back })
         gsap.set([...enteringElements, winningTeamElement], {
           willChange: 'transform, opacity',
         })
@@ -908,11 +939,20 @@ export function useScoringRoundTransition({
 
         gameOverResetTimelineRef.current = gameOverResetTimeline
 
-        gameOverResetTimeline.to(enteringElements, {
-          autoAlpha: 1,
-          x: 0,
-          y: 0,
-        })
+        gameOverResetTimeline
+          .to(enteringElements, {
+            x: 0,
+            y: 0,
+          })
+          .to(
+            scoreHudElements,
+            {
+              autoAlpha: 1,
+              duration: SCORE_HUD_REVEAL_DURATION,
+              ease: 'none',
+            },
+            SCORE_HUD_REVEAL_DELAY,
+          )
         return
       }
 

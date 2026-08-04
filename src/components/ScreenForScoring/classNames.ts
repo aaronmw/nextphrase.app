@@ -37,10 +37,6 @@ export const classNames = {
     twMerge(
       `
         js-start-button
-        col-start-1
-        col-end-3
-        row-start-2
-        row-end-4
         rounded-b-xl
         text-4xl
         transition-all

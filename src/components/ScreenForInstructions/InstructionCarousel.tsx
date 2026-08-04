@@ -18,6 +18,7 @@ import {
 } from '@/components/heartLossAnimation'
 import { Icon } from '@/components/Icon'
 import type { RegularIconName } from '@/components/Icon/types'
+import { PreventOrphans } from '@/components/PreventOrphans'
 import {
   addPlayerHopToTimeline,
   PLAYER_HOP_DURATION,
@@ -180,8 +181,8 @@ const instructionSlides: InstructionSlide[] = [
         Get your team to say the{' '}
         <u className="underline-offset-2">exact phrase</u> shown (swipe the
         phrase to get a new one) and then{' '}
-        <strong className="font-bold">pass the phone left</strong>&nbsp;to the
-        opposing&nbsp;team.
+        <strong className="font-bold">pass the phone left</strong> to the
+        opposing team.
       </>
     ),
   },
@@ -193,8 +194,7 @@ const instructionSlides: InstructionSlide[] = [
     caption: (
       <>
         When <u className="underline-offset-2">time runs out</u>, the team
-        holding the phone{' '}
-        <strong className="font-bold">loses a&nbsp;heart.</strong>
+        holding the phone <strong className="font-bold">loses a heart.</strong>
       </>
     ),
   },
@@ -2386,21 +2386,25 @@ export function InstructionCarousel() {
             >
               {index === instructionSlides.length - 1 ? (
                 <span>
-                  {slide.caption}{' '}
+                  <PreventOrphans>{slide.caption}</PreventOrphans>{' '}
                   <span
                     ref={finalRuleRef}
                     aria-hidden={!hasRevealedFinalRule}
                     className="opacity-0"
                   >
-                    The team to lose its{' '}
-                    <strong className="font-bold whitespace-nowrap">
-                      last heart
-                    </strong>{' '}
-                    loses the game.
+                    <PreventOrphans>
+                      The team to lose its{' '}
+                      <strong className="font-bold whitespace-nowrap">
+                        last heart
+                      </strong>{' '}
+                      loses the game.
+                    </PreventOrphans>
                   </span>
                 </span>
               ) : (
-                <span>{slide.caption}</span>
+                <PreventOrphans>
+                  <span>{slide.caption}</span>
+                </PreventOrphans>
               )}
             </p>
           ))}
@@ -2464,9 +2468,11 @@ export function InstructionCarousel() {
         aria-live="polite"
         className="sr-only"
       >
-        {activeSlide === instructionSlides.length - 1 && hasRevealedFinalRule
-          ? `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption} The team to lose its last heart loses the game.`
-          : `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption}`}
+        <PreventOrphans>
+          {activeSlide === instructionSlides.length - 1 && hasRevealedFinalRule
+            ? `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption} The team to lose its last heart loses the game.`
+            : `Instruction ${activeSlide + 1} of ${instructionSlides.length}. ${instructionSlides[activeSlide].accessibleCaption}`}
+        </PreventOrphans>
       </p>
 
       <Confetti

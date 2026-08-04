@@ -3,9 +3,13 @@
 import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { useRoundTransition } from '@/components/RoundTransitionContext'
+import {
+  isAppRunningStandalone,
+  subscribeToAppDisplayMode,
+} from '@/lib/appDisplayMode'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { ComponentProps, ReactNode, useRef } from 'react'
+import { ComponentProps, ReactNode, useEffect, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useIsClient } from 'usehooks-ts'
 
@@ -40,6 +44,7 @@ const guessingVisiblePhases = [
   'phraseEnter',
   'guessingExit',
 ]
+const MAX_IOS_FULLSCREEN_CHROME_GAP_PX = 200
 
 function getScopedAnimationElements(outerElement: HTMLDivElement) {
   const innerContainer = outerElement.querySelector('.js-inner-container')
@@ -58,6 +63,40 @@ function getScopedAnimationElements(outerElement: HTMLDivElement) {
   return { allElements, headerElements, innerContainer }
 }
 
+function getVisibleViewportHeight() {
+  return window.visualViewport?.height ?? window.innerHeight
+}
+
+function isLikelyIOS() {
+  return (
+    /iP(hone|ad|od)/.test(window.navigator.platform) ||
+    (window.navigator.platform === 'MacIntel' &&
+      window.navigator.maxTouchPoints > 1)
+  )
+}
+
+function getStandaloneScreenHeight() {
+  const fallbackHeight = getVisibleViewportHeight()
+  const screenHeight = window.screen.height
+
+  if (
+    isLikelyIOS() &&
+    Number.isFinite(screenHeight) &&
+    screenHeight >= fallbackHeight &&
+    screenHeight - fallbackHeight <= MAX_IOS_FULLSCREEN_CHROME_GAP_PX
+  ) {
+    return screenHeight
+  }
+
+  return fallbackHeight
+}
+
+function getScreenFrameHeight() {
+  return isAppRunningStandalone()
+    ? getStandaloneScreenHeight()
+    : getVisibleViewportHeight()
+}
+
 export function ScreenContainer({
   className,
   extendIntoBottomSafeArea = false,
@@ -65,6 +104,7 @@ export function ScreenContainer({
   slotForBackground,
   slotForHeader,
   slotForMain,
+  style,
   ...otherProps
 }: ScreenContainerProps) {
   const isClient = useIsClient()
@@ -79,6 +119,16 @@ export function ScreenContainer({
   const isRoundTransitionActive = roundTransitionPhase !== 'idle'
   const isRoundTransitionControlled =
     isRoundTransitionScreen && isRoundTransitionActive
+  const innerGridRows = slotForHeader
+    ? 'grid-rows-[2rem_auto]'
+    : 'grid-rows-[0_auto]'
+  const screenStyle = extendIntoBottomSafeArea
+    ? {
+        ...style,
+        height:
+          'calc(var(--app-screen-frame-height, 100dvh) - env(safe-area-inset-top))',
+      }
+    : style
 
   useGSAP(
     () => {
@@ -235,7 +285,7 @@ export function ScreenContainer({
 
       const upperMargin = 'env(safe-area-inset-top)'
       const lowerMargin = extendIntoBottomSafeArea
-        ? 0
+        ? 'auto'
         : 'env(safe-area-inset-bottom)'
       const nextRotation = rotateScreen ? 180 : 0
 
@@ -272,13 +322,49 @@ export function ScreenContainer({
     },
   )
 
+  useEffect(() => {
+    const outerElement = outerElementRef.current
+
+    if (!(outerElement && isClient)) return
+
+    const screenElement = outerElement
+
+    function updateScreenFrameHeight() {
+      const height = getScreenFrameHeight()
+
+      screenElement.style.setProperty(
+        '--app-screen-frame-height',
+        `${height}px`,
+      )
+    }
+
+    updateScreenFrameHeight()
+
+    const unsubscribeFromAppDisplayMode = subscribeToAppDisplayMode(
+      updateScreenFrameHeight,
+    )
+
+    window.addEventListener('resize', updateScreenFrameHeight)
+    window.visualViewport?.addEventListener('resize', updateScreenFrameHeight)
+
+    return () => {
+      unsubscribeFromAppDisplayMode()
+      window.removeEventListener('resize', updateScreenFrameHeight)
+      window.visualViewport?.removeEventListener(
+        'resize',
+        updateScreenFrameHeight,
+      )
+      screenElement.style.removeProperty('--app-screen-frame-height')
+    }
+  }, [isClient])
+
   return (
     <section
       ref={outerElementRef}
       className={twMerge(
         `
           invisible
-          fixed
+          absolute
           top-0
           right-0
           bottom-0
@@ -290,6 +376,7 @@ export function ScreenContainer({
         `,
         className,
       )}
+      style={screenStyle}
       {...otherProps}
     >
       <div
@@ -301,7 +388,7 @@ export function ScreenContainer({
             grid
             grid-cols-1
           `,
-          slotForHeader ? 'grid-rows-[2rem_auto]' : 'grid-rows-[0_auto]',
+          innerGridRows,
         )}
       >
         {slotForBackground && (
@@ -314,7 +401,7 @@ export function ScreenContainer({
               col-start-1
               col-end-2
               row-start-1
-              row-end-2
+              row-end-3
               overflow-visible
             "
           >
@@ -323,27 +410,27 @@ export function ScreenContainer({
         )}
         <div
           className="
-            js-header-container
-            relative
-            z-10
-            col-start-1
-            col-end-2
-            row-start-1
-            row-end-2
-          "
+              js-header-container
+              relative
+              z-10
+              col-start-1
+              col-end-2
+              row-start-1
+              row-end-2
+            "
         >
           {slotForHeader}
         </div>
         <div
           className="
-            js-content-container
-            relative
-            z-20
-            col-start-1
-            col-end-2
-            row-start-2
-            row-end-3
-          "
+              js-content-container
+              relative
+              z-20
+              col-start-1
+              col-end-2
+              row-start-2
+              row-end-3
+            "
         >
           {slotForMain}
         </div>

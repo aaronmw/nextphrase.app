@@ -36,8 +36,6 @@ const classNames = {
     size-[240vmax]
     -translate-x-1/2
     -translate-y-1/2
-    rounded-full
-    overflow-hidden
   `,
   rotatingLight: `
     absolute
@@ -172,16 +170,18 @@ export const SpinningAlertLight = forwardRef<
       const flashingLight = flashingLightRef.current
       const spinningIcon = spinningIconRef.current
 
-      if (!(
-        lightsContainer &&
-        lightsWash &&
-        rotatingLight &&
-        flashingLight &&
-        spinningIcon &&
-        currentRoundAccelerationStartTime &&
-        currentRoundEndTime &&
-        currentRoundStartTime
-      )) {
+      if (
+        !(
+          lightsContainer &&
+          lightsWash &&
+          rotatingLight &&
+          flashingLight &&
+          spinningIcon &&
+          currentRoundAccelerationStartTime &&
+          currentRoundEndTime &&
+          currentRoundStartTime
+        )
+      ) {
         if (lightsWash) {
           gsap.killTweensOf(lightsWash)
           gsap.set(lightsWash, { autoAlpha: 0 })

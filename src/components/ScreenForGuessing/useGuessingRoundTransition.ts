@@ -12,6 +12,13 @@ const COUNTDOWN_LABEL_NEXT_GAP = 0.08
 const COUNTDOWN_LABEL_OUT_DURATION = 0.18
 const COUNTDOWN_LABEL_STEP_DURATION = 0.8
 
+function getScreenRect(element: HTMLElement) {
+  return (
+    element.closest('section')?.getBoundingClientRect() ??
+    new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+  )
+}
+
 interface UseGuessingRoundTransitionProps {
   activeScreen: AppScreen
   alertElementRef: RefObject<HTMLDivElement | null>
@@ -99,19 +106,22 @@ export function useGuessingRoundTransition({
       const phraseElement = phraseElementRef.current
       const selectorElement = selectorElementRef.current
 
-      if (!(
-        alertElement &&
-        alertLightAnchorElement &&
-        countdownElement &&
-        handoffTrackElement &&
-        phraseElement &&
-        selectorElement
-      )) {
+      if (
+        !(
+          alertElement &&
+          alertLightAnchorElement &&
+          countdownElement &&
+          handoffTrackElement &&
+          phraseElement &&
+          selectorElement
+        )
+      ) {
         return
       }
 
-      const viewportHeight = window.innerHeight
-      const viewportWidth = window.innerWidth
+      const screenRect = getScreenRect(handoffTrackElement)
+      const viewportHeight = screenRect.height
+      const viewportWidth = screenRect.width
       const alertElements = [alertElement, alertLightAnchorElement]
       const animatedElements = [
         ...alertElements,

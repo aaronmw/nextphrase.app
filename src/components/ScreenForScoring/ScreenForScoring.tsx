@@ -234,43 +234,45 @@ export function ScreenForScoring() {
 
             <div
               ref={scoreStartRef}
-              className="js-score-start relative col-start-1 col-end-3 row-start-2 row-end-4 grid min-h-0 overflow-hidden rounded-b-xl [grid-template:1fr/1fr]"
+              className="js-score-start relative col-start-1 col-end-3 row-start-2 row-end-4 grid min-h-0 rounded-b-xl [grid-template:1fr/1fr]"
             >
-              <StyledText
-                as="button"
-                className={twMerge(
-                  'h-full w-full [grid-area:1/1]',
-                  classNames.startButton({ activeTeam: displayedActiveTeam }),
-                )}
-                variant="button.primary"
-                disabled={roundTransitionPhase !== 'idle' || isGameOver}
-                onClick={startRoundTransition}
-              >
-                Start
-              </StyledText>
-              <div className="pointer-events-none relative z-10 min-h-0 [grid-area:1/1]">
-                {(['A', 'B'] as const).map(team => {
-                  const heartsLeft =
-                    team === 'A'
-                      ? heartsRemainingForTeamA
-                      : heartsRemainingForTeamB
-                  const isActive = displayedActiveTeam === team
-                  return (
-                    <div
-                      key={team}
-                      className="absolute inset-0"
-                      style={{
-                        opacity: isActive ? 1 : 0,
-                        transition: 'opacity 500ms',
-                      }}
-                    >
-                      <DistressMarks
-                        heartsLeft={heartsLeft}
-                        instant={shouldApplyDamageInstantly}
-                      />
-                    </div>
-                  )
-                })}
+              <div className="relative grid min-h-0 overflow-hidden rounded-b-xl [grid-area:1/1] [grid-template:1fr/1fr]">
+                <StyledText
+                  as="button"
+                  className={twMerge(
+                    'h-full w-full [grid-area:1/1]',
+                    classNames.startButton({ activeTeam: displayedActiveTeam }),
+                  )}
+                  variant="button.primary"
+                  disabled={roundTransitionPhase !== 'idle' || isGameOver}
+                  onClick={startRoundTransition}
+                >
+                  Start
+                </StyledText>
+                <div className="pointer-events-none relative z-10 min-h-0 [grid-area:1/1]">
+                  {(['A', 'B'] as const).map(team => {
+                    const heartsLeft =
+                      team === 'A'
+                        ? heartsRemainingForTeamA
+                        : heartsRemainingForTeamB
+                    const isActive = displayedActiveTeam === team
+                    return (
+                      <div
+                        key={team}
+                        className="absolute inset-0"
+                        style={{
+                          opacity: isActive ? 1 : 0,
+                          transition: 'opacity 500ms',
+                        }}
+                      >
+                        <DistressMarks
+                          heartsLeft={heartsLeft}
+                          instant={shouldApplyDamageInstantly}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </main>

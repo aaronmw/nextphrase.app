@@ -144,15 +144,18 @@ export function ScreenForGuessing() {
           className="
             absolute
             inset-0
-            flex
-            items-center
-            justify-center
             overflow-visible
           "
         >
           <div
             ref={setAlertLightAnchorElement}
-            className="relative size-0 overflow-visible"
+            className="
+              absolute
+              top-4
+              left-1/2
+              size-0
+              overflow-visible
+            "
           />
         </div>
       }

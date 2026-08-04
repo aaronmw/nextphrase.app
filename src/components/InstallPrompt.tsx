@@ -1,26 +1,15 @@
 'use client'
 
 import { Icon } from '@/components/Icon'
+import { PreventOrphans } from '@/components/PreventOrphans'
 import { StyledText } from '@/components/StyledText'
+import {
+  getAppDisplayModeServerSnapshot,
+  isAppRunningStandalone,
+  subscribeToAppDisplayMode,
+} from '@/lib/appDisplayMode'
 import { useSyncExternalStore } from 'react'
 import { useIsClient, useSessionStorage } from 'usehooks-ts'
-
-const standaloneMediaQuery = '(display-mode: standalone)'
-
-function subscribeToStandaloneMode(onChange: () => void) {
-  const mediaQuery = window.matchMedia(standaloneMediaQuery)
-  mediaQuery.addEventListener('change', onChange)
-
-  return () => mediaQuery.removeEventListener('change', onChange)
-}
-
-function getStandaloneModeSnapshot() {
-  return window.matchMedia(standaloneMediaQuery).matches
-}
-
-function getStandaloneModeServerSnapshot() {
-  return false
-}
 
 export function InstallPrompt() {
   const isClient = useIsClient()
@@ -29,9 +18,9 @@ export function InstallPrompt() {
     'false',
   )
   const isStandalone = useSyncExternalStore(
-    subscribeToStandaloneMode,
-    getStandaloneModeSnapshot,
-    getStandaloneModeServerSnapshot,
+    subscribeToAppDisplayMode,
+    isAppRunningStandalone,
+    getAppDisplayModeServerSnapshot,
   )
 
   const handleClickDismiss = () => {
@@ -74,16 +63,22 @@ export function InstallPrompt() {
         "
       >
         <div className="text-center leading-relaxed">
-          <p>For the best time:</p>
+          <p>
+            <PreventOrphans>For the best time:</PreventOrphans>
+          </p>
           <p className="whitespace-nowrap">
-            Tap{' '}
-            <span className="text-primaryColor-400">
-              <Icon name="regular:arrow-up-from-square" /> Share
-            </span>{' '}
-            then
+            <PreventOrphans>
+              Tap{' '}
+              <span className="text-primaryColor-400">
+                <Icon name="regular:arrow-up-from-square" /> Share
+              </span>{' '}
+              then
+            </PreventOrphans>
           </p>
           <p className="text-primaryColor-400 whitespace-nowrap">
-            <Icon name="regular:square-plus" /> Add to Home Screen
+            <PreventOrphans>
+              <Icon name="regular:square-plus" /> Add to Home Screen
+            </PreventOrphans>
           </p>
         </div>
 
