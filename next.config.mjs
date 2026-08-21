@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ['nextphrase-dot-app.localhost'],
   devIndicators: {
     position: 'bottom-left',
   },

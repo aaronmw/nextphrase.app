@@ -2,17 +2,18 @@
   "name": "nextphrase-dot-app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.22.0",
   "scripts": {
-    "dev": "next dev",
+    "dev": "sh -c 'exec next dev \"$@\" --hostname 127.0.0.1 --port 3034' --",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write .",
-    "generate": "COMPONENTS_DIR=src/components npm explore handy-node-scripts -- npm run generate",
-    "generate-supabase-types": "npx supabase gen types --lang=typescript --project-id enljtnmwgsfhpsekdulz --schema public > src/app/database.types.ts",
-    "rebuild-component-index": "COMPONENTS_DIR=src/components npm explore handy-node-scripts -- npm run rebuild-component-index",
-    "upgrade-react-19": "npm install --save-exact react@rc react-dom@rc babel-plugin-react-compiler@latest --force"
+    "generate": "COMPONENTS_DIR=src/components pnpm --dir node_modules/handy-node-scripts run generate",
+    "generate-supabase-types": "pnpm exec supabase gen types --lang=typescript --project-id enljtnmwgsfhpsekdulz --schema public > src/app/database.types.ts",
+    "rebuild-component-index": "COMPONENTS_DIR=src/components pnpm --dir node_modules/handy-node-scripts run rebuild-component-index",
+    "upgrade-react-19": "pnpm add --save-exact react@rc react-dom@rc babel-plugin-react-compiler@latest --force"
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",
