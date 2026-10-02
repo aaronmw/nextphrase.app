@@ -5,6 +5,7 @@
   "packageManager": "pnpm@11.22.0",
   "scripts": {
     "dev": "sh -c 'exec next dev \"$@\" --hostname 127.0.0.1 --port 3034' --",
+    "dev:lan": "node scripts/dev-lan.mjs --port 3034 --local-url https://nextphrase-dot-app.localhost -- pnpm dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
