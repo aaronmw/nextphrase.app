@@ -207,17 +207,15 @@ export function useScoringRoundTransition({
       const scoreWinnerNewGame = scoreWinnerNewGameRef.current
       const scoreWinnerTrophy = scoreWinnerTrophyRef.current
 
-      if (
-        !(
-          scoreBack &&
-          scoreFlash &&
-          scoreHeartsA &&
-          scoreHeartsB &&
-          scoreStart &&
-          scoreTeamA &&
-          scoreTeamB
-        )
-      ) {
+      if (!(
+        scoreBack &&
+        scoreFlash &&
+        scoreHeartsA &&
+        scoreHeartsB &&
+        scoreStart &&
+        scoreTeamA &&
+        scoreTeamB
+      )) {
         return
       }
 
@@ -236,6 +234,13 @@ export function useScoringRoundTransition({
         scoreWinnerNewGame,
         scoreWinnerTrophy,
       ].filter(Boolean) as HTMLDivElement[]
+
+      function setWinnerCopyStyles(vars: gsap.TweenVars) {
+        if (winnerCopyElements.length) {
+          gsap.set(winnerCopyElements, vars)
+        }
+      }
+
       const animatedElements = [
         ...scoreElements,
         scoreFlash,
@@ -342,7 +347,7 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringEnter') {
-        gsap.set(winnerCopyElements, { autoAlpha: 0 })
+        setWinnerCopyStyles({ autoAlpha: 0 })
         gsap.set(scoreElements, {
           pointerEvents: 'auto',
           scale: 1,
@@ -373,7 +378,7 @@ export function useScoringRoundTransition({
                 clearProps:
                   'transform,opacity,visibility,willChange,animation,zIndex,pointerEvents',
               })
-              gsap.set(winnerCopyElements, {
+              setWinnerCopyStyles({
                 clearProps:
                   'left,top,transform,transformOrigin,transformPerspective,opacity,visibility,willChange,pointerEvents',
               })
@@ -538,14 +543,12 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverExit') {
-        if (
-          !(
-            gameOverTransitionTeam &&
-            scoreWinnerLabel &&
-            scoreWinnerNewGame &&
-            scoreWinnerTrophy
-          )
-        ) {
+        if (!(
+          gameOverTransitionTeam &&
+          scoreWinnerLabel &&
+          scoreWinnerNewGame &&
+          scoreWinnerTrophy
+        )) {
           finishScoringGameOverExit()
           return
         }
@@ -574,7 +577,7 @@ export function useScoringRoundTransition({
           y: 0,
           willChange: 'transform, opacity',
         })
-        gsap.set(winnerCopyElements, {
+        setWinnerCopyStyles({
           autoAlpha: 0,
           pointerEvents: 'none',
         })
@@ -602,14 +605,12 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverReveal') {
-        if (
-          !(
-            gameOverTransitionTeam &&
-            scoreWinnerLabel &&
-            scoreWinnerNewGame &&
-            scoreWinnerTrophy
-          )
-        ) {
+        if (!(
+          gameOverTransitionTeam &&
+          scoreWinnerLabel &&
+          scoreWinnerNewGame &&
+          scoreWinnerTrophy
+        )) {
           finishScoringGameOverReveal()
           return
         }
@@ -710,14 +711,12 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOver') {
-        if (
-          !(
-            gameOverTransitionTeam &&
-            scoreWinnerLabel &&
-            scoreWinnerNewGame &&
-            scoreWinnerTrophy
-          )
-        ) {
+        if (!(
+          gameOverTransitionTeam &&
+          scoreWinnerLabel &&
+          scoreWinnerNewGame &&
+          scoreWinnerTrophy
+        )) {
           return
         }
 
@@ -786,14 +785,12 @@ export function useScoringRoundTransition({
       }
 
       if (roundTransitionPhase === 'scoringGameOverReset') {
-        if (
-          !(
-            gameOverTransitionTeam &&
-            scoreWinnerLabel &&
-            scoreWinnerNewGame &&
-            scoreWinnerTrophy
-          )
-        ) {
+        if (!(
+          gameOverTransitionTeam &&
+          scoreWinnerLabel &&
+          scoreWinnerNewGame &&
+          scoreWinnerTrophy
+        )) {
           finishScoringGameOverReset()
           return
         }
@@ -887,7 +884,7 @@ export function useScoringRoundTransition({
           losingTeamElement,
         ]
 
-        gsap.set(winnerCopyElements, {
+        setWinnerCopyStyles({
           autoAlpha: 0,
           pointerEvents: 'none',
         })
@@ -929,7 +926,7 @@ export function useScoringRoundTransition({
               clearProps:
                 'transform,opacity,visibility,willChange,animation,zIndex,pointerEvents',
             })
-            gsap.set(winnerCopyElements, {
+            setWinnerCopyStyles({
               clearProps:
                 'left,top,transform,transformOrigin,transformPerspective,opacity,visibility,willChange,pointerEvents',
             })
@@ -961,7 +958,7 @@ export function useScoringRoundTransition({
           clearProps:
             'transform,opacity,visibility,willChange,animation,zIndex,pointerEvents',
         })
-        gsap.set(winnerCopyElements, {
+        setWinnerCopyStyles({
           clearProps:
             'left,top,transform,transformOrigin,transformPerspective,opacity,visibility,willChange,pointerEvents',
         })

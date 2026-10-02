@@ -30,7 +30,7 @@ export function StyledText<T extends ElementType = 'span'>({
 }: StyledTextProps<T>) {
   const { sounds } = useAppContext()
   const Component = as || 'span'
-  const releaseSoundCleanupRef = useRef<(() => void) | null>(null)
+  const pressCleanupRef = useRef<(() => void) | null>(null)
 
   const classNamesForVariant = Array.isArray(variant)
     ? variant.map(v => classNames[v])
@@ -41,10 +41,13 @@ export function StyledText<T extends ElementType = 'span'>({
   const isButton = Array.isArray(variant)
     ? variant.some(v => v.startsWith('button'))
     : variant?.startsWith('button')
+  const hasPressFeedback =
+    isButton ||
+    (Array.isArray(variant) ? variant.includes('link') : variant === 'link')
 
   useEffect(
     () => () => {
-      releaseSoundCleanupRef.current?.()
+      pressCleanupRef.current?.()
     },
     [],
   )
@@ -53,27 +56,33 @@ export function StyledText<T extends ElementType = 'span'>({
     const isPrimaryPress =
       event.isPrimary && (event.pointerType !== 'mouse' || event.button === 0)
 
-    if (isPrimaryPress && !releaseSoundCleanupRef.current) {
+    if (isPrimaryPress && !pressCleanupRef.current) {
       const { pointerId } = event
+      const pressedElement = event.currentTarget
 
-      sounds.playSound('spacebar-down')
+      // Chrome delays touch :active, so the pointer event owns press feedback.
+      pressedElement.setAttribute('data-pressed', '')
+      if (isButton) sounds.playSound('spacebar-down')
 
       const finishPress = (releaseEvent: globalThis.PointerEvent) => {
         if (releaseEvent.pointerId !== pointerId) return
 
-        releaseSoundCleanupRef.current?.()
-        sounds.playSound('spacebar-up')
+        pressCleanupRef.current?.()
+        if (isButton) sounds.playSound('spacebar-up')
       }
 
       const cleanup = () => {
         window.removeEventListener('pointerup', finishPress, true)
         window.removeEventListener('pointercancel', finishPress, true)
-        releaseSoundCleanupRef.current = null
+        window.removeEventListener('blur', cleanup)
+        pressedElement.removeAttribute('data-pressed')
+        pressCleanupRef.current = null
       }
 
-      releaseSoundCleanupRef.current = cleanup
+      pressCleanupRef.current = cleanup
       window.addEventListener('pointerup', finishPress, true)
       window.addEventListener('pointercancel', finishPress, true)
+      window.addEventListener('blur', cleanup)
     }
 
     onPointerDown?.(event)
@@ -82,7 +91,7 @@ export function StyledText<T extends ElementType = 'span'>({
   return (
     <Component
       className={twMerge(classNamesForVariant, className)}
-      onPointerDown={isButton ? handlePointerDown : onPointerDown}
+      onPointerDown={hasPressFeedback ? handlePointerDown : onPointerDown}
       {...otherProps}
     />
   )

@@ -187,6 +187,8 @@ export function ScreenContainer({
           ease: 'power1.inOut',
         },
       })
+      const { headerElements, innerContainer } =
+        getScopedAnimationElements(outerElement)
 
       timeline
         .to(outerElement, {
@@ -194,7 +196,7 @@ export function ScreenContainer({
           pointerEvents: isActiveScreen ? 'auto' : 'none',
         })
         .fromTo(
-          '.js-inner-container',
+          innerContainer,
           {
             transformOrigin: '50% -200%',
             rotation: isActiveScreen ? -90 : 0,
@@ -206,17 +208,14 @@ export function ScreenContainer({
           },
           '<',
         )
-        .fromTo(
-          '.js-header-container',
+
+      if (headerElements.length) {
+        timeline.fromTo(
+          headerElements,
           { yPercent: isActiveScreen ? -100 : 0 },
           { yPercent: isActiveScreen ? 0 : -100 },
         )
-        .fromTo(
-          '.js-header-title',
-          { yPercent: isActiveScreen ? -100 : 0 },
-          { yPercent: isActiveScreen ? 0 : -100 },
-          '<',
-        )
+      }
     },
     {
       dependencies: [

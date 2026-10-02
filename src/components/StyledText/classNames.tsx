@@ -20,10 +20,12 @@ const buttonClassNames = tw`
   before:to-transparent
   before:opacity-0
   before:transition-opacity
-  active:scale-95
-  active:before:opacity-100
   disabled:pointer-events-none
   disabled:opacity-40
+  [&:is(:active,[data-pressed])]:scale-95
+  [&:is(:active,[data-pressed])]:duration-0
+  [&:is(:active,[data-pressed])]:before:opacity-100
+  [&:is(:active,[data-pressed])]:before:duration-0
 `
 
 export const classNames = {
