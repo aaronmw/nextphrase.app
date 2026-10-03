@@ -8,6 +8,11 @@ import {
   teamBFillColor,
 } from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
+import {
+  createFlipAndChangeTimeline,
+  FLIP_AND_CHANGE_CHANGE_AT,
+} from '@/components/flipAndChangeAnimation'
+import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import {
   ComponentProps,
@@ -18,8 +23,90 @@ import {
   useState,
 } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { useMediaQuery } from 'usehooks-ts'
 
 const SNAP_BACK_DEAD_ZONE_PX = 8
+
+function PassToLetter({ letter }: { letter: 'A' | 'B' }) {
+  const letterRef = useRef<HTMLSpanElement>(null)
+  const letterARef = useRef<HTMLSpanElement>(null)
+  const letterBRef = useRef<HTMLSpanElement>(null)
+  const displayedLetterRef = useRef(letter)
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+
+  useGSAP(
+    () => {
+      const element = letterRef.current
+      const letterA = letterARef.current
+      const letterB = letterBRef.current
+      if (!(element && letterA && letterB)) return
+
+      if (prefersReducedMotion) {
+        displayedLetterRef.current = letter
+      }
+
+      const outgoingLetter =
+        displayedLetterRef.current === 'A' ? letterA : letterB
+      const incomingLetter = letter === 'A' ? letterA : letterB
+      // Hold the outgoing face until the flip reaches its edge-on frame.
+      gsap.set([letterA, letterB], { visibility: 'hidden' })
+      gsap.set(outgoingLetter, { visibility: 'visible' })
+      if (displayedLetterRef.current === letter) return
+
+      createFlipAndChangeTimeline(element)
+        .set(
+          outgoingLetter,
+          { visibility: 'hidden' },
+          FLIP_AND_CHANGE_CHANGE_AT,
+        )
+        .set(
+          incomingLetter,
+          { visibility: 'visible' },
+          FLIP_AND_CHANGE_CHANGE_AT,
+        )
+        .call(
+          () => {
+            displayedLetterRef.current = letter
+          },
+          undefined,
+          FLIP_AND_CHANGE_CHANGE_AT,
+        )
+        .set(element, { clearProps: 'willChange' })
+    },
+    {
+      dependencies: [letter, prefersReducedMotion],
+      revertOnUpdate: true,
+      scope: letterRef,
+    },
+  )
+
+  return (
+    <span
+      aria-hidden="true"
+      className="ml-1 inline-flex w-[0.7em] shrink-0 items-center justify-center text-xl font-bold perspective-[8em]"
+    >
+      <span
+        className="inline-grid"
+        ref={letterRef}
+      >
+        <span
+          className="col-start-1 row-start-1"
+          ref={letterARef}
+          style={{ visibility: letter === 'A' ? 'visible' : 'hidden' }}
+        >
+          A
+        </span>
+        <span
+          className="col-start-1 row-start-1"
+          ref={letterBRef}
+          style={{ visibility: letter === 'B' ? 'visible' : 'hidden' }}
+        >
+          B
+        </span>
+      </span>
+    </span>
+  )
+}
 
 function colorWithAlpha(color: string, alpha: number): string {
   const percentage = Math.round(alpha * 10_000) / 100
@@ -312,9 +399,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 )}
               >
                 <span>PASS TO</span>
-                <span className="ml-1 inline-flex w-[0.7em] shrink-0 items-center justify-center text-xl font-bold">
-                  {passToLetter}
-                </span>
+                <PassToLetter letter={passToLetter} />
               </span>
             </div>
           </div>

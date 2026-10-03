@@ -54,6 +54,7 @@ export interface AppState {
   accelerationDurationMin: number
   accelerationDurationMax: number
   rotateScreen: boolean
+  swipeDelayEnabled: boolean
   viewedPhraseIds: Tables<'phrases'>['id'][]
 }
 
@@ -80,6 +81,7 @@ export const initialState: AppState = {
   accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
   accelerationDurationMax: process.env.NODE_ENV === 'development' ? 3 : 15,
   rotateScreen: false,
+  swipeDelayEnabled: true,
   viewedPhraseIds: [],
 }
 
@@ -99,6 +101,7 @@ export const persistedStateKeys: (keyof AppState)[] = [
   'roundDurationMultiplier',
   'roundDurationMin',
   'roundDurationMax',
+  'swipeDelayEnabled',
   'viewedPhraseIds',
 ] as (keyof AppState)[]
 
@@ -110,7 +113,7 @@ export type AppAction =
   | { type: 'SET_ACTIVE_SCREEN'; screen: AppState['activeScreen'] }
   | { type: 'NEW_GAME' }
   | { type: 'START_ROUND' }
-  | { type: 'NEXT_PHRASE' }
+  | { type: 'NEXT_PHRASE'; phraseId?: AppState['currentPhraseId'] }
   | { type: 'PREVIOUS_PHRASE' }
   | { type: 'ACCELERATE_ROUND' }
   | { type: 'END_ROUND' }
@@ -123,6 +126,7 @@ export type AppAction =
   | { type: 'ENABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'DISABLE_CATEGORY_ID'; categoryId: string }
   | { type: 'SET_COUNTDOWN_ENABLED'; countdownEnabled: boolean }
+  | { type: 'SET_SWIPE_DELAY_ENABLED'; swipeDelayEnabled: boolean }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
   | {
       type: 'SET_ROUND_DURATION_MULTIPLIER'
@@ -135,6 +139,34 @@ export type AppAction =
       roundDurationMax: number
     }
   | { type: 'FACTORY_RESET' }
+
+export function selectNextPhrase(
+  state: Pick<
+    AppState,
+    'categoriesById' | 'disabledCategoryIds' | 'viewedPhraseIds'
+  >,
+  phraseId?: AppState['currentPhraseId'],
+) {
+  const disabledCategoryIds = new Set(state.disabledCategoryIds)
+  const viewedPhraseIds = new Set(state.viewedPhraseIds)
+  const enabledPhrases = Object.values(state.categoriesById).flatMap(category =>
+    category.phrases.filter(
+      phrase => !disabledCategoryIds.has(phrase.category_id),
+    ),
+  )
+  const unviewedPhrases = enabledPhrases.filter(
+    phrase => !viewedPhraseIds.has(phrase.id),
+  )
+  const startsNewCycle = unviewedPhrases.length === 0
+  const eligiblePhrases = startsNewCycle ? enabledPhrases : unviewedPhrases
+
+  return {
+    phrase:
+      eligiblePhrases.find(phrase => phrase.id === phraseId) ??
+      sample(eligiblePhrases),
+    startsNewCycle,
+  }
+}
 
 export function appStateReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState
@@ -252,28 +284,19 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
 
     case 'NEXT_PHRASE': {
-      const allPhrases = Object.values(state.categoriesById).flatMap(
-        category => category.phrases,
+      const { phrase: currentPhrase, startsNewCycle } = selectNextPhrase(
+        state,
+        action.phraseId,
       )
-      const disabledCategoryIds = new Set(state.disabledCategoryIds)
-      const viewedPhraseIds = new Set(state.viewedPhraseIds)
-      const enabledPhrases = allPhrases.filter(
-        phrase => !disabledCategoryIds.has(phrase.category_id),
-      )
-      const unviewedPhrases = enabledPhrases.filter(
-        phrase => !viewedPhraseIds.has(phrase.id),
-      )
-      const eligiblePhrases =
-        unviewedPhrases.length > 0 ? unviewedPhrases : enabledPhrases
-      const currentPhrase = sample(eligiblePhrases)!
+
+      if (!currentPhrase) return state
 
       newState = {
         ...state,
         currentPhraseId: currentPhrase.id,
-        viewedPhraseIds:
-          unviewedPhrases.length > 0
-            ? [...state.viewedPhraseIds, currentPhrase.id]
-            : [currentPhrase.id],
+        viewedPhraseIds: startsNewCycle
+          ? [currentPhrase.id]
+          : [...state.viewedPhraseIds, currentPhrase.id],
       }
       break
     }
@@ -325,14 +348,18 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
         action.categoryId,
       )
 
-      // Check if we're trying to disable the last possible category
+      // Disabling the last enabled category enables every other category.
       const isLastCategory =
         !shouldEnable &&
+        !isAlreadyInList &&
         state.disabledCategoryIds.length ===
           Object.keys(state.categoriesById).length - 1
 
       if (isLastCategory) {
-        newState = state
+        newState = {
+          ...state,
+          disabledCategoryIds: [action.categoryId],
+        }
       } else {
         const updatedList = shouldEnable
           ? without(state.disabledCategoryIds, action.categoryId)
@@ -360,6 +387,14 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       newState = {
         ...state,
         countdownEnabled: action.countdownEnabled,
+      }
+      break
+    }
+
+    case 'SET_SWIPE_DELAY_ENABLED': {
+      newState = {
+        ...state,
+        swipeDelayEnabled: action.swipeDelayEnabled,
       }
       break
     }

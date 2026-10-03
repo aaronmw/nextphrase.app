@@ -18,6 +18,7 @@ interface ScreenContainerProps extends Omit<
   'children'
 > {
   extendIntoBottomSafeArea?: boolean
+  onExitComplete?: () => void
   screenName: string
   slotForBackground?: ReactNode
   slotForHeader?: ReactNode
@@ -100,6 +101,7 @@ function getScreenFrameHeight() {
 export function ScreenContainer({
   className,
   extendIntoBottomSafeArea = false,
+  onExitComplete,
   screenName,
   slotForBackground,
   slotForHeader,
@@ -112,6 +114,7 @@ export function ScreenContainer({
   const { phase: roundTransitionPhase } = useRoundTransition()
   const { activeScreen, rotateScreen } = state
   const outerElementRef = useRef<HTMLDivElement>(null)
+  const screenTransitionTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const didSetInitialRotationRef = useRef(false)
   const wasRoundTransitionControlledRef = useRef(false)
   const isActiveScreen = activeScreen === screenName
@@ -136,6 +139,9 @@ export function ScreenContainer({
 
       if (!(outerElement && isClient)) return
 
+      screenTransitionTimelineRef.current?.kill()
+      screenTransitionTimelineRef.current = null
+
       const wasRoundTransitionControlled =
         wasRoundTransitionControlledRef.current
       wasRoundTransitionControlledRef.current = isRoundTransitionControlled
@@ -156,6 +162,7 @@ export function ScreenContainer({
         gsap.set(headerElements, {
           yPercent: 0,
         })
+        if (!isActiveScreen) onExitComplete?.()
         return
       }
 
@@ -186,7 +193,9 @@ export function ScreenContainer({
           duration: 0.5,
           ease: 'power1.inOut',
         },
+        onComplete: isActiveScreen ? undefined : onExitComplete,
       })
+      screenTransitionTimelineRef.current = timeline
       const { headerElements, innerContainer } =
         getScopedAnimationElements(outerElement)
 
@@ -225,6 +234,7 @@ export function ScreenContainer({
         isRoundTransitionActive,
         isRoundTransitionControlled,
         isRoundTransitionScreen,
+        onExitComplete,
       ],
       scope: outerElementRef,
     },

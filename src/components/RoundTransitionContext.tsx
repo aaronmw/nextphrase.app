@@ -1,6 +1,7 @@
 'use client'
 
 import { AppAction, AppScreen, AppState } from '@/app/reducer'
+import { soundFiles } from '@/app/sounds'
 import { useAppContext } from '@/components/AppContext'
 import {
   createContext,
@@ -148,6 +149,9 @@ function useRoundCountdown({
   phase: RoundTransitionPhase
   setPhase: (nextPhase: RoundTransitionPhase) => void
 }) {
+  const {
+    sounds: { playSound },
+  } = useAppContext()
   const [countdownLabel, setCountdownLabel] = useState<CountdownLabel | null>(
     null,
   )
@@ -156,23 +160,36 @@ function useRoundCountdown({
     if (phase !== 'countdown') return
 
     let labelIndex = 0
-    setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
+    let countdownTimeout: ReturnType<typeof setTimeout>
 
-    const countdownInterval = setInterval(() => {
-      labelIndex += 1
+    function showCountdownStep() {
+      const label = COUNTDOWN_LABELS[labelIndex]
+      setCountdownLabel(label)
+      playSound(label === 'GO!' ? 'countdown-go' : 'countdown-beep')
 
-      if (labelIndex < COUNTDOWN_LABELS.length) {
-        setCountdownLabel(COUNTDOWN_LABELS[labelIndex])
-        return
-      }
+      // Finish the GO beep before starting the round's repeating tick.
+      const stepDuration =
+        label === 'GO!'
+          ? soundFiles['countdown-go'].trimEnd * 1000
+          : COUNTDOWN_STEP_MS
 
-      clearInterval(countdownInterval)
-      dispatch({ type: 'START_ROUND' })
-      setPhase('phraseEnter')
-    }, COUNTDOWN_STEP_MS)
+      countdownTimeout = setTimeout(() => {
+        labelIndex += 1
 
-    return () => clearInterval(countdownInterval)
-  }, [dispatch, phase, setPhase])
+        if (labelIndex < COUNTDOWN_LABELS.length) {
+          showCountdownStep()
+          return
+        }
+
+        dispatch({ type: 'START_ROUND' })
+        setPhase('phraseEnter')
+      }, stepDuration)
+    }
+
+    showCountdownStep()
+
+    return () => clearTimeout(countdownTimeout)
+  }, [dispatch, phase, playSound, setPhase])
 
   return { countdownLabel, setCountdownLabel }
 }

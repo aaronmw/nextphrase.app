@@ -1,5 +1,6 @@
 'use client'
 
+import { AppScreen } from '@/app/reducer'
 import {
   teamAColor,
   teamAFillColor,
@@ -99,7 +100,7 @@ export const SpinningAlertLight = forwardRef<
   > | null>(null)
   const baseTimeScaleRef = useRef(1)
   const isAcceleratedRef = useRef(false)
-  const { requestEndRound } = useRoundTransition()
+  const { phase: roundTransitionPhase, requestEndRound } = useRoundTransition()
   const { state, sounds } = useAppContext()
   const {
     currentRoundAccelerationStartTime,
@@ -108,6 +109,9 @@ export const SpinningAlertLight = forwardRef<
     tickRate,
     acceleratedTickRate,
   } = state
+  const isRoundRunning =
+    state.activeScreen === AppScreen.Guessing &&
+    (roundTransitionPhase === 'idle' || roundTransitionPhase === 'phraseEnter')
   const activeTeamColor = activeTeam === 'A' ? teamAColor[500] : teamBColor[500]
   const activeTeamSurfaceColor =
     activeTeam === 'A' ? teamAFillColor : teamBFillColor
@@ -170,18 +174,17 @@ export const SpinningAlertLight = forwardRef<
       const flashingLight = flashingLightRef.current
       const spinningIcon = spinningIconRef.current
 
-      if (
-        !(
-          lightsContainer &&
-          lightsWash &&
-          rotatingLight &&
-          flashingLight &&
-          spinningIcon &&
-          currentRoundAccelerationStartTime &&
-          currentRoundEndTime &&
-          currentRoundStartTime
-        )
-      ) {
+      if (!(
+        lightsContainer &&
+        lightsWash &&
+        rotatingLight &&
+        flashingLight &&
+        spinningIcon &&
+        isRoundRunning &&
+        currentRoundAccelerationStartTime &&
+        currentRoundEndTime &&
+        currentRoundStartTime
+      )) {
         if (lightsWash) {
           gsap.killTweensOf(lightsWash)
           gsap.set(lightsWash, { autoAlpha: 0 })
@@ -282,6 +285,11 @@ export const SpinningAlertLight = forwardRef<
         const t = quickSpinReturnTimeoutRef.current
         if (t !== null) clearTimeout(t)
         quickSpinReturnTimeoutRef.current = null
+        gsap.killTweensOf([
+          rotatingLightTimeline,
+          spinningIconTimeline,
+          flashingLightTimeline,
+        ])
         gsap.killTweensOf(lightsWash)
         sounds.stopSound('bonk')
         clearTimeout(accelerationTimeout)
@@ -290,10 +298,13 @@ export const SpinningAlertLight = forwardRef<
     },
     {
       scope: containerRef,
+      // Screens stay mounted between rounds, so cancel their timers on updates.
+      revertOnUpdate: true,
       dependencies: [
         currentRoundAccelerationStartTime,
         currentRoundEndTime,
         currentRoundStartTime,
+        isRoundRunning,
         lightLayerTarget,
         requestEndRound,
       ],

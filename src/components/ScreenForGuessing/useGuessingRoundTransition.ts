@@ -6,7 +6,7 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { RefObject } from 'react'
 
-const ALERT_REST_Y_PX = 24
+export const ALERT_REST_Y_PX = 24
 const COUNTDOWN_LABEL_IN_DURATION = 0.22
 const COUNTDOWN_LABEL_NEXT_GAP = 0.08
 const COUNTDOWN_LABEL_OUT_DURATION = 0.18
@@ -106,16 +106,14 @@ export function useGuessingRoundTransition({
       const phraseElement = phraseElementRef.current
       const selectorElement = selectorElementRef.current
 
-      if (
-        !(
-          alertElement &&
-          alertLightAnchorElement &&
-          countdownElement &&
-          handoffTrackElement &&
-          phraseElement &&
-          selectorElement
-        )
-      ) {
+      if (!(
+        alertElement &&
+        alertLightAnchorElement &&
+        countdownElement &&
+        handoffTrackElement &&
+        phraseElement &&
+        selectorElement
+      )) {
         return
       }
 

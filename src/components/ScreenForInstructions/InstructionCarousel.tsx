@@ -5,6 +5,11 @@ import { teamBColor } from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
 import { Confetti } from '@/components/Confetti'
 import {
+  createFlipAndChangeTimeline,
+  FLIP_AND_CHANGE_CHANGE_AT,
+  FLIP_AND_CHANGE_DURATION as PLAYER_ASSIGNMENT_DURATION,
+} from '@/components/flipAndChangeAnimation'
+import {
   HEART_LOSS_ANIMATION_COLOR,
   HEART_LOSS_ANIMATION_DURATION_SECONDS,
   HEART_LOSS_ANIMATION_ROTATION_DEGREES,
@@ -30,6 +35,7 @@ import {
   InstructionTeamSelector,
   type InstructionTeamSelectorHandle,
 } from '@/components/ScreenForInstructions/InstructionTeamSelector'
+import { InstructionTrophy } from '@/components/ScreenForInstructions/InstructionTrophy'
 import { createTrophyCelebrationTimeline } from '@/components/trophyCelebrationAnimation'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
@@ -93,22 +99,14 @@ const PHONE_SCREEN_EXIT_DURATION = 0.45
 const PHONE_SCREEN_BLANK_BEAT_DURATION = 0.08
 const PHONE_SCREEN_ENTER_DURATION = 0.3
 const TEAM_SELECTOR_ENTER_DURATION = 0.55
-const PHONE_REVEAL_SLIDE_DURATION = 0.28
-const PHONE_REVEAL_DEPTH_DURATION = 0.14
-const PHONE_REVEAL_SETTLE_DURATION = 0.35
+const PROP_REVEAL_SLIDE_DURATION = 0.28
+const PROP_REVEAL_DEPTH_DURATION = 0.14
+const PROP_REVEAL_SETTLE_DURATION = 0.35
+const VICTORY_PLAYER_GAP_MULTIPLIER = 0.6
+const VICTORY_PLAYER_CELEBRATION_EFFORT = 0.25
+const VICTORY_PLAYER_CELEBRATION_REST_DURATION = 0.5
 const PLAYER_ENTRANCE_STAGGER = 0.14
 const PLAYER_START_DISTANCE_MULTIPLIER = 1.25
-const PLAYER_ASSIGNMENT_PREP_DURATION = 0.05
-const PLAYER_ASSIGNMENT_RISE_DURATION = 0.16
-const PLAYER_ASSIGNMENT_FALL_DURATION = 0.14
-const PLAYER_ASSIGNMENT_IMPACT_DURATION = 0.03
-const PLAYER_ASSIGNMENT_RECOVERY_DURATION = 0.06
-const PLAYER_ASSIGNMENT_DURATION =
-  PLAYER_ASSIGNMENT_PREP_DURATION +
-  PLAYER_ASSIGNMENT_RISE_DURATION +
-  PLAYER_ASSIGNMENT_FALL_DURATION +
-  PLAYER_ASSIGNMENT_IMPACT_DURATION +
-  PLAYER_ASSIGNMENT_RECOVERY_DURATION
 const TEAM_ASSIGNMENT_SEQUENCE_DURATION = PLAYER_ASSIGNMENT_DURATION * 2
 const VICTORY_REVEAL_DELAY = 0.6
 const PHONE_REVEAL_DELAY_AFTER_ASSIGNMENTS = 0.5
@@ -290,6 +288,62 @@ function getLocalPlayerSlotBounds(playerSlot: HTMLDivElement) {
     top: centerY - height / 2,
     width,
   }
+}
+
+function createPlayerPropRevealTimeline({
+  playerOffsetX = 0,
+  playerSlot,
+  prop,
+  settled,
+}: {
+  playerOffsetX?: number
+  playerSlot: HTMLDivElement
+  prop: HTMLElement
+  settled: Point
+}) {
+  const bounds = getLocalPlayerSlotBounds(playerSlot)
+  const propWidth = Math.max(prop.offsetWidth, 1)
+  const start = {
+    x: bounds.right + playerOffsetX - Math.max(propWidth * 0.75, 1),
+    y: bounds.top + (bounds.height - prop.offsetHeight) / 2,
+  }
+  const clearX = bounds.right + playerOffsetX + 2
+
+  return gsap
+    .timeline()
+    .set(playerSlot, { zIndex: 30 })
+    .set(prop, {
+      autoAlpha: 1,
+      rotation: 20,
+      scale: 1,
+      transformPerspective: 240,
+      x: start.x,
+      y: start.y,
+      z: 0,
+      zIndex: 20,
+    })
+    .to(prop, {
+      duration: PROP_REVEAL_SLIDE_DURATION,
+      ease: 'power2.out',
+      x: clearX,
+    })
+    .set(playerSlot, { clearProps: 'zIndex' })
+    .set(prop, { zIndex: 30 })
+    .to(prop, {
+      duration: PROP_REVEAL_DEPTH_DURATION,
+      ease: 'back.out(1.6)',
+      scale: 1.1,
+      z: 24,
+    })
+    .to(prop, {
+      duration: PROP_REVEAL_SETTLE_DURATION,
+      ease: 'power2.inOut',
+      rotation: 0,
+      scale: 1,
+      x: settled.x,
+      y: settled.y,
+      z: 0,
+    })
 }
 
 function getInnerOrbitSlotPoints(
@@ -474,7 +528,8 @@ export function InstructionCarousel() {
       )
       const youTag = youTagRef.current
 
-      entranceTimelineRef.current?.kill()
+      const previousEntranceTimeline = entranceTimelineRef.current
+      previousEntranceTimeline?.kill()
       entranceTimelineRef.current = null
       gsap.set(playerVisuals, { clearProps: 'willChange' })
 
@@ -484,7 +539,11 @@ export function InstructionCarousel() {
         playerVisuals.length === PLAYER_TEAMS.length &&
         playerLabels.length === PLAYER_TEAMS.length
 
-      if (sceneSlide !== 0 && hasCompletePlayerScene) {
+      if (
+        sceneSlide !== 0 &&
+        hasCompletePlayerScene &&
+        previousEntranceTimeline
+      ) {
         gsap.killTweensOf([...playerVisuals, ...playerLabels, youTag, phone])
         gsap.set(playerVisuals, {
           clearProps:
@@ -497,16 +556,14 @@ export function InstructionCarousel() {
         return
       }
 
-      if (
-        !(
-          isActive &&
-          !isLoading &&
-          sceneSlide === 0 &&
-          stage &&
-          phone &&
-          hasCompletePlayerScene
-        )
-      ) {
+      if (!(
+        isActive &&
+        !isLoading &&
+        sceneSlide === 0 &&
+        stage &&
+        phone &&
+        hasCompletePlayerScene
+      )) {
         return
       }
 
@@ -557,18 +614,6 @@ export function InstructionCarousel() {
       )
 
       if (!phonePoints) return
-
-      const initialPlayerBounds = getLocalPlayerSlotBounds(initialPlayerSlot)
-      const phoneStart = {
-        x: initialPlayerBounds.right - Math.max(phone.offsetWidth * 0.75, 1),
-        y:
-          initialPlayerBounds.top +
-          (initialPlayerBounds.height - phone.offsetHeight) / 2,
-      }
-      const phoneClear = {
-        x: initialPlayerBounds.right + 2,
-        y: phoneStart.y,
-      }
 
       const shouldWaitForLoadingOverlay =
         openedOnInstructionsRef.current && !hasRunEntranceRef.current
@@ -642,54 +687,14 @@ export function InstructionCarousel() {
         const diameter = Math.max(player.offsetWidth, player.offsetHeight)
         const identityElements =
           index === 2 ? [playerLabels[index], youTag] : [playerLabels[index]]
-        const assignmentTimeline = gsap
-          .timeline()
-          .set(player, {
-            rotationY: 0,
-            transformOrigin: '50% 100%',
-            transformPerspective: diameter * 8,
-            willChange: 'transform',
-          })
-          .to(player, {
-            duration: PLAYER_ASSIGNMENT_PREP_DURATION,
-            ease: 'power2.in',
-            scaleX: 1.08,
-            scaleY: 0.85,
-          })
-          .to(player, {
-            duration: PLAYER_ASSIGNMENT_RISE_DURATION,
-            ease: 'power2.out',
-            rotationY: 90,
-            scaleX: 0.9,
-            scaleY: 1.1,
-            y: -diameter * 0.32,
-          })
-          .set(player, {
+        const assignmentTimeline = createFlipAndChangeTimeline(player, {
+          changeVars: {
             backgroundColor: getTeamFillColor(PLAYER_TEAMS[index]),
             borderColor: 'var(--color-neutralColor-100)',
-            rotationY: -90,
-          })
-          .set(identityElements, { autoAlpha: 1 })
-          .to(player, {
-            duration: PLAYER_ASSIGNMENT_FALL_DURATION,
-            ease: 'power2.in',
-            rotationY: 0,
-            scaleX: 1,
-            scaleY: 1,
-            y: 0,
-          })
-          .to(player, {
-            duration: PLAYER_ASSIGNMENT_IMPACT_DURATION,
-            ease: 'power3.out',
-            scaleX: 1.08,
-            scaleY: 0.85,
-          })
-          .to(player, {
-            duration: PLAYER_ASSIGNMENT_RECOVERY_DURATION,
-            ease: 'back.out(2)',
-            scaleX: 1,
-            scaleY: 1,
-          })
+          },
+          lift: diameter * 0.32,
+          perspective: diameter * 8,
+        }).set(identityElements, { autoAlpha: 1 }, FLIP_AND_CHANGE_CHANGE_AT)
 
         entranceTimeline.add(
           assignmentTimeline,
@@ -717,48 +722,14 @@ export function InstructionCarousel() {
           `teamAssignmentsComplete+=${PHONE_REVEAL_DELAY_AFTER_ASSIGNMENTS}`,
         )
 
-      entranceTimeline
-        .set(initialPlayerSlot, { zIndex: 30 }, 'revealPhone')
-        .set(
-          phone,
-          {
-            autoAlpha: 1,
-            rotation: 20,
-            scale: 1,
-            transformPerspective: 240,
-            x: phoneStart.x,
-            y: phoneStart.y,
-            z: 0,
-            zIndex: 20,
-          },
-          'revealPhone',
-        )
-        .to(
-          phone,
-          {
-            duration: PHONE_REVEAL_SLIDE_DURATION,
-            ease: 'power2.out',
-            x: phoneClear.x,
-          },
-          'revealPhone',
-        )
-        .set(initialPlayerSlot, { clearProps: 'zIndex' })
-        .set(phone, { zIndex: 30 })
-        .to(phone, {
-          duration: PHONE_REVEAL_DEPTH_DURATION,
-          ease: 'back.out(1.6)',
-          scale: 1.1,
-          z: 24,
-        })
-        .to(phone, {
-          duration: PHONE_REVEAL_SETTLE_DURATION,
-          ease: 'power2.inOut',
-          rotation: 0,
-          scale: 1,
-          x: phonePoints[2].x,
-          y: phonePoints[2].y,
-          z: 0,
-        })
+      entranceTimeline.add(
+        createPlayerPropRevealTimeline({
+          playerSlot: initialPlayerSlot,
+          prop: phone,
+          settled: phonePoints[2],
+        }),
+        'revealPhone',
+      )
 
       hasRunEntranceRef.current = true
       entranceTimelineRef.current = entranceTimeline
@@ -856,6 +827,11 @@ export function InstructionCarousel() {
       const heart = heartRef.current
       const lostHeart = lostHeartRef.current
       const trophy = trophyRef.current
+      const trophyGlyph = trophy?.querySelector<HTMLElement>(
+        '[data-instruction-trophy-glyph]',
+      )
+      const rightWinnerSlot = playerSlotRefs.current[1]
+      const leftWinnerSlot = playerSlotRefs.current[3]
       const reducedPenalty = reducedPenaltyRef.current
       const roundResult = roundResultRef.current
       const heartLossResult = heartLossResultRef.current
@@ -881,41 +857,42 @@ export function InstructionCarousel() {
       setHasRevealedFinalRule(false)
       setIsInstructionConfettiActive(false)
 
-      if (
-        !(
-          stage &&
-          phone &&
-          teamSelectorDemo &&
-          phoneSelectorThumb &&
-          phoneAlertLight &&
-          phoneWhiteout &&
-          phoneScoreboard &&
-          phoneGame &&
-          phoneScreenDot &&
-          phonePhraseViewport &&
-          phoneSelector &&
-          phoneScoreTeamA &&
-          phoneScoreTeamB &&
-          phoneScoreStart &&
-          phonePhrases.length === 2 &&
-          timer &&
-          timerRing &&
-          heartLayer &&
-          heart &&
-          lostHeart &&
-          trophy &&
-          reducedPenalty &&
-          roundResult &&
-          heartLossResult &&
-          winnerResult &&
-          finalRule &&
-          playerVisuals.length === PLAYER_TEAMS.length &&
-          commentBubbles.length === PLAYER_TEAMS.length &&
-          commentBurstGroups.length === PLAYER_TEAMS.length &&
-          commentBurstParticles.length ===
-            PLAYER_TEAMS.length * COMMENT_BURST_ANGLES.length
-        )
-      ) {
+      if (!(
+        stage &&
+        phone &&
+        teamSelectorDemo &&
+        phoneSelectorThumb &&
+        phoneAlertLight &&
+        phoneWhiteout &&
+        phoneScoreboard &&
+        phoneGame &&
+        phoneScreenDot &&
+        phonePhraseViewport &&
+        phoneSelector &&
+        phoneScoreTeamA &&
+        phoneScoreTeamB &&
+        phoneScoreStart &&
+        phonePhrases.length === 2 &&
+        timer &&
+        timerRing &&
+        heartLayer &&
+        heart &&
+        lostHeart &&
+        trophy &&
+        trophyGlyph &&
+        rightWinnerSlot &&
+        leftWinnerSlot &&
+        reducedPenalty &&
+        roundResult &&
+        heartLossResult &&
+        winnerResult &&
+        finalRule &&
+        playerVisuals.length === PLAYER_TEAMS.length &&
+        commentBubbles.length === PLAYER_TEAMS.length &&
+        commentBurstGroups.length === PLAYER_TEAMS.length &&
+        commentBurstParticles.length ===
+          PLAYER_TEAMS.length * COMMENT_BURST_ANGLES.length
+      )) {
         return
       }
 
@@ -945,6 +922,7 @@ export function InstructionCarousel() {
         heart,
         lostHeart,
         trophy,
+        trophyGlyph,
         reducedPenalty,
         roundResult,
         heartLossResult,
@@ -960,7 +938,9 @@ export function InstructionCarousel() {
 
       if (!isActive) {
         teamSelectorDemo.reset()
-        gsap.set(playerSlotRefs.current[2], { clearProps: 'zIndex' })
+        gsap.set(playerSlotRefs.current.filter(Boolean), {
+          clearProps: 'zIndex',
+        })
         gsap.set(phone, {
           autoAlpha: 0,
           clearProps:
@@ -978,7 +958,7 @@ export function InstructionCarousel() {
 
       if (!phonePoints) return
 
-      gsap.set(playerSlotRefs.current[2], { clearProps: 'zIndex' })
+      gsap.set(playerSlotRefs.current.filter(Boolean), { clearProps: 'zIndex' })
 
       gsap.set(timer, { autoAlpha: 0, scale: 0.8 })
       gsap.set(timerRing, { strokeDashoffset: 0 })
@@ -995,16 +975,10 @@ export function InstructionCarousel() {
         rotation: 0,
         scale: HEART_LOSS_EXIT_SCALE,
       })
-      gsap.set(trophy, {
-        clearProps: 'transformOrigin,transformPerspective,willChange',
+      gsap.set([trophy, trophyGlyph], {
+        clearProps: 'transform,transformOrigin,transformPerspective,willChange',
       })
-      gsap.set(trophy, {
-        autoAlpha: 0,
-        rotationY: 0,
-        scaleX: 1,
-        scaleY: 1,
-        y: 0,
-      })
+      gsap.set(trophy, { autoAlpha: 0, zIndex: 20 })
       gsap.set(reducedPenalty, { autoAlpha: 0, scale: 0.6 })
       gsap.set(roundResult, {
         autoAlpha: 0,
@@ -1042,7 +1016,13 @@ export function InstructionCarousel() {
         y: 0,
       })
       if (sceneSlide !== 0) {
-        gsap.set(playerVisuals, { visibility: 'visible' })
+        gsap.set(playerVisuals, {
+          scaleX: 1,
+          scaleY: 1,
+          visibility: 'visible',
+          x: 0,
+          y: 0,
+        })
       }
 
       if (sceneSlide === 0) {
@@ -1437,11 +1417,33 @@ export function InstructionCarousel() {
       gsap.set(phoneScoreboard, { autoAlpha: 0 })
       phoneSeatRef.current = null
 
+      const rightWinnerBounds = getLocalPlayerSlotBounds(rightWinnerSlot)
+      const leftWinnerBounds = getLocalPlayerSlotBounds(leftWinnerSlot)
+      const centerX = stage.offsetWidth / 2
+      const playerSize = Math.min(
+        rightWinnerBounds.width,
+        leftWinnerBounds.width,
+      )
+      const playerGap = playerSize * VICTORY_PLAYER_GAP_MULTIPLIER
+      const rightWinnerOffsetX =
+        centerX + playerGap / 2 - rightWinnerBounds.left
+      const leftWinnerOffsetX = centerX - playerGap / 2 - leftWinnerBounds.right
+      const trophyPoint = {
+        x: centerX - trophy.offsetWidth / 2,
+        y:
+          stage.offsetHeight / 2 -
+          Math.max(rightWinnerBounds.height, leftWinnerBounds.height) / 2 -
+          trophy.offsetHeight / 2 -
+          playerSize * 0.1,
+      }
+
       if (prefersReducedMotion) {
         setInstructionPhoneTeam(phone, phoneSelectorThumb, 'A')
         gsap.set(playerVisuals, {
           opacity: playerIndex => (PLAYER_TEAMS[playerIndex] === 'B' ? 1 : 0),
         })
+        gsap.set(playerVisuals[1], { x: rightWinnerOffsetX })
+        gsap.set(playerVisuals[3], { x: leftWinnerOffsetX })
         gsap.set(phone, {
           autoAlpha: 0,
           rotation: 360,
@@ -1453,15 +1455,7 @@ export function InstructionCarousel() {
         gsap.set(timerRing, { strokeDashoffset: 100 })
         gsap.set(heart, { autoAlpha: 0 })
         gsap.set(lostHeart, { autoAlpha: 0 })
-        gsap.set(trophy, {
-          autoAlpha: 1,
-          rotation: 0,
-          rotationY: 0,
-          scaleX: 1,
-          scaleY: 1,
-          x: 0,
-          y: 0,
-        })
+        gsap.set(trophy, { autoAlpha: 1, ...trophyPoint })
         gsap.set(phoneScoreboard, { autoAlpha: 1 })
         gsap.set(roundResult, { autoAlpha: 1, scale: 1, y: 0 })
         gsap.set(heartLossResult, { autoAlpha: 0, xPercent: -100 })
@@ -1471,8 +1465,6 @@ export function InstructionCarousel() {
         phoneSeatRef.current = null
         return
       }
-
-      const trophyCelebrationLoop = createTrophyCelebrationTimeline(trophy)
 
       const finalScene = gsap.timeline({
         defaults: {
@@ -1682,22 +1674,63 @@ export function InstructionCarousel() {
           },
           'victoryReveal',
         )
-        .set(
-          trophy,
-          {
-            autoAlpha: 1,
-            rotation: 0,
-            rotationY: 0,
-            scaleX: 1,
-            scaleY: 1,
-            transformOrigin: '50% 100%',
-            willChange: 'transform',
-            x: 0,
-            y: 0,
-          },
-          'victoryReveal',
+
+      const winnerHops = gsap.timeline()
+      const winners = [
+        { player: playerVisuals[3], offsetX: leftWinnerOffsetX },
+        { player: playerVisuals[1], offsetX: rightWinnerOffsetX },
+      ]
+
+      winners.forEach(({ player, offsetX }, index) => {
+        const diameter = Math.max(player.offsetWidth, player.offsetHeight)
+        winnerHops.set(player, { transformOrigin: '50% 100%' })
+        addPlayerHopToTimeline(winnerHops, {
+          end: { x: offsetX, y: 0 },
+          lift: diameter * PLAYER_HOP_HEIGHT_MULTIPLIERS[0],
+          positionTarget: player,
+          start: { x: 0, y: 0 },
+        })
+        winnerHops.addLabel(`winnerSettled-${index}`)
+      })
+
+      const trophyReveal = createPlayerPropRevealTimeline({
+        playerOffsetX: rightWinnerOffsetX,
+        playerSlot: rightWinnerSlot,
+        prop: trophy,
+        settled: trophyPoint,
+      })
+
+      finalScene
+        .add(winnerHops, 'victoryReveal')
+        .addLabel('trophyReveal', `victoryReveal+=${winnerHops.duration()}`)
+        .add(trophyReveal, 'trophyReveal')
+        .addLabel(
+          'trophyCelebration',
+          `trophyReveal+=${trophyReveal.duration()}`,
         )
-        .add(trophyCelebrationLoop, 'victoryReveal')
+        .add(createTrophyCelebrationTimeline(trophyGlyph), 'trophyCelebration')
+
+      winners.forEach(({ player, offsetX }, index) => {
+        const diameter = Math.max(player.offsetWidth, player.offsetHeight)
+        const settled = { x: offsetX, y: 0 }
+        const celebrationHops = gsap.timeline({ repeat: -1 })
+
+        addPlayerHopToTimeline(celebrationHops, {
+          effortScale: VICTORY_PLAYER_CELEBRATION_EFFORT,
+          end: settled,
+          lift: diameter * PLAYER_HOP_HEIGHT_MULTIPLIERS[0],
+          positionTarget: player,
+          start: settled,
+        })
+        celebrationHops.to(player, {
+          duration: VICTORY_PLAYER_CELEBRATION_REST_DURATION,
+        })
+
+        finalScene.add(
+          celebrationHops,
+          `victoryReveal+=${winnerHops.labels[`winnerSettled-${index}`]}`,
+        )
+      })
 
       sceneTimelineRef.current = finalScene
     },
@@ -1795,9 +1828,11 @@ export function InstructionCarousel() {
     const dragState = dragStateRef.current
     const captionTrack = captionTrackRef.current
 
-    if (
-      !(dragState && captionTrack && dragState.pointerId === event.pointerId)
-    ) {
+    if (!(
+      dragState &&
+      captionTrack &&
+      dragState.pointerId === event.pointerId
+    )) {
       return
     }
 
@@ -2168,6 +2203,8 @@ export function InstructionCarousel() {
 
             <InstructionPhone ref={phoneRef} />
 
+            <InstructionTrophy ref={trophyRef} />
+
             <div
               ref={timerRef}
               className="
@@ -2276,25 +2313,6 @@ export function InstructionCarousel() {
                 data-instruction-lost-heart
               >
                 <Icon name="solid:xmark" />
-              </div>
-
-              <div
-                ref={trophyRef}
-                aria-hidden="true"
-                className="
-                  absolute
-                  flex
-                  size-[1em]
-                  items-center
-                  justify-center
-                  text-[2rem]
-                  leading-none
-                  opacity-0
-                  backface-visible
-                "
-                data-instruction-trophy
-              >
-                🏆
               </div>
             </div>
           </div>

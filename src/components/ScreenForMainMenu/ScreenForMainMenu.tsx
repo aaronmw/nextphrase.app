@@ -1,17 +1,35 @@
 'use client'
 
-import { AppScreen, HEARTS_PER_TEAM } from '@/app/reducer'
+import { AppScreen, type AppState, HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
 import { Logo } from '@/components/Logo'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
+import { useCallback, useState } from 'react'
 import { classNames } from './classNames'
+
+type MenuScores = Pick<
+  AppState,
+  'heartsRemainingForTeamA' | 'heartsRemainingForTeamB'
+>
 
 export function ScreenForMainMenu() {
   const { state, dispatch } = useAppContext()
+  const [exitingScores, setExitingScores] = useState<MenuScores | null>(null)
 
-  const { heartsRemainingForTeamA, heartsRemainingForTeamB } = state
+  const { heartsRemainingForTeamA, heartsRemainingForTeamB } =
+    state.activeScreen === AppScreen.MainMenu ? state : (exitingScores ?? state)
+
+  const clearExitingScores = useCallback(() => setExitingScores(null), [])
+
+  function handleNewGame() {
+    if (state.activeScreen !== AppScreen.MainMenu) return
+
+    // Keep the outgoing menu intact while the next screen gets fresh scores.
+    setExitingScores({ heartsRemainingForTeamA, heartsRemainingForTeamB })
+    dispatch({ type: 'NEW_GAME' })
+  }
 
   const gameInProgress =
     heartsRemainingForTeamA < HEARTS_PER_TEAM ||
@@ -20,6 +38,7 @@ export function ScreenForMainMenu() {
   return (
     <ScreenContainer
       extendIntoBottomSafeArea
+      onExitComplete={clearExitingScores}
       screenName={AppScreen.MainMenu}
       slotForHeader={<AppHeader />}
       slotForMain={
@@ -57,11 +76,7 @@ export function ScreenForMainMenu() {
             <StyledText
               as="button"
               variant="button.primary"
-              onClick={() =>
-                dispatch({
-                  type: 'NEW_GAME',
-                })
-              }
+              onClick={handleNewGame}
             >
               {gameInProgress ? 'New Game' : 'Start Game'}
             </StyledText>

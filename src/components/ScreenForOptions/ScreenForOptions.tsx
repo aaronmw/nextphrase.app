@@ -11,69 +11,119 @@ import { Icon } from '@/components/Icon'
 import { InsetDivider } from '@/components/InsetDivider'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
-import { ChangeEvent, ComponentProps } from 'react'
+import { Description, Field, Label, Switch } from '@headlessui/react'
+import { ReactNode } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { classNames } from './classNames'
 
-type CheckboxProps = Omit<ComponentProps<'input'>, 'type'>
-
-const Checkbox = ({ className, onChange, ...otherProps }: CheckboxProps) => {
-  const { sounds } = useAppContext()
-
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    sounds.playSound('spacebar-click')
-    onChange?.(event)
-  }
-
+function OptionsGroup({
+  children,
+  label,
+}: {
+  children: ReactNode
+  label: string
+}) {
   return (
-    <span
-      className={twMerge('relative inline-flex size-[1em] shrink-0', className)}
+    <section
+      aria-label={label}
+      className={classNames.fieldGroup}
     >
-      <input
-        className="
-          peer
-          bg-primaryColor-900
-          !outline-primaryColor-400
-          checked:bg-accentFillColor
-          m-0
-          size-full
-          appearance-none
-          rounded-sm
-          border-none
-          bg-none
-          transition-colors
-        "
-        type="checkbox"
-        onChange={handleChange}
-        {...otherProps}
-      />
-      <Icon
-        aria-hidden="true"
-        className="
-          text-textOnAccentColor
-          pointer-events-none
-          absolute
-          inset-0
-          flex
-          items-center
-          justify-center
-          text-[0.65em]
-          opacity-0
-          transition-opacity
-          peer-checked:opacity-100
-        "
-        name="check"
-      />
-    </span>
+      <StyledText
+        as="h2"
+        variant="label"
+      >
+        {label}
+      </StyledText>
+      <div className="flex flex-col">{children}</div>
+    </section>
   )
 }
 
-const checkboxRowClassName = `
-  flex
-  cursor-pointer
-  items-center
-  justify-between
-`
+type ToggleRowProps = {
+  checked: boolean
+  id: string
+  label: string
+  description?: string
+  onChange: (checked: boolean) => void
+}
+
+function ToggleRow({
+  checked,
+  description,
+  id,
+  label,
+  onChange,
+}: ToggleRowProps) {
+  const { sounds } = useAppContext()
+
+  function handleChange(checked: boolean) {
+    sounds.playSound('spacebar-click')
+    onChange(checked)
+  }
+
+  return (
+    <Field className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
+      <Label className="col-start-1 row-start-1 cursor-pointer">{label}</Label>
+      <Switch
+        checked={checked}
+        className="
+          group
+          ring-neutralColor-100
+          data-checked:bg-accentFillColor
+          data-checked:ring-accentFillColor
+          focus-visible:outline-primaryColor-400
+          relative
+          col-start-2
+          row-start-1
+          inline-flex
+          h-[1em]
+          w-[1.8em]
+          shrink-0
+          cursor-pointer
+          items-center
+          self-center
+          rounded-full
+          bg-transparent
+          p-0
+          ring-4
+          transition-[background-color,box-shadow]
+          duration-150
+          ring-inset
+          focus-visible:outline-2
+          focus-visible:outline-offset-2
+          motion-reduce:transition-none
+        "
+        id={id}
+        onChange={handleChange}
+      >
+        <span
+          aria-hidden="true"
+          className="
+            bg-neutralColor-100
+            group-data-checked:bg-textOnAccentColor
+            pointer-events-none
+            absolute
+            left-[0.1875em]
+            size-[0.625em]
+            rounded-full
+            transition-[translate,background-color]
+            duration-150
+            group-data-checked:translate-x-[0.8em]
+            motion-reduce:transition-none
+          "
+        />
+      </Switch>
+      {description && (
+        <Description
+          as="span"
+          className="text-neutralColor-100 col-start-1 row-start-2 text-xs leading-tight font-normal"
+        >
+          {description}
+        </Description>
+      )}
+    </Field>
+  )
+}
 
 function getRoundDurationLabel(multiplier: RoundDurationMultiplier) {
   return multiplier === 0.5 ? '½×' : `${multiplier}×`
@@ -87,30 +137,32 @@ export function ScreenForOptions() {
     disabledCategoryIds,
     rotateScreen,
     roundDurationMultiplier,
+    swipeDelayEnabled,
   } = state
   const disabledCategoryIdsSet = new Set(disabledCategoryIds)
 
-  function handleClickCheckbox(
-    categoryId: string,
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const { checked } = event.target
-
+  function handleChangeCategory(categoryId: string, checked: boolean) {
     dispatch({
       type: checked ? 'ENABLE_CATEGORY_ID' : 'DISABLE_CATEGORY_ID',
       categoryId,
     })
   }
 
-  function handleClickRotateScreen(event: ChangeEvent<HTMLInputElement>) {
-    const { checked } = event.target
-    dispatch({ type: 'SET_ROTATE_SCREEN', rotateScreen: checked })
+  function handleChangeRotateScreen(rotateScreen: boolean) {
+    dispatch({ type: 'SET_ROTATE_SCREEN', rotateScreen })
   }
 
-  function handleClickCountdown(event: ChangeEvent<HTMLInputElement>) {
+  function handleChangeCountdown(countdownEnabled: boolean) {
     dispatch({
       type: 'SET_COUNTDOWN_ENABLED',
-      countdownEnabled: event.target.checked,
+      countdownEnabled,
+    })
+  }
+
+  function handleChangeSwipeDelay(swipeDelayEnabled: boolean) {
+    dispatch({
+      type: 'SET_SWIPE_DELAY_ENABLED',
+      swipeDelayEnabled,
     })
   }
 
@@ -161,41 +213,27 @@ export function ScreenForOptions() {
             pb-[calc(0.75rem+env(safe-area-inset-bottom))]
           `}
         >
-          <div className={classNames.fieldGroup}>
-            <StyledText variant="label">Phrase Categories</StyledText>
-
-            <div className="flex flex-col">
-              {Object.entries(categoriesById).map(([categoryId, category]) => (
-                <label
-                  className={checkboxRowClassName}
-                  htmlFor={`category-${categoryId}`}
-                  key={categoryId}
-                >
-                  <span>{category.label}</span>
-
-                  <Checkbox
-                    checked={!disabledCategoryIdsSet.has(categoryId)}
-                    id={`category-${categoryId}`}
-                    onChange={handleClickCheckbox.bind(null, categoryId)}
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
+          <OptionsGroup label="Categories">
+            {Object.entries(categoriesById).map(([categoryId, category]) => (
+              <ToggleRow
+                checked={!disabledCategoryIdsSet.has(categoryId)}
+                id={`category-${categoryId}`}
+                key={categoryId}
+                label={category.label}
+                onChange={handleChangeCategory.bind(null, categoryId)}
+              />
+            ))}
+          </OptionsGroup>
 
           <InsetDivider />
 
-          <fieldset className={classNames.fieldGroup}>
-            <StyledText
-              as="legend"
-              variant="label"
-            >
-              Round Duration
-            </StyledText>
+          <OptionsGroup label="Round Options">
+            <fieldset className={classNames.fieldGroup}>
+              <legend>Round Duration</legend>
 
-            <div className={classNames.hardEdgeControlGroup}>
-              <div
-                className="
+              <div className={classNames.hardEdgeControlGroup}>
+                <div
+                  className="
                   border-neutralColor-100
                   grid
                   grid-cols-3
@@ -203,23 +241,23 @@ export function ScreenForOptions() {
                   rounded-sm
                   border-4
                 "
-              >
-                {ROUND_DURATION_MULTIPLIERS.map((multiplier, index) => (
-                  <label
-                    className="relative cursor-pointer"
-                    key={multiplier}
-                  >
-                    <input
-                      checked={roundDurationMultiplier === multiplier}
-                      className="peer sr-only"
-                      name="round-duration"
-                      type="radio"
-                      value={multiplier}
-                      onChange={() => handleChangeRoundDuration(multiplier)}
-                    />
-                    <span
-                      className={twMerge(
-                        `
+                >
+                  {ROUND_DURATION_MULTIPLIERS.map((multiplier, index) => (
+                    <label
+                      className="relative cursor-pointer"
+                      key={multiplier}
+                    >
+                      <input
+                        checked={roundDurationMultiplier === multiplier}
+                        className="peer sr-only"
+                        name="round-duration"
+                        type="radio"
+                        value={multiplier}
+                        onChange={() => handleChangeRoundDuration(multiplier)}
+                      />
+                      <span
+                        className={twMerge(
+                          `
                           peer-checked:bg-accentFillColor
                           peer-focus-visible:ring-primaryColor-100
                           text-neutralColor-100
@@ -233,81 +271,43 @@ export function ScreenForOptions() {
                           peer-focus-visible:ring-2
                           peer-focus-visible:ring-inset
                         `,
-                        index > 0 && 'border-neutralColor-100 border-l-4',
-                      )}
-                    >
-                      {getRoundDurationLabel(multiplier)}
-                    </span>
-                  </label>
-                ))}
+                          index > 0 && 'border-neutralColor-100 border-l-4',
+                        )}
+                      >
+                        {getRoundDurationLabel(multiplier)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          </fieldset>
+            </fieldset>
 
-          <InsetDivider />
-
-          <label
-            className={checkboxRowClassName}
-            htmlFor="countdown-enabled"
-          >
-            <span>Countdown</span>
-            <Checkbox
+            <ToggleRow
               checked={countdownEnabled}
               id="countdown-enabled"
-              onChange={handleClickCountdown}
+              label="Countdown"
+              onChange={handleChangeCountdown}
             />
-          </label>
+
+            <ToggleRow
+              checked={swipeDelayEnabled}
+              id="swipe-delay-enabled"
+              label="Swipe Delay"
+              onChange={handleChangeSwipeDelay}
+            />
+          </OptionsGroup>
 
           <InsetDivider />
 
-          <div className={classNames.fieldGroup}>
-            <StyledText variant="label">Sound Boost</StyledText>
-
-            <div
-              className={`
-                grid
-                grid-cols-[minmax(0,1fr)_auto]
-                items-center
-                gap-x-2
-              `}
-            >
-              <label
-                className="
-                  col-start-1
-                  row-start-1
-                  cursor-pointer
-                "
-                htmlFor="rotate-screen"
-              >
-                Rotate Screen
-              </label>
-              <Checkbox
-                aria-describedby="rotate-screen-description"
-                checked={rotateScreen}
-                className="
-                  col-start-2
-                  row-start-1
-                  self-center
-                "
-                id="rotate-screen"
-                onChange={handleClickRotateScreen}
-              />
-              <span
-                className="
-                  text-neutralColor-100
-                  col-start-1
-                  row-start-2
-                  text-xs
-                  leading-tight
-                  font-normal
-                "
-                id="rotate-screen-description"
-              >
-                For loud environments, this points the device&rsquo;s speakers
-                towards other players
-              </span>
-            </div>
-          </div>
+          <OptionsGroup label="Sound Boost">
+            <ToggleRow
+              checked={rotateScreen}
+              description="For loud environments, this points the device’s speakers towards other players"
+              id="rotate-screen"
+              label="Rotate Screen"
+              onChange={handleChangeRotateScreen}
+            />
+          </OptionsGroup>
         </div>
       }
     />

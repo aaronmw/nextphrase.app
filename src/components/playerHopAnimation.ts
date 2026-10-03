@@ -22,6 +22,7 @@ export const PLAYER_HOP_SEQUENCE_DURATION =
 
 interface PlayerHopOptions {
   durationScale?: number
+  effortScale?: number
   end: Point
   fallDurationScale?: number
   fallEase?: string
@@ -114,6 +115,7 @@ export function addPlayerHopToTimeline(
   timeline: gsap.core.Timeline,
   {
     durationScale = 1,
+    effortScale = 1,
     end,
     fallDurationScale = 1,
     fallEase = 'power2.in',
@@ -130,15 +132,17 @@ export function addPlayerHopToTimeline(
     start,
   }: PlayerHopOptions,
 ) {
-  const apex = getHopPoint(start, end, 0.5, lift)
-  const preImpact = getHopPoint(start, end, 0.9, lift * 0.1)
+  const scaledLift = lift * effortScale
+  const scaleForEffort = (scale: number) => 1 + (scale - 1) * effortScale
+  const apex = getHopPoint(start, end, 0.5, scaledLift)
+  const preImpact = getHopPoint(start, end, 0.9, scaledLift * 0.1)
 
   if (includePrep) {
     timeline.to(scaleTarget, {
       duration: PLAYER_HOP_PREP_DURATION * durationScale,
       ease: 'power2.in',
       scaleX: 1,
-      scaleY: 0.8,
+      scaleY: scaleForEffort(0.8),
     })
   }
 
@@ -152,8 +156,8 @@ export function addPlayerHopToTimeline(
     },
     scaleTarget,
     scaleVars: {
-      scaleX: 0.8,
-      scaleY: 1.2,
+      scaleX: scaleForEffort(0.8),
+      scaleY: scaleForEffort(1.2),
     },
   })
   addHopTween(timeline, {
@@ -189,8 +193,8 @@ export function addPlayerHopToTimeline(
       duration:
         PLAYER_HOP_IMPACT_DURATION * durationScale * impactDurationScale,
       ease: impactEase,
-      scaleX: impactScaleX,
-      scaleY: impactScaleY,
+      scaleX: scaleForEffort(impactScaleX),
+      scaleY: scaleForEffort(impactScaleY),
     })
   } else {
     addHopTween(timeline, {
@@ -204,8 +208,8 @@ export function addPlayerHopToTimeline(
       },
       scaleTarget,
       scaleVars: {
-        scaleX: impactScaleX,
-        scaleY: impactScaleY,
+        scaleX: scaleForEffort(impactScaleX),
+        scaleY: scaleForEffort(impactScaleY),
       },
     })
   }

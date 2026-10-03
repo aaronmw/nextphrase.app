@@ -11,9 +11,12 @@ import { useRoundTransition } from '@/components/RoundTransitionContext'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { SpinningAlertLight } from '@/components/SpinningAlertLight'
 import { TeamSelector } from '@/components/TeamSelector'
-import { useRef, useState } from 'react'
+import { CSSProperties, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useGuessingRoundTransition } from './useGuessingRoundTransition'
+import {
+  ALERT_REST_Y_PX,
+  useGuessingRoundTransition,
+} from './useGuessingRoundTransition'
 
 export function ScreenForGuessing() {
   const { state, dispatch } = useAppContext()
@@ -61,6 +64,12 @@ export function ScreenForGuessing() {
     <ScreenContainer
       className="touch-auto [&_.js-content-container]:row-start-1 [&_.js-header-container]:z-40"
       screenName={AppScreen.Guessing}
+      style={
+        {
+          '--alert-light-anchor-y': '1rem',
+          '--phrase-shadow-origin-y': `calc(var(--alert-light-anchor-y) + ${ALERT_REST_Y_PX}px)`,
+        } as CSSProperties
+      }
       slotForMain={
         <div className="relative flex h-full flex-col">
           <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -117,7 +126,10 @@ export function ScreenForGuessing() {
                   overflow-hidden
                 "
               >
-                <PhraseFlipper ref={phraseFlipperRef} />
+                <PhraseFlipper
+                  ref={phraseFlipperRef}
+                  disabled={!isTeamSelectorInteractive}
+                />
               </div>
             </div>
           </div>
@@ -151,7 +163,7 @@ export function ScreenForGuessing() {
             ref={setAlertLightAnchorElement}
             className="
               absolute
-              top-4
+              top-[var(--alert-light-anchor-y)]
               left-1/2
               size-0
               overflow-visible

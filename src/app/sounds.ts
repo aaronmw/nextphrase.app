@@ -1,6 +1,8 @@
 import type { SoundProperties } from '@/lib/useSoundPreloader'
 
 export const soundFiles = {
+  'countdown-beep': { src: '/sounds/countdown-beep.mp3', trimEnd: 0.5 },
+  'countdown-go': { src: '/sounds/countdown-go.mp3', trimEnd: 1 },
   'bonk': { src: '/sounds/bonk.mp3' },
   'cheering': { src: '/sounds/cheering.mp3', trimStart: 0.4 },
   'sad-trombone': { src: '/sounds/sad-trombone.mp3' },
