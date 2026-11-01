@@ -10,6 +10,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -150,14 +151,15 @@ function useRoundCountdown({
   setPhase: (nextPhase: RoundTransitionPhase) => void
 }) {
   const {
+    state: { activeScreen },
     sounds: { playSound },
   } = useAppContext()
   const [countdownLabel, setCountdownLabel] = useState<CountdownLabel | null>(
     null,
   )
 
-  useEffect(() => {
-    if (phase !== 'countdown') return
+  useLayoutEffect(() => {
+    if (phase !== 'countdown' || activeScreen !== AppScreen.Scoring) return
 
     let labelIndex = 0
     let countdownTimeout: ReturnType<typeof setTimeout>
@@ -189,7 +191,7 @@ function useRoundCountdown({
     showCountdownStep()
 
     return () => clearTimeout(countdownTimeout)
-  }, [dispatch, phase, playSound, setPhase])
+  }, [activeScreen, dispatch, phase, playSound, setPhase])
 
   return { countdownLabel, setCountdownLabel }
 }
@@ -284,7 +286,7 @@ function useRoundTransitionController() {
   const phaseRef = useRef(phase)
   const stateRef = useRef(state)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     stateRef.current = state
   }, [state])
 
@@ -304,6 +306,32 @@ function useRoundTransitionController() {
     phase,
     setPhase,
   })
+
+  // Scoring and guessing share a transition. Leaving both cancels its work,
+  // including callbacks that would otherwise change routes or apply damage later.
+  useLayoutEffect(() => {
+    if (
+      state.activeScreen === AppScreen.Scoring ||
+      state.activeScreen === AppScreen.Guessing
+    )
+      return
+
+    clearBlankBeatTimeout()
+    clearHeartLossTimeout()
+    exitReasonRef.current = null
+    pendingRoundEndRef.current = null
+    setPendingRoundEndIsFinalHit(false)
+    setPendingRoundEndTeam(null)
+    setGameOverResetWinningTeam(null)
+    setCountdownLabel(null)
+    setPhase('idle')
+  }, [
+    state.activeScreen,
+    clearBlankBeatTimeout,
+    clearHeartLossTimeout,
+    setCountdownLabel,
+    setPhase,
+  ])
 
   const startRoundTransition = useCallback(() => {
     if (

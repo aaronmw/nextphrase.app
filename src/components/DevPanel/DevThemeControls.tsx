@@ -1,6 +1,7 @@
 'use client'
 
 import { Icon } from '@/components/Icon'
+import { Button } from '@/components/Button'
 import {
   Listbox,
   ListboxButton,
@@ -91,13 +92,15 @@ function ThemeListbox<Value extends string>({
       <div className="text-neutralColor-100 flex items-center justify-between gap-4 text-xs">
         <ListboxLabel>{label}</ListboxLabel>
         <ListboxButton
+          as={Button}
+          variant="neutral"
+          size="compact"
           id={id}
           className={twJoin(
-            'border-neutralColor-100/30 text-neutralColor-100 grid h-7 w-28 items-center overflow-hidden rounded border bg-black p-0 text-xs',
+            'grid h-7 w-28 gap-0 overflow-hidden p-0 tracking-normal normal-case',
             renderLeading
               ? 'grid-cols-[1.75rem_minmax(0,1fr)_1.75rem]'
               : 'grid-cols-[minmax(0,1fr)_1.75rem] pl-2',
-            'focus-visible:outline-neutralColor-100/70 focus-visible:outline-2',
           )}
         >
           {({ open }) => (
@@ -282,34 +285,26 @@ export function DevThemeControls({
           onChange={colorName => setThemeColor(field.id, colorName)}
         />
       ))}
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="compact"
+        fullWidth
         onClick={copyTheme}
         disabled={copyStatus === 'pending'}
         aria-busy={copyStatus === 'pending' ? 'true' : undefined}
-        className={twJoin(
-          'border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 flex h-8 w-full items-center justify-center gap-2 rounded border px-3 text-xs',
+        icon={
           copyStatus === 'pending'
-            ? 'cursor-wait'
-            : 'hover:bg-neutralColor-100/20',
-        )}
+            ? 'spinner-third'
+            : copyStatus === 'success'
+              ? 'check'
+              : copyStatus === 'error'
+                ? 'triangle-exclamation'
+                : 'copy'
+        }
+        iconProps={{ spin: copyStatus === 'pending' }}
       >
-        <span className="inline-flex w-4 justify-center">
-          <Icon
-            name={
-              copyStatus === 'pending'
-                ? 'spinner-third'
-                : copyStatus === 'success'
-                  ? 'check'
-                  : copyStatus === 'error'
-                    ? 'triangle-exclamation'
-                    : 'copy'
-            }
-            spin={copyStatus === 'pending'}
-          />
-        </span>
-        <span>Copy Theme</span>
-      </button>
+        Copy Theme
+      </Button>
       <span
         className="sr-only"
         aria-live="polite"

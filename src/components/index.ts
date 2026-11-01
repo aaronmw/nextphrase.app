@@ -1,6 +1,8 @@
 export { AnimatedSetPiece } from './AnimatedSetPiece'
 export { AppContext } from './AppContext'
 export { AppHeader } from './AppHeader'
+export { Button } from './Button'
+export type { ButtonProps, ButtonVariant } from './Button'
 export { ClientComponent } from './ClientComponent'
 export { ConditionalWrapper } from './ConditionalWrapper'
 export { DebugPanel } from './DebugPanel'

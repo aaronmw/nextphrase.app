@@ -1,5 +1,6 @@
 'use client'
 
+import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { RoundTransitionPhase } from '@/components/RoundTransitionContext'
 import { createTrophyCelebrationTimeline } from '@/components/trophyCelebrationAnimation'
@@ -182,11 +183,15 @@ export function useScoringRoundTransition({
   scoreWinnerNewGameRef,
   scoreWinnerTrophyRef,
 }: UseScoringRoundTransitionProps) {
+  const transitionTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const impactTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const gameOverRevealTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const gameOverResetTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const gameOverTrophyTimelineRef = useRef<gsap.core.Timeline | null>(null)
-  const { sounds } = useAppContext()
+  const {
+    sounds,
+    state: { activeScreen },
+  } = useAppContext()
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const playSoundRef = useRef(sounds.playSound)
 
@@ -248,6 +253,25 @@ export function useScoringRoundTransition({
       ]
 
       if (
+        activeScreen !== AppScreen.Scoring &&
+        activeScreen !== AppScreen.Guessing
+      ) {
+        for (const timelineRef of [
+          transitionTimelineRef,
+          impactTimelineRef,
+          gameOverRevealTimelineRef,
+          gameOverResetTimelineRef,
+          gameOverTrophyTimelineRef,
+        ]) {
+          timelineRef.current?.kill()
+          timelineRef.current = null
+        }
+        gsap.killTweensOf(animatedElements)
+        gsap.set(animatedElements, { clearProps: 'willChange' })
+        return
+      }
+
+      if (
         roundTransitionPhase === 'scoringImpact' &&
         impactTimelineRef.current
       ) {
@@ -273,6 +297,9 @@ export function useScoringRoundTransition({
         impactTimelineRef.current?.kill()
         impactTimelineRef.current = null
       }
+
+      transitionTimelineRef.current?.kill()
+      transitionTimelineRef.current = null
 
       if (roundTransitionPhase !== 'scoringGameOverReveal') {
         gameOverRevealTimelineRef.current?.kill()
@@ -327,7 +354,7 @@ export function useScoringRoundTransition({
           y: 0,
           willChange: 'transform',
         })
-        gsap
+        transitionTimelineRef.current = gsap
           .timeline({
             defaults: {
               duration: SCORE_TRANSITION_DURATION,
@@ -366,7 +393,7 @@ export function useScoringRoundTransition({
         })
         gsap.set(scoreBack, { autoAlpha: 0, ...scoreExitTransforms.back })
         gsap.set(scoreElements, { willChange: 'transform' })
-        gsap
+        transitionTimelineRef.current = gsap
           .timeline({
             defaults: {
               duration: SCORE_TRANSITION_DURATION,
@@ -582,7 +609,7 @@ export function useScoringRoundTransition({
           pointerEvents: 'none',
         })
 
-        gsap
+        transitionTimelineRef.current = gsap
           .timeline({
             defaults: {
               duration: SCORE_TRANSITION_DURATION,
@@ -966,6 +993,7 @@ export function useScoringRoundTransition({
     },
     {
       dependencies: [
+        activeScreen,
         applyPendingRoundEndDamage,
         finishScoringEnter,
         finishScoringExit,

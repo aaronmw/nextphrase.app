@@ -1,4 +1,5 @@
 import { Tables } from '@/app/database.types'
+import { screencapMode } from '@/screencap.config.mjs'
 import clamp from 'lodash/clamp'
 import last from 'lodash/last'
 import random from 'lodash/random'
@@ -21,10 +22,6 @@ export const DEFAULT_ROUND_DURATION_MIN =
   process.env.NODE_ENV === 'development' ? 3 : 45
 export const DEFAULT_ROUND_DURATION_MAX =
   process.env.NODE_ENV === 'development' ? 5 : 60
-export const ROUND_DURATION_MULTIPLIERS = [0.5, 1, 2] as const
-
-export type RoundDurationMultiplier =
-  (typeof ROUND_DURATION_MULTIPLIERS)[number]
 
 export interface AppState {
   activeScreen: AppScreen
@@ -48,7 +45,6 @@ export interface AppState {
   phrasesById: Map<string, string>
   tickRate: number
   acceleratedTickRate: number
-  roundDurationMultiplier: RoundDurationMultiplier
   roundDurationMin: number
   roundDurationMax: number
   accelerationDurationMin: number
@@ -75,7 +71,6 @@ export const initialState: AppState = {
   phrasesById: new Map(),
   tickRate: 1,
   acceleratedTickRate: 0.5,
-  roundDurationMultiplier: 1,
   roundDurationMin: DEFAULT_ROUND_DURATION_MIN,
   roundDurationMax: DEFAULT_ROUND_DURATION_MAX,
   accelerationDurationMin: process.env.NODE_ENV === 'development' ? 2 : 10,
@@ -98,7 +93,6 @@ export const persistedStateKeys: (keyof AppState)[] = [
   'heartsRemainingForTeamB',
   'isNewGame',
   'rotateScreen',
-  'roundDurationMultiplier',
   'roundDurationMin',
   'roundDurationMax',
   'swipeDelayEnabled',
@@ -128,10 +122,6 @@ export type AppAction =
   | { type: 'SET_COUNTDOWN_ENABLED'; countdownEnabled: boolean }
   | { type: 'SET_SWIPE_DELAY_ENABLED'; swipeDelayEnabled: boolean }
   | { type: 'SET_ROTATE_SCREEN'; rotateScreen: boolean }
-  | {
-      type: 'SET_ROUND_DURATION_MULTIPLIER'
-      roundDurationMultiplier: RoundDurationMultiplier
-    }
   | { type: 'SET_HEARTS'; heartsA: number; heartsB: number }
   | {
       type: 'SET_ROUND_DURATION'
@@ -139,6 +129,23 @@ export type AppAction =
       roundDurationMax: number
     }
   | { type: 'FACTORY_RESET' }
+
+export function restoreAppState(state: AppState): AppState {
+  if (!screencapMode) return state
+
+  const freshGame = appStateReducer(state, { type: 'NEW_GAME' })
+
+  return {
+    ...freshGame,
+    // Keep the current menu/tutorial screen, but don't resume an expired round
+    // or show a winner after restoring both teams' hearts.
+    activeScreen:
+      state.activeScreen === AppScreen.Guessing ||
+      state.activeScreen === AppScreen.Winners
+        ? AppScreen.Scoring
+        : state.activeScreen,
+  }
+}
 
 export function selectNextPhrase(
   state: Pick<
@@ -211,18 +218,13 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       const {
         roundDurationMin,
         roundDurationMax,
-        roundDurationMultiplier,
         accelerationDurationMin,
         accelerationDurationMax,
       } = state
       const roundDuration =
-        random(roundDurationMin, roundDurationMax) *
-        roundDurationMultiplier *
-        1000
+        random(roundDurationMin, roundDurationMax) * 1000
       const accelerationDuration =
-        random(accelerationDurationMin, accelerationDurationMax) *
-        roundDurationMultiplier *
-        1000
+        random(accelerationDurationMin, accelerationDurationMax) * 1000
 
       newState = appStateReducer(
         {
@@ -399,14 +401,6 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       break
     }
 
-    case 'SET_ROUND_DURATION_MULTIPLIER': {
-      newState = {
-        ...state,
-        roundDurationMultiplier: action.roundDurationMultiplier,
-      }
-      break
-    }
-
     case 'SET_HEARTS': {
       const heartsA = clamp(action.heartsA, 0, HEARTS_PER_TEAM)
       const heartsB = clamp(action.heartsB, 0, HEARTS_PER_TEAM)
@@ -435,7 +429,6 @@ export function appStateReducer(state: AppState, action: AppAction): AppState {
       )
       newState = {
         ...state,
-        roundDurationMultiplier: 1,
         roundDurationMin,
         roundDurationMax,
       }

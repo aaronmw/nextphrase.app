@@ -3,7 +3,7 @@
 import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { ScreenContainer } from '@/components/ScreenContainer'
-import { StyledText } from '@/components/StyledText'
+import { Button } from '@/components/Button'
 
 export function ScreenForWinners() {
   const { state, dispatch } = useAppContext()
@@ -23,13 +23,13 @@ export function ScreenForWinners() {
             </div>
             <div className="text-8xl">{winner}</div>
           </div>
-          <StyledText
-            as="button"
-            variant="button.primary"
+          <Button
+            fullWidth
+            variant="primary"
             onClick={() => dispatch({ type: 'NEW_GAME' })}
           >
             New Game
-          </StyledText>
+          </Button>
         </div>
       }
     />

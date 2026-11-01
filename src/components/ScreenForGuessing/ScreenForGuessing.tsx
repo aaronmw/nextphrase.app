@@ -135,6 +135,7 @@ export function ScreenForGuessing() {
           </div>
           <TeamSelector
             ref={selectorElementRef}
+            active={isTeamSelectorInteractive}
             activeTeam={activeTeamInRound}
             className={twMerge(
               'js-guess-selector z-30',

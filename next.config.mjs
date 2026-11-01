@@ -1,4 +1,5 @@
 import { networkInterfaces } from 'node:os'
+import { screencapMode } from './src/screencap.config.mjs'
 
 const lanDevOrigins = Object.values(networkInterfaces())
   .flatMap((addresses) => addresses ?? [])
@@ -8,9 +9,7 @@ const lanDevOrigins = Object.values(networkInterfaces())
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ['nextphrase-dot-app.localhost', ...lanDevOrigins],
-  devIndicators: {
-    position: 'bottom-left',
-  },
+  devIndicators: screencapMode ? false : { position: 'bottom-left' },
   images: {
     remotePatterns: [
       {

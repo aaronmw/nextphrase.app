@@ -178,13 +178,13 @@ export function usePhraseSwipe({
   }
 
   useEffect(() => {
-    if (swipeDelayEnabled) return
+    if (swipeDelayEnabled && !disabled) return
     if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current)
     freezeTimeoutRef.current = null
     frozenUntilRef.current = 0
     rejectedSwipeRef.current = false
     setIsFrozen(false)
-  }, [swipeDelayEnabled])
+  }, [disabled, swipeDelayEnabled])
 
   useEffect(() => {
     const activePreview = previewRef.current

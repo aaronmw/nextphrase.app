@@ -1,13 +1,11 @@
 'use client'
 
-import { AppScreen } from '@/app/reducer'
 import {
   teamAColor,
   teamAFillColor,
   teamBColor,
   teamBFillColor,
 } from '@/app/theme'
-import { useAppContext } from '@/components/AppContext'
 import {
   createFlipAndChangeTimeline,
   FLIP_AND_CHANGE_CHANGE_AT,
@@ -19,6 +17,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
@@ -27,7 +26,13 @@ import { useMediaQuery } from 'usehooks-ts'
 
 const SNAP_BACK_DEAD_ZONE_PX = 8
 
-function PassToLetter({ letter }: { letter: 'A' | 'B' }) {
+function PassToLetter({
+  letter,
+  active,
+}: {
+  letter: 'A' | 'B'
+  active: boolean
+}) {
   const letterRef = useRef<HTMLSpanElement>(null)
   const letterARef = useRef<HTMLSpanElement>(null)
   const letterBRef = useRef<HTMLSpanElement>(null)
@@ -41,7 +46,7 @@ function PassToLetter({ letter }: { letter: 'A' | 'B' }) {
       const letterB = letterBRef.current
       if (!(element && letterA && letterB)) return
 
-      if (prefersReducedMotion) {
+      if (!active || prefersReducedMotion) {
         displayedLetterRef.current = letter
       }
 
@@ -74,7 +79,7 @@ function PassToLetter({ letter }: { letter: 'A' | 'B' }) {
         .set(element, { clearProps: 'willChange' })
     },
     {
-      dependencies: [letter, prefersReducedMotion],
+      dependencies: [active, letter, prefersReducedMotion],
       revertOnUpdate: true,
       scope: letterRef,
     },
@@ -122,16 +127,16 @@ function getClientXFromPointer(e: TouchEvent | MouseEvent): number {
 }
 
 interface TeamSelectorProps extends Omit<ComponentProps<'div'>, 'children'> {
+  active?: boolean
   onSelectTeam: (team: 'A' | 'B') => void
   activeTeam: 'A' | 'B'
 }
 
 export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
   function TeamSelector(
-    { onSelectTeam, activeTeam, className, ...otherProps },
+    { onSelectTeam, activeTeam, active = true, className, ...otherProps },
     ref,
   ) {
-    const { state } = useAppContext()
     const railRef = useRef<HTMLDivElement>(null)
     const handleRef = useRef<HTMLDivElement>(null)
     const [maxPosition, setMaxPosition] = useState(0)
@@ -155,8 +160,12 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
       positionPxRef.current = positionPx
     }, [positionPx])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+      const position = positionObjRef.current
       return () => {
+        gsap.killTweensOf(position)
+        setIsAnimating(false)
+        setIsDragging(false)
         const L = dragListenersRef.current
         if (!L) return
         const touchOpts: AddEventListenerOptions = { passive: true }
@@ -166,23 +175,10 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
         window.removeEventListener('mouseup', L.onEnd)
         dragListenersRef.current = null
       }
-    }, [])
-
-    useEffect(() => {
-      if (state.activeScreen === AppScreen.Guessing) return
-      const L = dragListenersRef.current
-      if (!L) return
-      const touchOpts: AddEventListenerOptions = { passive: true }
-      window.removeEventListener('touchmove', L.onMove, touchOpts)
-      window.removeEventListener('mousemove', L.onMove)
-      window.removeEventListener('touchend', L.onEnd)
-      window.removeEventListener('mouseup', L.onEnd)
-      dragListenersRef.current = null
-      setIsDragging(false)
-    }, [state.activeScreen])
+    }, [active])
 
     const displayPosition =
-      isDragging || isAnimating
+      active && (isDragging || isAnimating)
         ? positionPx
         : activeTeam === 'A'
           ? 0
@@ -254,6 +250,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
     }, [runToPosition])
 
     function handleStart(e: React.TouchEvent | React.MouseEvent) {
+      if (!active) return
       const el = railRef.current
       if (!el) return
       const startPosition = activeTeam === 'A' ? 0 : maxPosition
@@ -304,7 +301,7 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
     }
 
     function handleKeyboardSelect(team: 'A' | 'B') {
-      if (team === activeTeam) return
+      if (!active || team === activeTeam) return
       onSelectTeamRef.current(team)
       runToPositionRef.current(team === 'A' ? 0 : maxPosition, {
         startPx: positionPxRef.current,
@@ -326,12 +323,16 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
 
     const prevActiveTeamRef = useRef(activeTeam)
     useEffect(() => {
+      if (!active) {
+        prevActiveTeamRef.current = activeTeam
+        return
+      }
       if (isDragging || isAnimating || maxPosition <= 0) return
       if (prevActiveTeamRef.current === activeTeam) return
       prevActiveTeamRef.current = activeTeam
       const idle = activeTeam === 'A' ? 0 : maxPosition
       runToPositionRef.current(idle, { startPx: positionPxRef.current })
-    }, [activeTeam, isAnimating, isDragging, maxPosition])
+    }, [active, activeTeam, isAnimating, isDragging, maxPosition])
 
     const isHandleOnTeamA = t < 0.5
     const handleColor = isHandleOnTeamA ? teamAFillColor : teamBFillColor
@@ -358,13 +359,14 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
             'p-2',
           )}
           aria-label="Pass team selector"
+          aria-disabled={!active}
           aria-valuemax={1}
           aria-valuemin={0}
           aria-valuenow={activeTeam === 'A' ? 0 : 1}
           aria-valuetext={`Pass to ${passToLetter}`}
           role="slider"
           style={{ background: trackGradient }}
-          tabIndex={0}
+          tabIndex={active ? 0 : -1}
           onKeyDown={handleKeyDown}
           onTouchStart={handleStart}
           onMouseDown={handleStart}
@@ -399,7 +401,10 @@ export const TeamSelector = forwardRef<HTMLDivElement, TeamSelectorProps>(
                 )}
               >
                 <span>PASS TO</span>
-                <PassToLetter letter={passToLetter} />
+                <PassToLetter
+                  active={active}
+                  letter={passToLetter}
+                />
               </span>
             </div>
           </div>

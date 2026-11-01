@@ -13,6 +13,7 @@ import {
   RefObject,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
 } from 'react'
 import { twMerge } from 'tailwind-merge'
@@ -66,6 +67,7 @@ export const PhraseFlipper = forwardRef<
 
   useImperativeHandle(ref, () => ({
     triggerPhraseTransition(onComplete: () => void) {
+      if (disabled) return
       resetSwipe()
       const el = phraseContentRef.current
       if (!el || transitionPendingRef.current) {
@@ -101,12 +103,17 @@ export const PhraseFlipper = forwardRef<
     )
   }, [currentPhraseId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const phraseContent = phraseContentRef.current
-    return () => {
-      if (phraseContent) gsap.killTweensOf(phraseContent)
+    function cancelTransition() {
+      if (!phraseContent) return
+      gsap.killTweensOf(phraseContent)
+      gsap.set(phraseContent, { clearProps: 'opacity,transform' })
+      transitionPendingRef.current = false
     }
-  }, [])
+    if (disabled) cancelTransition()
+    return cancelTransition
+  }, [disabled])
 
   return (
     <div

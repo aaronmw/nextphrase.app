@@ -7,6 +7,7 @@ import {
   appStateReducer,
   initialState,
   persistedStateKeys,
+  restoreAppState,
 } from '@/app/reducer'
 import { soundFiles } from '@/app/sounds'
 import { supabase } from '@/app/supabase'
@@ -50,6 +51,7 @@ export function AppContext({ children }: { children: ReactNode }) {
     key: APP_STATE_STORAGE_KEY,
     persistedKeys: persistedStateKeys,
     reducer: appStateReducer,
+    restoreState: restoreAppState,
   })
   const [isLoadingPhrases, setIsLoadingPhrases] = useState(true)
   const sounds = useSoundPreloader(soundFiles)

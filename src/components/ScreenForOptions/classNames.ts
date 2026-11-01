@@ -6,7 +6,4 @@ export const classNames = {
     flex-col
     gap-y-0.5
   `,
-  hardEdgeControlGroup: tw`
-    py-1.5
-  `,
 }

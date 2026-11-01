@@ -5,24 +5,28 @@ export function usePersistedReducer({
   initialState = {},
   key,
   persistedKeys = [],
+  restoreState,
 }: {
   reducer: Reducer<any, any>
   initialState: any
   key: string
   persistedKeys: string[]
+  restoreState?: (state: any) => any
 }) {
   // Initialize state from localStorage, or fall back to initialState
   const [state, dispatch] = useReducer(
     reducer,
     initialState,
     (initial = {}) => {
-      if (
-        typeof localStorage === 'undefined' ||
-        typeof localStorage.getItem !== 'function'
-      )
-        return initial
-      const persisted = localStorage.getItem(key)
-      return persisted ? { ...initial, ...JSON.parse(persisted) } : initial
+      const persisted =
+        typeof localStorage !== 'undefined' &&
+        typeof localStorage.getItem === 'function'
+          ? localStorage.getItem(key)
+          : null
+      const restored = persisted
+        ? { ...initial, ...JSON.parse(persisted) }
+        : initial
+      return restoreState ? restoreState(restored) : restored
     },
   )
 

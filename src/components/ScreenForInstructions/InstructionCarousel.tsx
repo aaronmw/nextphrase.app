@@ -421,7 +421,13 @@ function createClockwiseQuarterPath(start: Point, end: Point, center: Point) {
   ].join(' ')
 }
 
-export function InstructionCarousel() {
+export function InstructionCarousel({
+  backButtonOverlay,
+  onFinalSceneCompleteChange,
+}: {
+  backButtonOverlay: ReactNode
+  onFinalSceneCompleteChange: (complete: boolean) => void
+}) {
   const { isLoading, state } = useAppContext()
   const isActive = state.activeScreen === AppScreen.Instructions
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
@@ -485,10 +491,24 @@ export function InstructionCarousel() {
     }
   }, [isActive])
 
+  useGSAP(
+    () => {
+      if (isActive) return
+
+      const dragState = dragStateRef.current
+      const root = rootRef.current
+      dragStateRef.current = null
+      if (dragState && root?.hasPointerCapture(dragState.pointerId)) {
+        root.releasePointerCapture(dragState.pointerId)
+      }
+    },
+    { dependencies: [isActive], scope: rootRef },
+  )
+
   useEffect(() => {
     const stage = stageRef.current
 
-    if (!(stage && typeof ResizeObserver !== 'undefined')) return
+    if (!(isActive && stage && typeof ResizeObserver !== 'undefined')) return
 
     let animationFrame = 0
     let previousWidth = 0
@@ -513,7 +533,7 @@ export function InstructionCarousel() {
       cancelAnimationFrame(animationFrame)
       resizeObserver.disconnect()
     }
-  }, [])
+  }, [isActive])
 
   useGSAP(
     () => {
@@ -750,9 +770,10 @@ export function InstructionCarousel() {
     () => {
       const captionTrack = captionTrackRef.current
 
-      if (!(captionTrack && isActive)) return
+      if (!captionTrack) return
 
       gsap.killTweensOf(captionTrack)
+      if (!isActive) return
       gsap.to(captionTrack, {
         duration: prefersReducedMotion ? 0.15 : 0.45,
         ease: 'power2.inOut',
@@ -854,6 +875,7 @@ export function InstructionCarousel() {
 
       sceneTimelineRef.current?.kill()
       sceneTimelineRef.current = null
+      onFinalSceneCompleteChange(false)
       setHasRevealedFinalRule(false)
       setIsInstructionConfettiActive(false)
 
@@ -1462,6 +1484,7 @@ export function InstructionCarousel() {
         gsap.set(winnerResult, { autoAlpha: 1, xPercent: 0 })
         gsap.set(finalRule, { autoAlpha: 1 })
         setHasRevealedFinalRule(true)
+        onFinalSceneCompleteChange(true)
         phoneSeatRef.current = null
         return
       }
@@ -1710,6 +1733,13 @@ export function InstructionCarousel() {
         )
         .add(createTrophyCelebrationTimeline(trophyGlyph), 'trophyCelebration')
 
+      // The reveal ends here; the trophy and winner celebrations loop forever.
+      finalScene.call(
+        () => onFinalSceneCompleteChange(true),
+        [],
+        'trophyCelebration',
+      )
+
       winners.forEach(({ player, offsetX }, index) => {
         const diameter = Math.max(player.offsetWidth, player.offsetHeight)
         const settled = { x: offsetX, y: 0 }
@@ -1741,6 +1771,7 @@ export function InstructionCarousel() {
         isActive,
         prefersReducedMotion,
         stageGeometryVersion,
+        onFinalSceneCompleteChange,
       ],
       scope: rootRef,
     },
@@ -1761,6 +1792,7 @@ export function InstructionCarousel() {
   }
 
   function goToSlide(nextSlide: number) {
+    if (!isActive) return
     const clampedSlide = gsap.utils.clamp(
       0,
       instructionSlides.length - 1,
@@ -1810,7 +1842,11 @@ export function InstructionCarousel() {
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.button !== 0 || (event.target as HTMLElement).closest('button')) {
+    if (
+      !isActive ||
+      event.button !== 0 ||
+      (event.target as HTMLElement).closest('button')
+    ) {
       return
     }
 
@@ -2317,7 +2353,10 @@ export function InstructionCarousel() {
             </div>
           </div>
 
-          <InstructionTeamSelector ref={teamSelectorDemoRef} />
+          <InstructionTeamSelector
+            ref={teamSelectorDemoRef}
+            active={isActive}
+          />
         </div>
 
         <div
@@ -2501,7 +2540,6 @@ export function InstructionCarousel() {
             <span
               aria-hidden="true"
               className={`
-                bg-bgColor
                 pointer-events-none
                 fixed
                 z-[110]
@@ -2509,7 +2547,6 @@ export function InstructionCarousel() {
                 size-6
                 items-center
                 justify-center
-                rounded-full
                 text-xs
                 ${
                   state.rotateScreen
@@ -2518,10 +2555,7 @@ export function InstructionCarousel() {
                 }
               `}
             >
-              <Icon
-                className="translate-y-px"
-                name="arrow-left-long"
-              />
+              {backButtonOverlay}
             </span>
           ) : null
         }

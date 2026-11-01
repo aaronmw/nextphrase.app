@@ -2,10 +2,11 @@
 
 import { HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
-import { Icon } from '@/components/Icon'
+import { Button } from '@/components/Button'
+import { screencapMode } from '@/screencap.config.mjs'
 import clamp from 'lodash/clamp'
 import { useLayoutEffect, useState } from 'react'
-import { twMerge, twJoin } from 'tailwind-merge'
+import { twJoin } from 'tailwind-merge'
 import {
   applyDevThemePreview,
   persistDevThemePreview,
@@ -63,33 +64,18 @@ export function DevPanel() {
   }
 
   return (
-    <>
-      <button
+    <div hidden={screencapMode}>
+      <Button
         data-dev-panel
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={twMerge(
-          'fixed',
-          'right-[max(1rem,env(safe-area-inset-right))]',
-          'bottom-[max(1rem,env(safe-area-inset-bottom))]',
-          'z-200',
-          'flex',
-          'h-5',
-          'w-5',
-          'items-center',
-          'justify-center',
-          'rounded-full',
-          'bg-black/20',
-          'text-xs',
-          'text-neutralColor-100',
-          'shadow',
-          'hover:bg-black/30',
-        )}
+        icon="gear"
+        variant="neutral"
+        size="compact"
+        className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-200 shadow"
         aria-expanded={open}
         aria-label={open ? 'Close dev panel' : 'Open dev panel'}
-      >
-        <Icon name="gear" />
-      </button>
+      />
       {open && (
         <dialog
           data-dev-panel
@@ -125,27 +111,27 @@ export function DevPanel() {
               Team A
             </span>
             <div className="flex items-center gap-1">
-              <button
+              <Button
                 type="button"
                 onClick={() => setHearts('A', -1)}
                 disabled={heartsRemainingForTeamA <= 0}
-                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
+                variant="secondary"
+                size="compact"
                 aria-label="Decrease Team A score"
-              >
-                −
-              </button>
+                icon="minus"
+              />
               <span className="text-neutralColor-100 min-w-6 text-center">
                 {heartsRemainingForTeamA}
               </span>
-              <button
+              <Button
                 type="button"
                 onClick={() => setHearts('A', 1)}
                 disabled={heartsRemainingForTeamA >= HEARTS_PER_TEAM}
-                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
+                variant="secondary"
+                size="compact"
                 aria-label="Increase Team A score"
-              >
-                +
-              </button>
+                icon="plus"
+              />
             </div>
           </div>
           <div className="flex items-center justify-between gap-4">
@@ -153,27 +139,27 @@ export function DevPanel() {
               Team B
             </span>
             <div className="flex items-center gap-1">
-              <button
+              <Button
                 type="button"
                 onClick={() => setHearts('B', -1)}
                 disabled={heartsRemainingForTeamB <= 0}
-                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
+                variant="secondary"
+                size="compact"
                 aria-label="Decrease Team B score"
-              >
-                −
-              </button>
+                icon="minus"
+              />
               <span className="text-neutralColor-100 min-w-6 text-center">
                 {heartsRemainingForTeamB}
               </span>
-              <button
+              <Button
                 type="button"
                 onClick={() => setHearts('B', 1)}
                 disabled={heartsRemainingForTeamB >= HEARTS_PER_TEAM}
-                className="border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100 hover:bg-neutralColor-100/20 disabled:hover:bg-neutralColor-100/10 h-7 w-7 rounded border disabled:opacity-40"
+                variant="secondary"
+                size="compact"
                 aria-label="Increase Team B score"
-              >
-                +
-              </button>
+                icon="plus"
+              />
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -186,19 +172,17 @@ export function DevPanel() {
                   getRoundPresetId(roundDurationMin, roundDurationMax) ===
                   preset.id
                 return (
-                  <button
+                  <Button
                     key={preset.id}
                     type="button"
                     onClick={() => setRoundDuration(preset.min, preset.max)}
-                    className={twJoin(
-                      'flex-1 rounded border px-2 py-1.5 text-xs',
-                      active
-                        ? 'border-neutralColor-100/50 bg-neutralColor-100/20 text-neutralColor-100'
-                        : 'border-neutralColor-100/30 bg-neutralColor-100/10 text-neutralColor-100/70 hover:bg-neutralColor-100/15',
-                    )}
+                    variant={active ? 'primary' : 'secondary'}
+                    size="compact"
+                    aria-pressed={active}
+                    className="min-w-0 flex-1"
                   >
                     {preset.label}
-                  </button>
+                  </Button>
                 )
               })}
             </div>
@@ -209,36 +193,20 @@ export function DevPanel() {
             onChange={setThemePreview}
           />
           <div className="bg-neutralColor-100/20 h-px" />
-          <button
+          <Button
             type="button"
             onClick={() => {
               document.documentElement.dataset.devUiHidden = 'true'
             }}
-            className="
-              border-neutralColor-100/30
-              bg-neutralColor-100/10
-              text-neutralColor-100
-              hover:bg-neutralColor-100/20
-              flex
-              h-8
-              w-full
-              shrink-0
-              items-center
-              justify-center
-              gap-2
-              rounded
-              border
-              px-3
-              text-xs
-            "
+            variant="secondary"
+            size="compact"
+            fullWidth
+            icon="eye-slash"
           >
-            <span className="inline-flex w-4 justify-center">
-              <Icon name="eye-slash" />
-            </span>
-            <span>Hide Until Reload</span>
-          </button>
+            Hide Until Reload
+          </Button>
         </dialog>
       )}
-    </>
+    </div>
   )
 }

@@ -1,19 +1,14 @@
 'use client'
 
-import {
-  AppScreen,
-  ROUND_DURATION_MULTIPLIERS,
-  RoundDurationMultiplier,
-} from '@/app/reducer'
+import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
-import { Icon } from '@/components/Icon'
+import { Button } from '@/components/Button'
 import { InsetDivider } from '@/components/InsetDivider'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
 import { Description, Field, Label, Switch } from '@headlessui/react'
 import { ReactNode } from 'react'
-import { twMerge } from 'tailwind-merge'
 import { classNames } from './classNames'
 
 function OptionsGroup({
@@ -125,18 +120,13 @@ function ToggleRow({
   )
 }
 
-function getRoundDurationLabel(multiplier: RoundDurationMultiplier) {
-  return multiplier === 0.5 ? '½×' : `${multiplier}×`
-}
-
 export function ScreenForOptions() {
-  const { state, dispatch, sounds } = useAppContext()
+  const { state, dispatch } = useAppContext()
   const {
     categoriesById,
     countdownEnabled,
     disabledCategoryIds,
     rotateScreen,
-    roundDurationMultiplier,
     swipeDelayEnabled,
   } = state
   const disabledCategoryIdsSet = new Set(disabledCategoryIds)
@@ -166,16 +156,6 @@ export function ScreenForOptions() {
     })
   }
 
-  function handleChangeRoundDuration(
-    roundDurationMultiplier: RoundDurationMultiplier,
-  ) {
-    sounds.playSound('spacebar-click')
-    dispatch({
-      type: 'SET_ROUND_DURATION_MULTIPLIER',
-      roundDurationMultiplier,
-    })
-  }
-
   return (
     <ScreenContainer
       className="touch-auto"
@@ -185,18 +165,18 @@ export function ScreenForOptions() {
         <AppHeader
           centerSlot="Options"
           leftSlot={
-            <StyledText
-              as="button"
-              variant="button.tool"
+            <Button
+              icon="arrow-left-long"
+              aria-label="Back to main menu"
+              className="-my-0.5"
+              variant="neutral"
               onClick={() =>
                 dispatch({
                   type: 'SET_ACTIVE_SCREEN',
                   screen: AppScreen.MainMenu,
                 })
               }
-            >
-              <Icon name="arrow-left-long" />
-            </StyledText>
+            />
           }
         />
       }
@@ -228,60 +208,6 @@ export function ScreenForOptions() {
           <InsetDivider />
 
           <OptionsGroup label="Round Options">
-            <fieldset className={classNames.fieldGroup}>
-              <legend>Round Duration</legend>
-
-              <div className={classNames.hardEdgeControlGroup}>
-                <div
-                  className="
-                  border-neutralColor-100
-                  grid
-                  grid-cols-3
-                  overflow-hidden
-                  rounded-sm
-                  border-4
-                "
-                >
-                  {ROUND_DURATION_MULTIPLIERS.map((multiplier, index) => (
-                    <label
-                      className="relative cursor-pointer"
-                      key={multiplier}
-                    >
-                      <input
-                        checked={roundDurationMultiplier === multiplier}
-                        className="peer sr-only"
-                        name="round-duration"
-                        type="radio"
-                        value={multiplier}
-                        onChange={() => handleChangeRoundDuration(multiplier)}
-                      />
-                      <span
-                        className={twMerge(
-                          `
-                          peer-checked:bg-accentFillColor
-                          peer-focus-visible:ring-primaryColor-100
-                          text-neutralColor-100
-                          peer-checked:text-textOnAccentColor
-                          flex
-                          items-center
-                          justify-center
-                          py-1
-                          text-xs
-                          transition-colors
-                          peer-focus-visible:ring-2
-                          peer-focus-visible:ring-inset
-                        `,
-                          index > 0 && 'border-neutralColor-100 border-l-4',
-                        )}
-                      >
-                        {getRoundDurationLabel(multiplier)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </fieldset>
-
             <ToggleRow
               checked={countdownEnabled}
               id="countdown-enabled"
@@ -299,10 +225,9 @@ export function ScreenForOptions() {
 
           <InsetDivider />
 
-          <OptionsGroup label="Sound Boost">
+          <OptionsGroup label="Point Speakers Outward">
             <ToggleRow
               checked={rotateScreen}
-              description="For loud environments, this points the device’s speakers towards other players"
               id="rotate-screen"
               label="Rotate Screen"
               onChange={handleChangeRotateScreen}

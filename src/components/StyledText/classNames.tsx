@@ -42,6 +42,7 @@ export const classNames = {
     `,
   ),
 
+  // Legacy surface for the custom scoring controls, not ordinary UI buttons.
   'button.primary': twMerge(
     buttonClassNames,
     `
@@ -61,82 +62,6 @@ export const classNames = {
       tracking-tighter
       whitespace-nowrap
       uppercase
-    `,
-  ),
-
-  'button.secondary': twMerge(
-    buttonClassNames,
-    `
-      js-button-secondary
-      border-primaryColor-400/40
-      text-primaryColor-400
-      relative
-      z-10
-      w-full
-      rounded-sm
-      border-4
-      px-3
-      pt-[0.3125rem]
-      pb-[0.1875rem]
-      text-center
-      text-xs
-      leading-none
-      tracking-tighter
-      whitespace-nowrap
-      uppercase
-      backdrop-blur-sm
-    `,
-  ),
-
-  'button.tertiary': twMerge(
-    buttonClassNames,
-    `
-      text-primaryColor-400
-      relative
-      z-10
-      w-full
-      rounded-sm
-      bg-transparent
-      px-3
-      pt-[0.3125rem]
-      pb-[0.1875rem]
-      text-center
-      text-xs
-      leading-none
-      tracking-tighter
-      whitespace-nowrap
-      uppercase
-    `,
-  ),
-
-  'button.icon': twMerge(
-    buttonClassNames,
-    `
-      hover:bg-primaryColor
-      bg-shadedBgColor
-      hover:text-neutralColor-100
-      size-10
-      rounded-none
-      text-xs
-    `,
-  ),
-
-  'button.tool': twMerge(
-    buttonClassNames,
-    `
-      -my-0.5
-      inline-flex
-      size-6
-      shrink-0
-      items-center
-      justify-center
-      rounded-full
-      p-0
-      text-xs
-      text-inherit
-      hover:bg-current/10
-      focus-visible:bg-current/10
-      active:bg-current/15
     `,
   ),
 

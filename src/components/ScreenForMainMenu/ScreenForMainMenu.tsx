@@ -5,7 +5,7 @@ import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
 import { Logo } from '@/components/Logo'
 import { ScreenContainer } from '@/components/ScreenContainer'
-import { StyledText } from '@/components/StyledText'
+import { Button } from '@/components/Button'
 import { useCallback, useState } from 'react'
 import { classNames } from './classNames'
 
@@ -49,10 +49,10 @@ export function ScreenForMainMenu() {
 
           <div className={classNames.mainContainer}>
             {gameInProgress && (
-              <StyledText
-                as="button"
+              <Button
+                fullWidth
                 className={classNames.continueButton}
-                variant="button.primary"
+                variant="primary"
                 onClick={() =>
                   dispatch({
                     type: 'SET_ACTIVE_SCREEN',
@@ -60,30 +60,30 @@ export function ScreenForMainMenu() {
                   })
                 }
               >
-                <div>Continue Game</div>
+                <span>Continue Game</span>
 
-                <div className={classNames.scoreContainer}>
-                  <div className={classNames.teamAScore}>
+                <span className={classNames.scoreContainer}>
+                  <span className={classNames.teamAScore}>
                     {heartsRemainingForTeamA}
-                  </div>
-                  <div className={classNames.teamBScore}>
+                  </span>
+                  <span className={classNames.teamBScore}>
                     {heartsRemainingForTeamB}
-                  </div>
-                </div>
-              </StyledText>
+                  </span>
+                </span>
+              </Button>
             )}
 
-            <StyledText
-              as="button"
-              variant="button.primary"
+            <Button
+              fullWidth
+              variant="primary"
               onClick={handleNewGame}
             >
               {gameInProgress ? 'New Game' : 'Start Game'}
-            </StyledText>
+            </Button>
 
-            <StyledText
-              as="button"
-              variant="button.secondary"
+            <Button
+              fullWidth
+              variant="secondary"
               onClick={() =>
                 dispatch({
                   type: 'SET_ACTIVE_SCREEN',
@@ -92,11 +92,11 @@ export function ScreenForMainMenu() {
               }
             >
               How to Play
-            </StyledText>
+            </Button>
 
-            <StyledText
-              as="button"
-              variant="button.secondary"
+            <Button
+              fullWidth
+              variant="secondary"
               onClick={() =>
                 dispatch({
                   type: 'SET_ACTIVE_SCREEN',
@@ -105,7 +105,7 @@ export function ScreenForMainMenu() {
               }
             >
               Options
-            </StyledText>
+            </Button>
           </div>
         </>
       }

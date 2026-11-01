@@ -3,13 +3,22 @@
 import { AppScreen } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
-import { Icon } from '@/components/Icon'
+import { Button, ButtonVisual } from '@/components/Button'
 import { ScreenContainer } from '@/components/ScreenContainer'
-import { StyledText } from '@/components/StyledText'
+import { useState } from 'react'
 import { InstructionCarousel } from './InstructionCarousel'
 
 export function ScreenForInstructions() {
   const { dispatch } = useAppContext()
+  const [hasCompletedFinalScene, setHasCompletedFinalScene] = useState(false)
+
+  const backButtonAppearance = {
+    icon: 'arrow-left-long' as const,
+    variant: hasCompletedFinalScene
+      ? ('primary' as const)
+      : ('neutral' as const),
+    className: 'relative z-[110] -my-0.5',
+  }
 
   return (
     <ScreenContainer
@@ -21,31 +30,25 @@ export function ScreenForInstructions() {
         <AppHeader
           centerSlot="How to Play"
           leftSlot={
-            <StyledText
-              as="button"
+            <Button
+              {...backButtonAppearance}
               aria-label="Back to main menu"
-              className="
-                bg-bgColor
-                relative
-                z-[110]
-              "
-              variant="button.tool"
               onClick={() =>
                 dispatch({
                   type: 'SET_ACTIVE_SCREEN',
                   screen: AppScreen.MainMenu,
                 })
               }
-            >
-              <Icon
-                className="translate-y-px"
-                name="arrow-left-long"
-              />
-            </StyledText>
+            />
           }
         />
       }
-      slotForMain={<InstructionCarousel />}
+      slotForMain={
+        <InstructionCarousel
+          backButtonOverlay={<ButtonVisual {...backButtonAppearance} />}
+          onFinalSceneCompleteChange={setHasCompletedFinalScene}
+        />
+      }
     />
   )
 }

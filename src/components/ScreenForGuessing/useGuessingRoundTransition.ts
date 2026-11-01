@@ -4,7 +4,7 @@ import { AppScreen } from '@/app/reducer'
 import { RoundTransitionPhase } from '@/components/RoundTransitionContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { RefObject } from 'react'
+import { RefObject, useRef } from 'react'
 
 export const ALERT_REST_Y_PX = 24
 const COUNTDOWN_LABEL_IN_DURATION = 0.22
@@ -50,15 +50,26 @@ export function useGuessingRoundTransition({
   roundTransitionPhase,
   selectorElementRef,
 }: UseGuessingRoundTransitionProps) {
+  const countdownTimelineRef = useRef<gsap.core.Timeline | null>(null)
+  const transitionTimelineRef = useRef<gsap.core.Timeline | null>(null)
+  const isRoundScreen =
+    activeScreen === AppScreen.Scoring || activeScreen === AppScreen.Guessing
+
   useGSAP(
     () => {
+      countdownTimelineRef.current?.kill()
+      countdownTimelineRef.current = null
       const countdownLabelElement = countdownLabelElementRef.current
 
       if (!countdownLabelElement) return
 
       gsap.killTweensOf(countdownLabelElement)
 
-      if (roundTransitionPhase !== 'countdown' || !countdownLabel) {
+      if (
+        !isRoundScreen ||
+        roundTransitionPhase !== 'countdown' ||
+        !countdownLabel
+      ) {
         gsap.set(countdownLabelElement, {
           autoAlpha: countdownLabel ? 1 : 0,
           yPercent: 0,
@@ -67,6 +78,7 @@ export function useGuessingRoundTransition({
       }
 
       const timeline = gsap.timeline()
+      countdownTimelineRef.current = timeline
 
       timeline.fromTo(
         countdownLabelElement,
@@ -94,12 +106,14 @@ export function useGuessingRoundTransition({
       }
     },
     {
-      dependencies: [countdownLabel, roundTransitionPhase],
+      dependencies: [countdownLabel, isRoundScreen, roundTransitionPhase],
     },
   )
 
   useGSAP(
     () => {
+      transitionTimelineRef.current?.kill()
+      transitionTimelineRef.current = null
       const alertElement = alertElementRef.current
       const countdownElement = countdownElementRef.current
       const handoffTrackElement = handoffTrackElementRef.current
@@ -130,6 +144,11 @@ export function useGuessingRoundTransition({
       ]
 
       gsap.killTweensOf(animatedElements)
+
+      if (!isRoundScreen) {
+        gsap.set(animatedElements, { clearProps: 'willChange' })
+        return
+      }
 
       if (roundTransitionPhase === 'guessingEnter') {
         gsap.set(handoffTrackElement, { autoAlpha: 1, x: 0 })
@@ -192,7 +211,7 @@ export function useGuessingRoundTransition({
           willChange: 'transform, opacity',
         })
 
-        gsap
+        transitionTimelineRef.current = gsap
           .timeline({
             defaults: { duration: 0.3 },
             onComplete: () => {
@@ -251,6 +270,7 @@ export function useGuessingRoundTransition({
           })
           .to(alertElements, { autoAlpha: 0, y: -viewportHeight }, 0)
           .to(selectorElement, { autoAlpha: 0, y: viewportHeight }, 0)
+        transitionTimelineRef.current = timeline
 
         if (shouldExitPhrase) {
           timeline.to(phraseElement, { autoAlpha: 0, xPercent: 100 }, 0)
@@ -286,6 +306,7 @@ export function useGuessingRoundTransition({
     {
       dependencies: [
         activeScreen,
+        isRoundScreen,
         alertLightAnchorElement,
         countdownLabel,
         finishGuessingEnter,

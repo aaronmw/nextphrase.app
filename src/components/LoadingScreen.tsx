@@ -670,7 +670,7 @@ export function LoadingScreen({
               pointer-events-none
               invisible
               absolute
-              top-1/2
+              top-[calc(100%/3_-_70vmin/6)]
               left-1/2
               aspect-[475/419]
               w-[70vmin]

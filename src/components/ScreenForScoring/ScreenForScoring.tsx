@@ -4,13 +4,13 @@ import { AppScreen } from '@/app/reducer'
 import { teamAColor, teamBColor } from '@/app/theme'
 import { useAppContext } from '@/components/AppContext'
 import { AppHeader } from '@/components/AppHeader'
+import { Button } from '@/components/Button'
 import { Confetti } from '@/components/Confetti'
-import { Icon } from '@/components/Icon'
 import { PointDots } from '@/components/PointDots'
 import { useRoundTransition } from '@/components/RoundTransitionContext'
 import { ScreenContainer } from '@/components/ScreenContainer'
 import { StyledText } from '@/components/StyledText'
-import { useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { classNames } from './classNames'
 import { DistressMarks } from './DistressMarks'
@@ -109,7 +109,24 @@ export function ScreenForScoring() {
     scoreWinnerTrophyRef,
   })
 
+  useLayoutEffect(() => {
+    // A captured touch may never receive touchend once its screen departs.
+    return cancelScorePress
+  }, [state.activeScreen, roundTransitionPhase])
+
+  function cancelScorePress() {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = null
+    touchStartedAtRef.current = null
+  }
+
   function handleTouchStart(team: 'A' | 'B') {
+    if (
+      state.activeScreen !== AppScreen.Scoring ||
+      roundTransitionPhase !== 'idle'
+    )
+      return
+    cancelScorePress()
     touchStartedAtRef.current = Date.now()
     timerRef.current = setTimeout(() => {
       dispatch({ type: 'ADD_HEART', team })
@@ -117,13 +134,11 @@ export function ScreenForScoring() {
   }
 
   function handleTouchEnd(team: 'A' | 'B') {
-    const touchStartedAt = touchStartedAtRef.current!
+    const touchStartedAt = touchStartedAtRef.current
+    if (touchStartedAt === null) return
     const touchDuration = Date.now() - touchStartedAt
 
-    touchStartedAtRef.current = null
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
+    cancelScorePress()
 
     if (touchDuration < 500) {
       dispatch({ type: 'SET_ACTIVE_TEAM', team })
@@ -157,18 +172,18 @@ export function ScreenForScoring() {
               ref={scoreBackRef}
               className="js-score-back"
             >
-              <StyledText
-                as="button"
-                variant="button.tool"
+              <Button
+                icon="arrow-left-long"
+                aria-label="Back to main menu"
+                className="-my-0.5"
+                variant="neutral"
                 onClick={() =>
                   dispatch({
                     type: 'SET_ACTIVE_SCREEN',
                     screen: AppScreen.MainMenu,
                   })
                 }
-              >
-                <Icon name="arrow-left-long" />
-              </StyledText>
+              />
             </div>
           }
           rightSlot={
@@ -220,6 +235,7 @@ export function ScreenForScoring() {
                     variant="button.primary"
                     onTouchStart={() => handleTouchStart(team)}
                     onTouchEnd={() => handleTouchEnd(team)}
+                    onTouchCancel={cancelScorePress}
                   >
                     {team}
                   </StyledText>

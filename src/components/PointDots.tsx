@@ -1,6 +1,6 @@
 'use client'
 
-import { HEARTS_PER_TEAM } from '@/app/reducer'
+import { AppScreen, HEARTS_PER_TEAM } from '@/app/reducer'
 import { useAppContext } from '@/components/AppContext'
 import {
   HEART_LOSS_ANIMATION_CLASS_NAME,
@@ -8,7 +8,13 @@ import {
 } from '@/components/heartLossAnimation'
 import { Icon } from '@/components/Icon'
 import { usePrevious } from '@/lib/usePrevious'
-import { ComponentProps, useEffect, useRef, useState } from 'react'
+import {
+  ComponentProps,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useIsClient } from 'usehooks-ts'
 
@@ -24,6 +30,7 @@ export function PointDots({
   ...otherProps
 }: PointDotsProps) {
   const { state, sounds } = useAppContext()
+  const isActive = state.activeScreen === AppScreen.Scoring
   const { heartsRemainingForTeamA, heartsRemainingForTeamB, isNewGame } = state
   const isClient = useIsClient()
   const playSoundRef = useRef(sounds.playSound)
@@ -54,8 +61,18 @@ export function PointDots({
     playSoundRef.current = sounds.playSound
   }, [sounds.playSound])
 
+  useLayoutEffect(() => {
+    if (!isActive) return
+
+    return () => {
+      setHeldHeartsRemaining(null)
+      pendingPointToAnimateRef.current = null
+      setPointToAnimate(null)
+    }
+  }, [isActive])
+
   useEffect(() => {
-    if (!(didIncrease || didDecrease)) return
+    if (!isActive || !(didIncrease || didDecrease)) return
 
     const nextPointToAnimate = didDecrease
       ? previousHeartsRemaining
@@ -72,6 +89,7 @@ export function PointDots({
     pendingPointToAnimateRef.current = null
     setPointToAnimate(nextPointToAnimate)
   }, [
+    isActive,
     didDecrease,
     didIncrease,
     heartsRemaining,
@@ -80,17 +98,21 @@ export function PointDots({
   ])
 
   useEffect(() => {
-    if (!playChangeAnimation || pendingPointToAnimateRef.current === null)
+    if (
+      !isActive ||
+      !playChangeAnimation ||
+      pendingPointToAnimateRef.current === null
+    )
       return
 
     const pendingPointToAnimate = pendingPointToAnimateRef.current
     pendingPointToAnimateRef.current = null
     setHeldHeartsRemaining(null)
     setPointToAnimate(pendingPointToAnimate)
-  }, [playChangeAnimation])
+  }, [isActive, playChangeAnimation])
 
-  useEffect(() => {
-    if (!pointToAnimate) return
+  useLayoutEffect(() => {
+    if (!isActive || !pointToAnimate) return
 
     let cheeringId: ReturnType<typeof setTimeout> | null = null
     const animationDoneId = setTimeout(() => {
@@ -109,7 +131,7 @@ export function PointDots({
         clearTimeout(cheeringId)
       }
     }
-  }, [pointToAnimate, isGameOver])
+  }, [isActive, pointToAnimate, isGameOver])
 
   return (
     <div
@@ -127,7 +149,7 @@ export function PointDots({
         )}
       >
         {pointSlots.map(slotNumber => {
-          const isAnimating = slotNumber === pointToAnimate
+          const isAnimating = isActive && slotNumber === pointToAnimate
           const isHeart = isAnimating || slotNumber <= visibleHeartsRemaining
 
           return (

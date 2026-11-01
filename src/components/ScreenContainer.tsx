@@ -116,12 +116,28 @@ export function ScreenContainer({
   const outerElementRef = useRef<HTMLDivElement>(null)
   const screenTransitionTimelineRef = useRef<gsap.core.Timeline | null>(null)
   const didSetInitialRotationRef = useRef(false)
+  const wasActiveScreenRef = useRef(false)
+  const pendingExitCompleteRef = useRef<(() => void) | undefined>(undefined)
   const wasRoundTransitionControlledRef = useRef(false)
   const isActiveScreen = activeScreen === screenName
   const isRoundTransitionScreen = roundTransitionScreens.includes(screenName)
-  const isRoundTransitionActive = roundTransitionPhase !== 'idle'
+  const isRoundTransitionActive =
+    roundTransitionPhase !== 'idle' &&
+    roundTransitionScreens.includes(activeScreen)
   const isRoundTransitionControlled =
     isRoundTransitionScreen && isRoundTransitionActive
+  const isPresented = isRoundTransitionControlled
+    ? (screenName === AppScreen.Scoring
+        ? [...scoringVisiblePhases, ...scoringAftermathPhases]
+        : guessingVisiblePhases
+      ).includes(roundTransitionPhase)
+    : isActiveScreen && !isRoundTransitionActive
+  const isInteractive = isRoundTransitionControlled
+    ? screenName === AppScreen.Scoring
+      ? roundTransitionPhase === 'scoringGameOver'
+      : roundTransitionPhase === 'countdown' ||
+        roundTransitionPhase === 'phraseEnter'
+    : isPresented
   const innerGridRows = slotForHeader
     ? 'grid-rows-[2rem_auto]'
     : 'grid-rows-[0_auto]'
@@ -145,13 +161,30 @@ export function ScreenContainer({
       const wasRoundTransitionControlled =
         wasRoundTransitionControlledRef.current
       wasRoundTransitionControlledRef.current = isRoundTransitionControlled
+      const wasActiveScreen = wasActiveScreenRef.current
+      wasActiveScreenRef.current = isActiveScreen
+      if (isActiveScreen) pendingExitCompleteRef.current = undefined
+      else if (wasActiveScreen) pendingExitCompleteRef.current = onExitComplete
 
-      if (isRoundTransitionActive && !isRoundTransitionScreen) {
+      function finishExit() {
+        gsap.set(outerElement, { opacity: 0, visibility: 'hidden' })
+        const complete = pendingExitCompleteRef.current
+        pendingExitCompleteRef.current = undefined
+        complete?.()
+      }
+
+      // Dormant views must stay dormant when an unrelated round phase changes.
+      // Child GSAP animations can override inherited visibility, but not opacity.
+      if (
+        (isRoundTransitionActive && !isRoundTransitionScreen) ||
+        (!isActiveScreen && !wasActiveScreen && !isRoundTransitionControlled)
+      ) {
         const { allElements, headerElements, innerContainer } =
           getScopedAnimationElements(outerElement)
 
         gsap.killTweensOf(allElements)
         gsap.set(outerElement, {
+          opacity: 0,
           pointerEvents: 'none',
           visibility: 'hidden',
         })
@@ -162,7 +195,7 @@ export function ScreenContainer({
         gsap.set(headerElements, {
           yPercent: 0,
         })
-        if (!isActiveScreen) onExitComplete?.()
+        finishExit()
         return
       }
 
@@ -174,6 +207,7 @@ export function ScreenContainer({
 
         gsap.killTweensOf(allElements)
         gsap.set(outerElement, {
+          opacity: isActiveScreen ? 1 : 0,
           pointerEvents: isActiveScreen ? 'auto' : 'none',
           visibility: isActiveScreen ? 'visible' : 'hidden',
         })
@@ -193,15 +227,16 @@ export function ScreenContainer({
           duration: 0.5,
           ease: 'power1.inOut',
         },
-        onComplete: isActiveScreen ? undefined : onExitComplete,
+        onComplete: isActiveScreen ? undefined : finishExit,
       })
       screenTransitionTimelineRef.current = timeline
       const { headerElements, innerContainer } =
         getScopedAnimationElements(outerElement)
 
       timeline
-        .to(outerElement, {
-          visibility: isActiveScreen ? 'visible' : undefined,
+        .set(outerElement, {
+          opacity: 1,
+          visibility: 'visible',
           pointerEvents: isActiveScreen ? 'auto' : 'none',
         })
         .fromTo(
@@ -246,28 +281,18 @@ export function ScreenContainer({
 
       if (!(outerElement && isClient && isRoundTransitionControlled)) return
 
-      const isScoringScreen = screenName === AppScreen.Scoring
-      const shouldShow = isScoringScreen
-        ? [...scoringVisiblePhases, ...scoringAftermathPhases].includes(
-            roundTransitionPhase,
-          )
-        : guessingVisiblePhases.includes(roundTransitionPhase)
-      const shouldReceivePointer = isScoringScreen
-        ? roundTransitionPhase === 'scoringGameOver'
-        : screenName === AppScreen.Guessing &&
-          (roundTransitionPhase === 'countdown' ||
-            roundTransitionPhase === 'phraseEnter')
       const { allElements, headerElements, innerContainer } =
         getScopedAnimationElements(outerElement)
 
       gsap.killTweensOf(allElements)
       gsap.set(outerElement, {
-        pointerEvents: shouldReceivePointer ? 'auto' : 'none',
-        visibility: shouldShow ? 'visible' : 'hidden',
+        opacity: isPresented ? 1 : 0,
+        pointerEvents: isInteractive ? 'auto' : 'none',
+        visibility: isPresented ? 'visible' : 'hidden',
       })
 
       gsap.set(innerContainer, {
-        opacity: shouldShow ? 1 : 0,
+        opacity: isPresented ? 1 : 0,
         rotation: 0,
       })
 
@@ -280,6 +305,8 @@ export function ScreenContainer({
         roundTransitionPhase,
         isClient,
         isRoundTransitionControlled,
+        isPresented,
+        isInteractive,
         screenName,
       ],
       scope: outerElementRef,
@@ -370,6 +397,8 @@ export function ScreenContainer({
   return (
     <section
       ref={outerElementRef}
+      aria-hidden={!isPresented}
+      inert={!isInteractive}
       className={twMerge(
         `
           invisible
@@ -381,6 +410,7 @@ export function ScreenContainer({
           w-full
           origin-center
           touch-pan-x
+          opacity-0
           select-none
         `,
         className,

@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/Icon'
 import { PreventOrphans } from '@/components/PreventOrphans'
-import { StyledText } from '@/components/StyledText'
+import { Button } from '@/components/Button'
 import {
   getAppDisplayModeServerSnapshot,
   isAppRunningStandalone,
@@ -82,14 +82,14 @@ export function InstallPrompt() {
           </p>
         </div>
 
-        <StyledText
-          as="button"
-          variant="button.tertiary"
+        <Button
+          fullWidth
+          variant="tertiary"
           type="button"
           onClick={handleClickDismiss}
         >
           Play Anyway
-        </StyledText>
+        </Button>
       </div>
     </div>
   )

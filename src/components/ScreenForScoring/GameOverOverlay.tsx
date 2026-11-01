@@ -1,7 +1,7 @@
 'use client'
 
 import { RoundTransitionPhase } from '@/components/RoundTransitionContext'
-import { StyledText } from '@/components/StyledText'
+import { Button } from '@/components/Button'
 import { RefObject } from 'react'
 import { twMerge } from 'tailwind-merge'
 
@@ -63,19 +63,15 @@ export function GameOverOverlay({
             : 'pointer-events-none',
         )}
       >
-        <StyledText
-          as="button"
-          className={twMerge(
-            'h-14 w-full rounded-xl text-2xl',
-            gameOverWinningTeam === 'A'
-              ? 'border-teamAFillColor bg-teamAFillColor text-textOnTeamAColor'
-              : 'border-teamBFillColor bg-teamBFillColor text-textOnTeamBColor',
-          )}
-          variant="button.primary"
+        <Button
+          fullWidth
+          size="large"
+          tone={gameOverWinningTeam === 'A' ? 'teamA' : 'teamB'}
+          variant="primary"
           onClick={onNewGame}
         >
           New Game
-        </StyledText>
+        </Button>
       </div>
       <div
         ref={scoreWinnerTrophyRef}
