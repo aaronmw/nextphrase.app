@@ -1,4 +1,18 @@
 nodeLinker: hoisted
+
+# Security fixes for transitive dependencies whose parents still resolve older releases.
+overrides:
+  'brace-expansion@<1.1.21': 1.1.21
+  'brace-expansion@>=4.0.0 <5.0.12': 5.0.12
+  'js-yaml@>=4.0.0 <4.3.2': 4.3.2
+  'source-map-js@>=1.0.0 <1.2.2': 1.2.2
+  'tar@>=7.0.0 <7.5.22': 7.5.22
+  'zod@>=4.0.0 <4.6.7': 4.6.7
+  # v10's named exports are compatible with v11. Keep v3's callable CommonJS API.
+  # Reviewed 2026-11-01: v3.1.5 has no firstPhasePreProcess/optimizationLevel
+  # implementation described by https://github.com/advisories/GHSA-g3hv-75wg-m249.
+  # Its broad <11.0.1 range still flags v3; leave that finding visible to audit.
+  'minimatch@>=10.0.0 <11.0.1': 11.0.3
 allowBuilds:
   supabase: true
   unrs-resolver: true
